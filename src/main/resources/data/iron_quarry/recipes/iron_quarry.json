@@ -1,0 +1,22 @@
+{
+    "type": "iron_quarry:handled_crafting_recipe",
+    "pattern": [
+        "PBP",
+        "BMB",
+        "PBP"
+    ],
+    "key": {
+        "P": {
+            "item": "minecraft:iron_pickaxe"
+        },
+        "B": {
+            "item": "minecraft:iron_block"
+        },
+        "M": {
+            "item": "iron_quarry:copper_quarry"
+        }
+    },
+    "result": {
+        "item": "iron_quarry:iron_quarry"
+    }
+}

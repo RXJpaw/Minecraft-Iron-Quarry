@@ -1,0 +1,12 @@
+{
+    "replace": false,
+    "values": [
+        "minecraft:oxidized_copper",
+        "minecraft:diamond_block",
+        "minecraft:heart_of_the_sea",
+        "minecraft:enchanted_golden_apple",
+        "minecraft:sculk_catalyst",
+        "minecraft:dragon_head",
+        "minecraft:nether_star"
+    ]
+}

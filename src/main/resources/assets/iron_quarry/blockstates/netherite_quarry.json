@@ -1,0 +1,448 @@
+{
+    "multipart": [
+        {
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_main"
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "north", "open_front": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_front",
+                "y": 0
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "north", "open_right": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_side",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "north", "open_back": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_side",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "north", "open_left": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_side",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "north", "open_top": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_top",
+                "y": 0
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "north", "open_bottom": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_bottom",
+                "y": 0
+            }
+        },
+
+        {
+            "when": {
+                "AND": [{ "facing": "east", "open_front": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_front",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "east", "open_right": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_side",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "east", "open_back": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_side",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "east", "open_left": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_side",
+                "y": 0
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "east", "open_top": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_top",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "east", "open_bottom": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_bottom",
+                "y": 90
+            }
+        },
+
+        {
+            "when": {
+                "AND": [{ "facing": "south", "open_front": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_front",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "south", "open_right": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_side",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "south", "open_back": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_side",
+                "y": 0
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "south", "open_left": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_side",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "south", "open_top": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_top",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "south", "open_bottom": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_bottom",
+                "y": 180
+            }
+        },
+
+        {
+            "when": {
+                "AND": [{ "facing": "west", "open_front": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_front",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "west", "open_right": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_side",
+                "y": 0
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "west", "open_back": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_side",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "west", "open_left": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_side",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "west", "open_top": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_top",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "west", "open_bottom": false }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_closed_bottom",
+                "y": 270
+            }
+        },
+
+        {
+            "when": {
+                "AND": [{ "facing": "north", "open_front": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_front",
+                "y": 0
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "north", "open_right": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_side",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "north", "open_back": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_side",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "north", "open_left": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_side",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "north", "open_top": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_top",
+                "y": 0
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "north", "open_bottom": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_bottom",
+                "y": 0
+            }
+        },
+
+        {
+            "when": {
+                "AND": [{ "facing": "east", "open_front": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_front",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "east", "open_right": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_side",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "east", "open_back": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_side",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "east", "open_left": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_side",
+                "y": 0
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "east", "open_top": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_top",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "east", "open_bottom": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_bottom",
+                "y": 90
+            }
+        },
+
+        {
+            "when": {
+                "AND": [{ "facing": "south", "open_front": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_front",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "south", "open_right": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_side",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "south", "open_back": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_side",
+                "y": 0
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "south", "open_left": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_side",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "south", "open_top": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_top",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "south", "open_bottom": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_bottom",
+                "y": 180
+            }
+        },
+
+        {
+            "when": {
+                "AND": [{ "facing": "west", "open_front": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_front",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "west", "open_right": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_side",
+                "y": 0
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "west", "open_back": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_side",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "west", "open_left": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_side",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "west", "open_top": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_top",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "AND": [{ "facing": "west", "open_bottom": true }]
+            },
+            "apply": {
+                "model": "iron_quarry:block/quarry/netherite_quarry_open_bottom",
+                "y": 270
+            }
+        }
+    ]
+}

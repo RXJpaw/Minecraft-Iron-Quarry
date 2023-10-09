@@ -1,0 +1,12 @@
+{
+    "type": "iron_quarry:handled_smithing_recipe",
+    "base": {
+        "item": "iron_quarry:blueprint"
+    },
+    "addition": {
+        "item": "iron_quarry:conductive_amethyst"
+    },
+    "result": {
+        "item": "iron_quarry:blueprint"
+    }
+}

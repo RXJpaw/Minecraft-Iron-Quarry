@@ -1,0 +1,7 @@
+{
+    "parent": "iron_quarry:template/quarry/quarry_closed_side",
+    "textures": {
+        "0": "iron_quarry:block/iron_quarry",
+        "particle": "iron_quarry:block/iron_quarry_particles"
+    }
+}

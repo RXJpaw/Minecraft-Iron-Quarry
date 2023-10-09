@@ -1,0 +1,41 @@
+{
+    "itemGroup.iron_quarry.universal": "Iron Quarry",
+
+    "block.iron_quarry.copper_quarry": "Copper Quarry",
+    "block.iron_quarry.iron_quarry": "Iron Quarry",
+    "block.iron_quarry.gold_quarry": "Gold Quarry",
+    "block.iron_quarry.diamond_quarry": "Diamond Quarry",
+    "block.iron_quarry.netherite_quarry": "Netherite Quarry",
+    "block.iron_quarry.nether_star_quarry": "Nether Star Quarry",
+
+    "block.iron_quarry.reinforced_redstone_block": "Reinforced Block of Redstone",
+    "block.iron_quarry.reinforced_lapis_block": "Reinforced Block of Lapis Lazuli",
+
+    "item.iron_quarry.conductive_amethyst": "Conductive Amethyst",
+
+    "item.iron_quarry.quarry_block.lore.usage": "Usage: ",
+    "item.iron_quarry.quarry_block.lore.speed": "Speed: ",
+    "item.iron_quarry.quarry_block.lore.yield": "Yield: ",
+    "item.iron_quarry.quarry_block.lore.stored": "Stored: ",
+    "item.iron_quarry.quarry_block.lore.capacity": "Capacity: ",
+
+    "item.iron_quarry.augment": "Empty Augment",
+    "item.iron_quarry.augment.empty": "Empty Augment",
+    "item.iron_quarry.augment.speed": "Speed Augment",
+    "item.iron_quarry.augment.fortune": "Fortune Augment",
+    "item.iron_quarry.augment.lore.used": "Used %s/%s enhancements.",
+    "item.iron_quarry.augment.lore.capacity_upgrades": "Capacity Upgrades (%s/%s):",
+    "item.iron_quarry.augment.lore.benefit.speed": "+%s%% faster operation",
+    "item.iron_quarry.augment.lore.benefit.fortune": "+%s%% yield from ores",
+    "item.iron_quarry.augment.lore.drawback.energy": "+%s%% energy usage",
+
+    "item.iron_quarry.blueprint": "Blueprint",
+    "item.iron_quarry.blueprint.sealed": "Sealed Blueprint",
+    "item.iron_quarry.blueprint.unbound": "(Unbound)",
+    "item.iron_quarry.blueprint.lore.unbound": "§7§oUseless until both positions are set.",
+    "item.iron_quarry.blueprint.lore.first_pos": "§7First Position: %s",
+    "item.iron_quarry.blueprint.lore.second_pos": "§7Second Position: %s",
+    "item.iron_quarry.blueprint.lore.empty": "<unset>",
+
+    "item.iron_quarry.lore.details": "§7Hold §bLeft Shift§7 for more information"
+}

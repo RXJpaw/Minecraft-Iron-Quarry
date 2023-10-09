@@ -1,0 +1,22 @@
+{
+    "type": "iron_quarry:handled_crafting_recipe",
+    "pattern": [
+        "PBP",
+        "BMB",
+        "PBP"
+    ],
+    "key": {
+        "P": {
+            "item": "minecraft:golden_pickaxe"
+        },
+        "B": {
+            "item": "minecraft:gold_block"
+        },
+        "M": {
+            "item": "iron_quarry:iron_quarry"
+        }
+    },
+    "result": {
+        "item": "iron_quarry:gold_quarry"
+    }
+}

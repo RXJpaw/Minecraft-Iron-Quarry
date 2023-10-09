@@ -1,0 +1,43 @@
+{
+    "schemaVersion": 1,
+    "id": "iron_quarry",
+    "version": "${version}",
+
+    "name": "Iron Quarry",
+    "description": "Ever wanted to excavate 5 Chunks in a minute? No? Well.. now you can!",
+    "authors": [
+        "RXJpaw"
+    ],
+    "contact": {
+        "homepage": "https://www.curseforge.com/minecraft/mc-mods/iron-quarry",
+        "sources": "https://github.com/RXJpaw/Fabric-Iron-Quarry",
+        "issues": "https://github.com/RXJpaw/Fabric-Iron-Quarry/issues"
+    },
+
+    "license": "Apache-2.0",
+    "icon": "assets/iron_quarry/icon.png",
+
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "pw.rxj.iron_quarry.Main"
+        ],
+        "client": [
+            "pw.rxj.iron_quarry.Client"
+        ]
+    },
+    "mixins": [
+        "iron_quarry.mixins.json"
+    ],
+
+    "depends": {
+        "reborncore": ">=5.4.0",
+        "fabricloader": ">=0.14.21",
+        "fabric-api": "*",
+        "minecraft": "~1.19.2",
+        "java": ">=17"
+    },
+    "suggests": {
+        "another-mod": "*"
+    }
+}

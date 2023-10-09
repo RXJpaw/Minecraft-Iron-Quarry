@@ -1,0 +1,11 @@
+{
+    "replace": false,
+    "values": [
+        "iron_quarry:copper_quarry",
+        "iron_quarry:iron_quarry",
+        "iron_quarry:gold_quarry",
+        "iron_quarry:diamond_quarry",
+        "iron_quarry:netherite_quarry",
+        "iron_quarry:nether_star_quarry"
+    ]
+}

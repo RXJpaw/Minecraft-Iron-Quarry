@@ -1,0 +1,22 @@
+{
+    "type": "iron_quarry:handled_crafting_recipe",
+    "pattern": [
+        "PBP",
+        "BMB",
+        "PBP"
+    ],
+    "key": {
+        "P": {
+            "item": "minecraft:netherite_pickaxe"
+        },
+        "B": {
+            "item": "minecraft:netherite_block"
+        },
+        "M": {
+            "item": "iron_quarry:diamond_quarry"
+        }
+    },
+    "result": {
+        "item": "iron_quarry:netherite_quarry"
+    }
+}

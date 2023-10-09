@@ -1,0 +1,19 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "BBB",
+        "BAB",
+        "BBB"
+    ],
+    "key": {
+        "B": {
+            "item": "minecraft:lapis_block"
+        },
+        "A": {
+            "item": "iron_quarry:conductive_amethyst"
+        }
+    },
+    "result": {
+        "item": "iron_quarry:reinforced_lapis_block"
+    }
+}

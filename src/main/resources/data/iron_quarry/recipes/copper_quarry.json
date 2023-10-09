@@ -1,0 +1,22 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "PBP",
+        "BMB",
+        "PBP"
+    ],
+    "key": {
+        "P": {
+            "item": "minecraft:stone_pickaxe"
+        },
+        "B": {
+            "item": "minecraft:copper_block"
+        },
+        "M": {
+            "item": "iron_quarry:conductive_amethyst"
+        }
+    },
+    "result": {
+        "item": "iron_quarry:copper_quarry"
+    }
+}

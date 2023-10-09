@@ -1,0 +1,25 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "RLS",
+        "LPL",
+        "SLR"
+    ],
+    "key": {
+        "R": {
+            "item": "minecraft:redstone"
+        },
+        "L": {
+            "item": "minecraft:lapis_lazuli"
+        },
+        "S": {
+            "tag": "minecraft:signs"
+        },
+        "P": {
+            "item": "minecraft:paper"
+        }
+    },
+    "result": {
+        "item": "iron_quarry:blueprint"
+    }
+}

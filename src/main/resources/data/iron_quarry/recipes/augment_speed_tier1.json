@@ -1,0 +1,12 @@
+{
+    "type": "iron_quarry:handled_smithing_recipe",
+    "base": {
+        "item": "iron_quarry:augment"
+    },
+    "addition": {
+        "tag": "iron_quarry:augment_speed_tier1_enhancers"
+    },
+    "result": {
+        "item": "iron_quarry:augment"
+    }
+}

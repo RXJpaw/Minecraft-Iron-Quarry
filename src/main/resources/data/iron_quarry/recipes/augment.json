@@ -1,0 +1,19 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        " C ",
+        "CPC",
+        " C "
+    ],
+    "key": {
+        "P": {
+            "item": "minecraft:paper"
+        },
+        "C": {
+            "item": "iron_quarry:conductive_amethyst"
+        }
+    },
+    "result": {
+        "item": "iron_quarry:augment"
+    }
+}

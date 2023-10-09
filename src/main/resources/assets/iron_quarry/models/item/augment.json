@@ -1,0 +1,9 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "iron_quarry:item/augment"
+    },
+    "overrides": [
+        { "predicate": { "iron_quarry:augment_predicate": 1 }, "model": "minecraft:item/diamond" }
+    ]
+}
