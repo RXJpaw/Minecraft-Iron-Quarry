@@ -6,13 +6,13 @@ import net.minecraft.text.Text;
 
 import java.awt.*;
 
-public enum DynamicItemName {
+public enum DynamicText {
     RAINBOW(0, "rainbow");
 
     private final int id;
     private final String name;
 
-    private DynamicItemName(int id, String name) {
+    private DynamicText(int id, String name) {
         this.id = id;
         this.name = name;
     }

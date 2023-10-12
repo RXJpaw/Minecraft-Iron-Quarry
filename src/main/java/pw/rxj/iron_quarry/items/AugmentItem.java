@@ -35,7 +35,7 @@ import pw.rxj.iron_quarry.interfaces.IModelPredicateProvider;
 import pw.rxj.iron_quarry.recipes.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.records.AugmentStack;
 import pw.rxj.iron_quarry.types.AugmentType;
-import pw.rxj.iron_quarry.types.DynamicItemName;
+import pw.rxj.iron_quarry.types.DynamicText;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.ArrayList;
@@ -63,8 +63,8 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
-    public DynamicItemName getDynamicItemName(ItemStack stack) {
-        return DynamicItemName.RAINBOW;
+    public DynamicText getDynamicItemName(ItemStack stack) {
+        return DynamicText.RAINBOW;
     }
 
     @Override
