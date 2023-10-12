@@ -54,6 +54,19 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
+    public float getModelPredicate(ItemStack stack, ClientWorld world, LivingEntity entity, int seed) {
+        AugmentType type = getType(stack);
+
+        for (int i = 0; i < CAPACITY_UPGRADE_SLOTS; i++) {
+            if(getAmount(stack) > type.getCapacity(i)) continue;
+
+            return (type.getId() / 10.0F) + (0.01F * i);
+        }
+
+        return (type.getId() / 10.0F) + (0.01F * CAPACITY_UPGRADE_SLOTS);
+    }
+
+    @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         AugmentType augmentType = this.getType(stack);
         List<Item> upgrades = this.getUpgrades(stack);
