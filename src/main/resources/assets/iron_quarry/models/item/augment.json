@@ -4,6 +4,70 @@
         "layer0": "iron_quarry:item/augment"
     },
     "overrides": [
-        { "predicate": { "iron_quarry:augment_predicate": 1 }, "model": "minecraft:item/diamond" }
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.1 },
+            "model": "iron_quarry:item/augment/speed_t0"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.11 },
+            "model": "iron_quarry:item/augment/speed_t1"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.12 },
+            "model": "iron_quarry:item/augment/speed_t2"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.13 },
+            "model": "iron_quarry:item/augment/speed_t3"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.14 },
+            "model": "iron_quarry:item/augment/speed_t4"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.15 },
+            "model": "iron_quarry:item/augment/speed_t5"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.16 },
+            "model": "iron_quarry:item/augment/speed_t6"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.17 },
+            "model": "iron_quarry:item/augment/speed_t7"
+        },
+
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.2 },
+            "model": "iron_quarry:item/augment/fortune_t0"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.21 },
+            "model": "iron_quarry:item/augment/fortune_t1"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.22 },
+            "model": "iron_quarry:item/augment/fortune_t2"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.23 },
+            "model": "iron_quarry:item/augment/fortune_t3"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.24 },
+            "model": "iron_quarry:item/augment/fortune_t4"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.25 },
+            "model": "iron_quarry:item/augment/fortune_t5"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.26 },
+            "model": "iron_quarry:item/augment/fortune_t6"
+        },
+        {
+            "predicate": { "iron_quarry:handled_model_predicate": 0.27 },
+            "model": "iron_quarry:item/augment/fortune_t7"
+        }
     ]
 }
