@@ -25,7 +25,7 @@ public class ZUtil {
         if(input < 10 && input > -10) return new DecimalFormat("#,##0.00").format(input);
         if(input < 100 && input > -100) return new DecimalFormat("#,##0.0").format(input);
 
-        return Integer.toString(Math.round(input));
+        return new DecimalFormat("#,##0").format(input);
     }
 
     /** Shoutout to "Powah! (Rearchitected)"-developer Technici4n for including a {@link net.minecraft.block.BlockEntityProvider} with every of their non-Block Entity blocks. */
