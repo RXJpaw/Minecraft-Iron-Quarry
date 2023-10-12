@@ -1,8 +1,11 @@
 package pw.rxj.iron_quarry.items;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.inventory.Inventory;
@@ -25,18 +28,21 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.interfaces.IDynamicItemName;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
 import pw.rxj.iron_quarry.interfaces.IHandledSmithing;
+import pw.rxj.iron_quarry.interfaces.IModelPredicateProvider;
 import pw.rxj.iron_quarry.recipes.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.records.AugmentStack;
 import pw.rxj.iron_quarry.types.AugmentType;
+import pw.rxj.iron_quarry.types.DynamicItemName;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class AugmentItem extends Item implements IHandledSmithing, IHandledItemEntity {
+public class AugmentItem extends Item implements IHandledSmithing, IHandledItemEntity, IModelPredicateProvider, IDynamicItemName {
     public static int CAPACITY_UPGRADE_SLOTS = 7;
 
     public AugmentItem(Settings settings) {
@@ -45,12 +51,20 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
     @Override
     public Text getName(ItemStack stack) {
+        MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        if(minecraftClient.player == null) return getName();
+
         String translationKey = "item.iron_quarry.augment";
 
         AugmentType augmentType = this.getType(stack);
         translationKey += "." + augmentType.getName();
 
         return Text.translatable(translationKey);
+    }
+
+    @Override
+    public DynamicItemName getDynamicItemName(ItemStack stack) {
+        return DynamicItemName.RAINBOW;
     }
 
     @Override
@@ -127,6 +141,12 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     @Override
     public Rarity getRarity(ItemStack stack) {
         return super.getRarity(stack);
+    }
+    @Override
+    public boolean hasGlint(ItemStack stack) {
+        if(getAmount(stack) >= getType(stack).getCapacity(CAPACITY_UPGRADE_SLOTS)) return true;
+
+        return super.hasGlint(stack);
     }
 
     @Override
