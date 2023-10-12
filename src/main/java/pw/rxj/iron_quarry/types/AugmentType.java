@@ -36,6 +36,16 @@ public enum AugmentType {
     public boolean isEmpty() { return this.equals(AugmentType.EMPTY); }
     public boolean isPresent() { return !this.isEmpty(); }
 
+    public int getCapacity(int capacityUpgrades) {
+        float capacity = this.baseAmount;
+
+        for (int i = 0; i < capacityUpgrades; i++) {
+            capacity += this.baseAmount * 0.5F * (i + 1);
+        }
+
+        return (int) capacity;
+    }
+
     public static AugmentType from(String name){
         for (AugmentType augmentType : ALL) {
             if(augmentType.getName().equalsIgnoreCase(name)){

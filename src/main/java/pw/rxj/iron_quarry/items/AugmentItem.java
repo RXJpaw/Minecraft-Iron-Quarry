@@ -260,14 +260,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         List<Item> upgrades = this.getUpgrades(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
         AugmentType type = this.getType(stack);
 
-        int baseCapacity = type.getBaseAmount();
-        float capacity = baseCapacity;
-
-        for (int i = 0; i < upgrades.size(); i++) {
-            capacity += baseCapacity * 0.5F * (i + 1);
-        }
-
-        return (int) capacity;
+        return type.getCapacity(upgrades.size());
     }
     public int getFreeSpace(@NotNull ItemStack stack){
         return this.getCapacity(stack) - this.getAmount(stack);
