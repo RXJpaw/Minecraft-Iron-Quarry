@@ -64,7 +64,9 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
     @Override
     public DynamicText getDynamicItemName(ItemStack stack) {
-        return DynamicText.RAINBOW;
+        if(getAmount(stack) >= getType(stack).getCapacity(CAPACITY_UPGRADE_SLOTS)) return DynamicText.RAINBOW;;
+
+        return DynamicText.EMPTY;
     }
 
     @Override

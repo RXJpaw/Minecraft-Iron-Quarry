@@ -7,7 +7,8 @@ import net.minecraft.text.Text;
 import java.awt.*;
 
 public enum DynamicText {
-    RAINBOW(0, "rainbow");
+    EMPTY(0, "empty"),
+    RAINBOW(1, "rainbow");
 
     private final int id;
     private final String name;
@@ -24,24 +25,35 @@ public enum DynamicText {
         return this.id;
     }
 
-    public MutableText getText(String name) {
+
+    public MutableText getText(Text text) {
+        return this.getText(text, 0);
+    }
+
+    public MutableText getText(Text text, int offset) {
+        String string = text.getString();
+
         switch (this) {
+            case EMPTY -> {
+                return text.copy();
+            }
+
             case RAINBOW -> {
                 long time = System.currentTimeMillis() / 50L;
 
                 MutableText rainbowName = Text.empty();
 
-                for (int i = 0; i < name.length(); i++) {
-                    double hue = 1.0/90.0 * (time - i);
+                for (int i = 0; i < string.length(); i++) {
+                    double hue = 1.0/90.0 * (time - i - offset);
                     Style style = Style.EMPTY.withColor(Color.HSBtoRGB((float) (hue % 360), 0.5F, 1.0F));
 
-                    rainbowName.append(Text.literal(String.valueOf(name.charAt(i))).setStyle(style));
+                    rainbowName.append(Text.literal(String.valueOf(string.charAt(i))).setStyle(style));
                 }
 
                 return rainbowName;
             }
         }
 
-        return Text.literal(name);
+        return text.copy();
     }
 }

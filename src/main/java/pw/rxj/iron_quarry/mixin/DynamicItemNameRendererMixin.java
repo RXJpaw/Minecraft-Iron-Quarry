@@ -24,7 +24,7 @@ public abstract class DynamicItemNameRendererMixin {
                 try {
                     Text text = Text.Serializer.fromJson(nbtCompound.getString("Name"));
                     if (text != null) {
-                        MutableText itemName = dynamicItemName.getDynamicItemName(stack).getText(text.getString());
+                        MutableText itemName = dynamicItemName.getDynamicItemName(stack).getText(text);
                         cir.setReturnValue(itemName);
                         return;
                     }
@@ -35,7 +35,7 @@ public abstract class DynamicItemNameRendererMixin {
                 }
             }
 
-            MutableText itemName = dynamicItemName.getDynamicItemName(stack).getText(stack.getItem().getName(stack).getString());
+            MutableText itemName = dynamicItemName.getDynamicItemName(stack).getText(stack.getItem().getName(stack));
             cir.setReturnValue(itemName);
         }
     }
