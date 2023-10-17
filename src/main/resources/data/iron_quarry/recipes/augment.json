@@ -7,7 +7,7 @@
     ],
     "key": {
         "P": {
-            "item": "minecraft:paper"
+            "item": "minecraft:item_frame"
         },
         "C": {
             "item": "iron_quarry:conductive_amethyst"
