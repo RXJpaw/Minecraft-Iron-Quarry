@@ -6,6 +6,9 @@
         "iron_quarry:gold_quarry",
         "iron_quarry:diamond_quarry",
         "iron_quarry:netherite_quarry",
-        "iron_quarry:nether_star_quarry"
+        "iron_quarry:nether_star_quarry",
+
+        "iron_quarry:reinforced_redstone_block",
+        "iron_quarry:reinforced_lapis_block"
     ]
 }
