@@ -395,11 +395,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             if(ZUtil.isActualBlockEntity(thisWorld, blockStateToBreak, posToBreak)) continue;
 
             //Energy
-            int baseConsumption = thisBlock.getBaseConsumption();
-            float inefficiencyPenalty = upgradesUtil.getInefficiency();
-            float blockHardnessPenalty = Math.max(1.0F, Math.min(5.0F, blockStateToBreak.getBlock().getHardness() / 10));
-
-            long actualEnergyConsumption = (long) (baseConsumption * inefficiencyPenalty * blockHardnessPenalty / threads);
+            long actualEnergyConsumption = thisBlock.getActualEnergyConsumption(upgradesUtil, blockStateToBreak.getBlock());
 
             if(thisBlockEntity.EnergyContainer.getStored() < actualEnergyConsumption) {
                 MiningQueue.add(queueItem); return;

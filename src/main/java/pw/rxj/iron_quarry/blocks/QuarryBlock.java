@@ -100,7 +100,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         MutableText LORE_USAGE_1 = Text.translatable("item.iron_quarry.quarry_block.lore.usage")
                 .setStyle(Style.EMPTY.withColor(0xA8A8A8));
         MutableText LORE_USAGE_2 = Screen.hasShiftDown() ?
-                Text.literal(String.format("%s RF/op", ZUtil.expandableFixedFloat(energy_usage / operations)))
+                Text.literal(String.format("%s RF/op", ZUtil.expandableFixedFloat(energy_usage * 20 / operations)))
                         .setStyle(Style.EMPTY.withColor(0x8C5454)) :
                 Text.literal(String.format("%s RF/tick", integerFormat.format(energy_usage)))
                         .setStyle(Style.EMPTY.withColor(0x8C5454));
@@ -142,6 +142,14 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
             tooltip.add(Text.empty());
             tooltip.add(LORE_DETAILS);
         }
+    }
+
+    public long getActualEnergyConsumption(MachineUpgradesUtil upgradesUtil, Block block) {
+        float blockHardnessPenalty = Math.max(1.0F, Math.min(5.0F, block.getHardness() / 10));
+        float inefficiencyPenalty = upgradesUtil.getInefficiency();
+        float operations = (20.0F / this.ticksPerOperation) * upgradesUtil.getSpeedMultiplier();
+
+        return (long) (this.baseConsumption * blockHardnessPenalty * inefficiencyPenalty * 20 / operations);
     }
 
     public static final DirectionProperty FACING = DirectionProperty.of("facing");
