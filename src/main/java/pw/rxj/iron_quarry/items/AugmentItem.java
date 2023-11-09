@@ -193,7 +193,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             ItemStack stack = output.copy();
 
             if(addition.toJson().equals(Ingredient.fromTag(ZItemTags.AUGMENT_CAPACITY_ENHANCERS).toJson())) {
-                augmentItem.putUpgrade(stack, Items.GOLD_BLOCK.getDefaultStack());
+                augmentItem.putUpgrade(stack, Items.OXIDIZED_COPPER.getDefaultStack());
 
                 return stack;
             } else {
