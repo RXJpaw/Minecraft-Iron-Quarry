@@ -403,7 +403,8 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
 
             //Loot
             ItemStack breakingItem = Items.NETHERITE_PICKAXE.getDefaultStack();
-            breakingItem.addEnchantment(Enchantments.FORTUNE, 3);
+            int fortuneLevel = FortuneUtil.fromProbability(upgradesUtil.getFortuneMultiplier());
+            breakingItem.addEnchantment(Enchantments.FORTUNE, fortuneLevel);
 
             List<ItemStack> droppingItems = blockStateToBreak.getDroppedStacks(
                     new LootContext.Builder((ServerWorld) thisWorld)
