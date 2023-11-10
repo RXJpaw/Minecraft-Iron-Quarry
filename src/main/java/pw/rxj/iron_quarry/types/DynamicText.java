@@ -55,17 +55,17 @@ public enum DynamicText {
             }
 
             case ELOCIN -> {
-                MutableText rainbowName = Text.empty();
+                MutableText elocinName = Text.empty();
                 ColorGradient gradient = new ColorGradient(new Color(71, 119, 76), new Color(102, 69, 124));
 
                 for (int i = 0; i < string.length(); i++) {
-                    double hue = (time - i - offset) % 45.0;
-                    Style style = Style.EMPTY.withColor(gradient.getColor((float) hue / 22.5F).getRGB());
+                    double progress = (time - i - offset) % 45.0;
+                    Style style = Style.EMPTY.withColor(gradient.getColor((float) progress / 22.5F).getRGB());
 
-                    rainbowName.append(Text.literal(String.valueOf(string.charAt(i))).setStyle(style));
+                    elocinName.append(Text.literal(String.valueOf(string.charAt(i))).setStyle(style));
                 }
 
-                return rainbowName;
+                return elocinName;
             }
         }
 
