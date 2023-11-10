@@ -120,8 +120,8 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             drawTexture(matrices, augmentsMenuX, augmentsMenuY, 0, 0, augmentsMenuWidth, augmentsMenuHeight);
 
             AugmentSlots.forEach(augmentSlot -> {
-                int bgX = augmentSlot.bgX() + 4;
-                int bgY = augmentSlot.bgY() + 4;
+                int bgX = augmentSlot.bgX() + 8;
+                int bgY = augmentSlot.bgY() + 8;
                 boolean slotEnabled = augmentsMenuWidth >= bgX && augmentsMenuHeight >= bgY;
 
                 if(handler.slots.get(augmentSlot.slotIndex()) instanceof ManagedSlot slot) slot.setEnabled(slotEnabled);
