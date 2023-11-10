@@ -43,4 +43,12 @@ public class ZUtil {
         if(!blockState.hasBlockEntity()) return false;
         return worldChunk.getBlockEntity(blockPos) != null;
     }
+
+    public static double bounceBack(double input, double range) {
+        double doubleRange = range * 2;
+        input = Math.abs(input);
+
+        double position = input % doubleRange;
+        return position >= range ? doubleRange - position : position;
+    }
 }
