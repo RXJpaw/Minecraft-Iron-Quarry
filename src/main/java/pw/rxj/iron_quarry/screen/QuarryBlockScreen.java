@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.screen.slot.Slot;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -13,14 +14,13 @@ import net.minecraft.util.math.BlockPos;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.blockentities.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blocks.QuarryBlock;
-import pw.rxj.iron_quarry.records.AugmentSlot;
 import pw.rxj.iron_quarry.records.IoOption;
 import pw.rxj.iron_quarry.records.TexturePosition;
-import pw.rxj.iron_quarry.util.ScreenBackgroundButton;
 import pw.rxj.iron_quarry.screenhandler.QuarryBlockScreenHandler;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.types.IoState;
 import pw.rxj.iron_quarry.util.ManagedSlot;
+import pw.rxj.iron_quarry.util.TrackableZone;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,11 +33,15 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     private final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/augmentation_configuration.png");
     private final BlockPos blockPos;
 
-    private ScreenBackgroundButton EnergyDisplay = new ScreenBackgroundButton();
-    private ScreenBackgroundButton IoConfigIcon = new ScreenBackgroundButton();
-    private ScreenBackgroundButton AugmentsConfigIcon = new ScreenBackgroundButton();
+    private TrackableZone EnergyDisplay = new TrackableZone();
+    private TrackableZone IoConfigIcon = new TrackableZone();
+    private TrackableZone AugmentsConfigIcon = new TrackableZone();
 
-    private final List<IoOption> IoOptions = List.of(
+    private final int expandableMenuWidth;
+    private final int realBackgroundWidth;
+    private final int realBackgroundHeight;
+
+    public static final List<IoOption> IO_OPTIONS = List.of(
             new IoOption(Face.TOP, Face.TOP, 40, 24),
             new IoOption(Face.LEFT, Face.RIGHT, 20, 44),
             new IoOption(Face.FRONT, Face.FRONT, 40, 44),
@@ -46,25 +50,22 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             new IoOption(Face.BACK, Face.BACK, 60, 64)
     );
 
-    private final List<AugmentSlot> AugmentSlots = List.of(
-            new AugmentSlot(0, 0, 22, 25),
-            new AugmentSlot(1, 1, 40, 25),
-            new AugmentSlot(2, 2, 58, 25),
-            new AugmentSlot(3, 3, 22, 43),
-            new AugmentSlot(4, 4, 40, 43),
-            new AugmentSlot(5, 5, 58, 43)
-    );
+    public static final List<Integer> AUGMENT_SLOTS = List.of(0, 1, 2, 3, 4, 5);
 
     public QuarryBlockScreen(QuarryBlockScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
 
-        this.backgroundWidth = 176 + 100 * 2;
-        this.backgroundHeight = 224;
+        this.expandableMenuWidth = 100;
+        this.realBackgroundWidth = 176;
+        this.realBackgroundHeight = 224;
 
-        this.titleY = -1;
-        this.titleX = 108;
-        this.playerInventoryTitleY = 124;
-        this.playerInventoryTitleX = 108;
+        this.backgroundWidth = this.realBackgroundWidth + this.expandableMenuWidth;
+        this.backgroundHeight = this.realBackgroundHeight;
+
+        this.titleY = 6;
+        this.titleX = 8;
+        this.playerInventoryTitleY = 131;
+        this.playerInventoryTitleX = 8;
 
         blockPos = handler.getPos();
     }
@@ -83,18 +84,16 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        int backgroundX = ((this.width - this.backgroundWidth)) / 2 + 100;
-        int backgroundY = ((this.height - this.backgroundHeight) - 14) / 2;
-        int backgroundWidth = this.backgroundWidth - 200;
-        int backgroundHeight = this.backgroundHeight;
+        int backgroundX = (this.width - this.realBackgroundWidth) / 2;
+        int backgroundY = (this.height - this.realBackgroundHeight) / 2;
 
         RenderSystem.setShaderTexture(0, BACKGROUND_TEXTURE);
-        drawTexture(matrices, backgroundX, backgroundY, 0, 0, backgroundWidth, backgroundHeight);
+        drawTexture(matrices, backgroundX, backgroundY, 0, 0, this.realBackgroundWidth, this.realBackgroundHeight);
 
         //Energy-Fill-% rendering
         if(blockEntity.EnergyContainer.getStored() > 0) {
             int chargedPixels = Math.max(0, Math.min(40, (int) (blockEntity.EnergyContainer.getFillPercent() * 40)));
-            drawTexture(matrices, backgroundX + 10, backgroundY + 17 + 40 - chargedPixels, 179, 57 - chargedPixels, 12, chargedPixels);
+            drawTexture(matrices, backgroundX + 10, backgroundY + 57 - chargedPixels, 179, 57 - chargedPixels, 12, chargedPixels);
         }
 
         //Battery Slot rendering
@@ -103,14 +102,14 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         }
 
         //Energy-Fill-% tooltip
-        EnergyDisplay = EnergyDisplay.setAll(backgroundX+9, backgroundY+16, 14, 42, mouseX, mouseY);
+        EnergyDisplay = EnergyDisplay.setAll(backgroundX + 9, backgroundY + 16, 14, 42, mouseX, mouseY);
         if(EnergyDisplay.isMouseOver()){
             renderTooltip(matrices, Text.of(String.format("%s / %s RF", blockEntity.EnergyContainer.getStored(), blockEntity.EnergyContainer.getCapacity())), mouseX, mouseY);
         }
 
         //Augmentation Configuration
-        int augmentsMenuX = backgroundX + backgroundWidth;
-        int augmentsMenuY = backgroundY + 4 + 22;
+        int augmentsMenuX = backgroundX + this.realBackgroundWidth;
+        int augmentsMenuY = backgroundY + 26;
         int augmentsMenuWidth = (int) Math.min(22 + AugmentsConfigIcon.wasMouseOverMillis() * 40, 100);
         int augmentsMenuHeight = (int) Math.min(22 + AugmentsConfigIcon.wasMouseOverMillis() * 40, 92);
 
@@ -119,25 +118,26 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             RenderSystem.setShaderTexture(0, AUGMENTATION_CONFIGURATION_TEXTURE);
             drawTexture(matrices, augmentsMenuX, augmentsMenuY, 0, 0, augmentsMenuWidth, augmentsMenuHeight);
 
-            AugmentSlots.forEach(augmentSlot -> {
-                int bgX = augmentSlot.bgX() + 8;
-                int bgY = augmentSlot.bgY() + 8;
-                boolean slotEnabled = augmentsMenuWidth >= bgX && augmentsMenuHeight >= bgY;
+            for (int slotIndex : AUGMENT_SLOTS) {
+                Slot slot = handler.slots.get(slotIndex);
 
-                if(handler.slots.get(augmentSlot.slotIndex()) instanceof ManagedSlot slot) slot.setEnabled(slotEnabled);
+                int bgX = slot.x + 8;
+                int bgY = slot.y + 8;
+                boolean slotEnabled = (augmentsMenuWidth + this.realBackgroundWidth >= bgX) && (augmentsMenuHeight + 26 >= bgY);
 
-            });
+                if(handler.slots.get(slotIndex) instanceof ManagedSlot managedSlot) managedSlot.setEnabled(slotEnabled);
+            }
         } else {
             RenderSystem.setShaderTexture(0, OPTIONS_TEXTURE);
             drawTexture(matrices, augmentsMenuX, augmentsMenuY, 0, 22, 22, 22);
 
-            AugmentSlots.forEach(augmentSlot -> {
-                if(handler.slots.get(augmentSlot.slotIndex()) instanceof ManagedSlot slot) slot.setEnabled(false);
+            AUGMENT_SLOTS.forEach(slotIndex -> {
+                if(handler.slots.get(slotIndex) instanceof ManagedSlot slot) slot.setEnabled(false);
             });
         }
 
         //Settings Configuration
-        int settingsMenuX = backgroundX + backgroundWidth;
+        int settingsMenuX = backgroundX + this.realBackgroundWidth;
         int settingsMenuY = backgroundY + 4;
         int settingsMenuWidth = (int) Math.min(22 + IoConfigIcon.wasMouseOverMillis() * 40, 100);
         int settingsMenuHeight = (int) Math.min(22 + IoConfigIcon.wasMouseOverMillis() * 40, 92);
@@ -147,7 +147,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             RenderSystem.setShaderTexture(0, OPTIONS_CONFIGURATION_TEXTURE);
             drawTexture(matrices, settingsMenuX, settingsMenuY, 0, 0, settingsMenuWidth, settingsMenuHeight);
 
-            IoOptions.forEach(ioOption -> {
+            IO_OPTIONS.forEach(ioOption -> {
                 int bgX = ioOption.bgX();
                 int bgY = ioOption.bgY();
                 Face face = ioOption.frontFace();
@@ -186,14 +186,16 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
 
     @Override
     protected boolean isClickOutsideBounds(double mouseX, double mouseY, int left, int top, int button) {
+        if(IoConfigIcon.isMouseOver() || AugmentsConfigIcon.isMouseOver()) return false;
+
         int offsetX = 0;
-        int offsetY = 7;
+        int offsetY = 0;
 
-        int topLeftX = (width/2) - (this.backgroundWidth/2) - offsetX;
-        int topLeftY = (height/2) - (this.backgroundHeight/2) - offsetY;
+        int topLeftX = (width/2) - (this.realBackgroundWidth/2) - offsetX;
+        int topLeftY = (height/2) - (this.realBackgroundHeight/2) - offsetY;
 
-        int bottomRightX = (width/2) + (this.backgroundWidth/2) - offsetX;
-        int bottomRightY = (height/2) + (this.backgroundHeight/2) - offsetY;
+        int bottomRightX = (width/2) + (this.realBackgroundWidth/2) - offsetX;
+        int bottomRightY = (height/2) + (this.realBackgroundHeight/2) - offsetY;
 
         return (mouseX < topLeftX || mouseX > bottomRightX) || (mouseY < topLeftY || mouseY > bottomRightY);
     }
@@ -214,8 +216,8 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         if(MinecraftInstance.cameraEntity == null) return false;
 
         if(IoConfigIcon.wasMouseOverMillis() > 0) {
-            IoOptions.forEach(ioOption -> {
-                ScreenBackgroundButton ioButton = new ScreenBackgroundButton(IoConfigIcon.getButtonX() + ioOption.bgX(), IoConfigIcon.getButtonY() + ioOption.bgY(), 16, 16, (int) mouseX, (int) mouseY);
+            IO_OPTIONS.forEach(ioOption -> {
+                TrackableZone ioButton = new TrackableZone(IoConfigIcon.getButtonX() + ioOption.bgX(), IoConfigIcon.getButtonY() + ioOption.bgY(), 16, 16, (int) mouseX, (int) mouseY);
                 if(ioButton.isMouseOver()) {
                     MinecraftInstance.cameraEntity.playSound(SoundEvents.UI_BUTTON_CLICK, 0.2F, 1.0F);
 
@@ -242,8 +244,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     @Override
     protected void init() {
         super.init();
-        // Center the title
-        // titleX = (backgroundWidth - textRenderer.getWidth(title)) / 2;
-        // titleY = -6;
+        this.x = (this.width - this.realBackgroundWidth) / 2;
+        this.y = (this.height - this.realBackgroundHeight) / 2;
     }
 }

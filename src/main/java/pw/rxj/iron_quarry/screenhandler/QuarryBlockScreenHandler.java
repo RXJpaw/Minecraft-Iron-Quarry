@@ -58,10 +58,12 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
         batteryInputInventory.onOpen(playerInventory.player);
         outputInventory.onOpen(playerInventory.player);
 
+        final int SLOT_SIZE = 18;
+
         //Machine Upgrades Inventory
         for (var row = 0; row < 2; ++row) {
             for (var slot = 0; slot < 3; ++slot) {
-                this.addSlot(new ManagedSlot(machineUpgradesInventory, (row * 3) + slot, 291 + 8 + slot * 18, (193 - 148) + row * 18) {
+                this.addSlot(new ManagedSlot(machineUpgradesInventory, (row * 3) + slot, 199 + slot * SLOT_SIZE, 52 + row * SLOT_SIZE) {
                     @Override
                     public boolean canInsert(ItemStack stack) {
                         return stack.getItem() instanceof AugmentItem;
@@ -71,7 +73,7 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
         }
 
         //Blueprint Inventory
-        this.addSlot(new ManagedSlot(blueprintInventory, 0, 100 + 80, 193 - 162) {
+        this.addSlot(new ManagedSlot(blueprintInventory, 0, 80, 38) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return stack.getItem() instanceof BlueprintItem;
@@ -80,7 +82,7 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
 
 
         //Reborn Inventory
-        this.addSlot(new ManagedSlot(batteryInputInventory, 0, 100 + 8, 193 - 138) {
+        this.addSlot(new ManagedSlot(batteryInputInventory, 0, 8, 62) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return EnergyStorageUtil.isEnergyStorage(stack);
@@ -90,20 +92,20 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
         //Output Inventory
         for (var row = 0; row < 2; ++row) {
             for (var slot = 0; slot < 9; ++slot) {
-                this.addSlot(new ManagedSlot(outputInventory, (row * 9) + slot, 100 + 8 + slot * 18, (193 - 107) + row * 18));
+                this.addSlot(new ManagedSlot(outputInventory, (row * 9) + slot, 8 + slot * SLOT_SIZE, 93 + row * SLOT_SIZE));
             }
         }
 
         //Player Inventory
         for (var row = 0; row < 3; ++row) {
             for (var slot = 0; slot < 9; ++slot) {
-                this.addSlot(new ManagedSlot(playerInventory, (row * 9) + (slot + 9), 100 + 8 + slot * 18, (193 - 58) + row * 18));
+                this.addSlot(new ManagedSlot(playerInventory, (row * 9) + slot + 9, 8 + slot * SLOT_SIZE, 142 + row * SLOT_SIZE));
             }
         }
 
         //Player Hotbar
         for (var slot = 0; slot < 9; ++slot) {
-            this.addSlot(new ManagedSlot(playerInventory, slot, 100 + 8 + slot * 18, 193));
+            this.addSlot(new ManagedSlot(playerInventory, slot, 8 + slot * SLOT_SIZE, 200));
         }
     }
 

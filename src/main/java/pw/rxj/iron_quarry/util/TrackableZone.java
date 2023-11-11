@@ -1,6 +1,6 @@
 package pw.rxj.iron_quarry.util;
 
-public class ScreenBackgroundButton {
+public class TrackableZone {
     private int buttonX;
     private int buttonY;
     private int mouseX;
@@ -10,13 +10,13 @@ public class ScreenBackgroundButton {
 
     private float wasMouseOverMillis = 0;
 
-    public ScreenBackgroundButton(int buttonX, int buttonY, int buttonWidth, int buttonHeight, int mouseX, int mouseY){
+    public TrackableZone(int buttonX, int buttonY, int buttonWidth, int buttonHeight, int mouseX, int mouseY){
         this.setAll(buttonX, buttonY, buttonWidth, buttonHeight, mouseX, mouseY);
     }
-    public ScreenBackgroundButton(int buttonX, int buttonY, int buttonWidth, int buttonHeight){
+    public TrackableZone(int buttonX, int buttonY, int buttonWidth, int buttonHeight){
         this.setAll(buttonX, buttonY, buttonWidth, buttonHeight, -1, -1);
     }
-    public ScreenBackgroundButton(){ }
+    public TrackableZone(){ }
 
     public boolean isMouseOver(float delta, float maxDelta){
         boolean wasMouseOver = mouseX >= buttonX && mouseY >= buttonY && mouseX < buttonX + buttonWidth && mouseY < buttonY + buttonHeight;
@@ -59,7 +59,7 @@ public class ScreenBackgroundButton {
         return buttonWidth;
     }
 
-    public ScreenBackgroundButton setAll(int buttonX, int buttonY, int buttonWidth, int buttonHeight, int mouseX, int mouseY){
+    public TrackableZone setAll(int buttonX, int buttonY, int buttonWidth, int buttonHeight, int mouseX, int mouseY){
         if(this.buttonX != -1) this.buttonX = buttonX;
         if(this.buttonY != -1) this.buttonY = buttonY;
         if(this.buttonWidth != -1) this.buttonWidth = buttonWidth;
@@ -70,7 +70,7 @@ public class ScreenBackgroundButton {
         return this;
     }
 
-    public ScreenBackgroundButton setMousePos(int x, int y) {
+    public TrackableZone setMousePos(int x, int y) {
         this.mouseX = x;
         this.mouseY = y;
         return this;
