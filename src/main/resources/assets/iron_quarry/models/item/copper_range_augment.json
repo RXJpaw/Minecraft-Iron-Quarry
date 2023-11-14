@@ -1,6 +1,0 @@
-{
-    "parent": "item/generated",
-    "textures": {
-        "layer0": "iron_quarry:item/copper_range_augment"
-    }
-}
