@@ -44,9 +44,37 @@ import java.util.Optional;
 
 public class AugmentItem extends Item implements IHandledSmithing, IHandledItemEntity, IModelPredicateProvider, IDynamicItemName {
     public static int CAPACITY_UPGRADE_SLOTS = 7;
+    public static int UNIQUE_SET_AMOUNT = 1;
+
+    private @NotNull AugmentType uniqueType = AugmentType.EMPTY;
+    private @NotNull DynamicText dynamicName = DynamicText.EMPTY;
 
     public AugmentItem(Settings settings) {
         super(settings);
+    }
+
+    public AugmentItem dynamicName(DynamicText dynamicText) {
+        this.dynamicName = dynamicText;
+
+        return this;
+    }
+    public boolean hasDynamicName(){
+        return this.dynamicName.isPresent();
+    }
+    public @NotNull DynamicText getDynamicName() {
+        return this.dynamicName;
+    }
+
+    public AugmentItem unique(AugmentType augmentType) {
+        this.uniqueType = augmentType;
+
+        return this;
+    }
+    public boolean isUnique(){
+        return !this.uniqueType.isEmpty();
+    }
+    public @NotNull AugmentType getUniqueType() {
+        return this.uniqueType;
     }
 
     @Override
@@ -64,6 +92,8 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
     @Override
     public DynamicText getDynamicItemName(ItemStack stack) {
+        if(this.hasDynamicName()) return this.getDynamicName();
+
         if(getAmount(stack) >= getType(stack).getCapacity(CAPACITY_UPGRADE_SLOTS)) return DynamicText.RAINBOW;;
 
         return DynamicText.EMPTY;
@@ -89,10 +119,12 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         int capacity = this.getCapacity(stack);
         int stored = this.getAmount(stack);
 
-        MutableText LORE_UNUSED = Text.translatable("item.iron_quarry.augment.lore.used", stored, capacity)
-                .setStyle(Style.EMPTY.withColor(0xA8A8A8));
+        if(!this.isUnique()) {
+            MutableText LORE_UNUSED = Text.translatable("item.iron_quarry.augment.lore.used", stored, capacity)
+                    .setStyle(Style.EMPTY.withColor(0xA8A8A8));
 
-        tooltip.add(LORE_UNUSED);
+            tooltip.add(LORE_UNUSED);
+        }
 
         if(augmentType.isPresent()) {
             MutableText LORE_BENEFITS = Text.translatable("item.iron_quarry.augment.lore.benefit." + augmentType.getName(), ZUtil.expandableFixedFloat(stored * augmentType.getMultiplier()))
@@ -103,6 +135,8 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             tooltip.add(LORE_BENEFITS);
             tooltip.add(LORE_DRAWBACK);
         }
+
+        if(this.isUnique()) return;
 
         if(Screen.hasShiftDown()) {
             List<Item> used_upgrades = new ArrayList<>();
@@ -146,7 +180,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
     @Override
     public boolean hasGlint(ItemStack stack) {
-        if(getAmount(stack) >= getType(stack).getCapacity(CAPACITY_UPGRADE_SLOTS)) return true;
+        if(this.isUnique() || getAmount(stack) >= getType(stack).getCapacity(CAPACITY_UPGRADE_SLOTS)) return true;
 
         return super.hasGlint(stack);
     }
@@ -243,6 +277,8 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     public boolean canInsert(@NotNull ItemStack stack, AugmentStack augmentStack) {
+        if(this.isUnique()) return false;
+
         AugmentType stackType = this.getType(stack);
         int stackFreeSpace = this.getFreeSpace(stack);
 
@@ -253,6 +289,8 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     public AugmentType getType(@NotNull ItemStack stack) {
+        if(this.isUnique()) return this.getUniqueType();
+
         NbtCompound nbtCompound = stack.getNbt();
         if(nbtCompound == null) return AugmentType.EMPTY;
 
@@ -266,6 +304,8 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     public int getAmount(@NotNull ItemStack stack) {
+        if(this.isUnique()) return UNIQUE_SET_AMOUNT;
+
         NbtCompound nbtCompound = stack.getNbt();
         if(nbtCompound == null) return 0;
 
@@ -279,6 +319,8 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     public int getCapacity(@NotNull ItemStack stack) {
+        if(this.isUnique()) return UNIQUE_SET_AMOUNT;
+
         List<Item> upgrades = this.getUpgrades(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
         AugmentType type = this.getType(stack);
 
