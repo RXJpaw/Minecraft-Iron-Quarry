@@ -6,7 +6,6 @@ import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.records.ChunkTicket;
 
 import java.util.ArrayList;

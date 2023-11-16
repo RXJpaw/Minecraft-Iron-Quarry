@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.interfaces;
 
-import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import pw.rxj.iron_quarry.util.ZUtil;
