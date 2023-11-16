@@ -5,7 +5,8 @@ import java.util.List;
 public enum AugmentType {
     EMPTY(0, "empty", 1, 0.0F, 0.0F),
     SPEED(1, "speed", 1000, 0.10F, 0.05F),
-    FORTUNE(2, "fortune", 1500, 2.0F/225.0F, 1.0F/75.0F);
+    FORTUNE(2, "fortune", 1500, 2.0F/225.0F, 1.0F/75.0F),
+    SILK_TOUCH(3, "silk_touch", 0, 0.0F, 180.0F);
 
     private final int id;
     private final String name;
@@ -13,7 +14,7 @@ public enum AugmentType {
     private final float multiplier;
     private final float inefficiency;
 
-    private static final List<AugmentType> ALL = List.of(EMPTY, SPEED, FORTUNE);
+    private static final List<AugmentType> ALL = List.of(EMPTY, SPEED, FORTUNE, SILK_TOUCH);
 
     private AugmentType(int id, String name, int baseAmount, float multiplier, float inefficiency) {
         this.id = id;

@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import pw.rxj.iron_quarry.blockentities.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blockentities.ZBlockEntities;
 import pw.rxj.iron_quarry.blocks.ZBlocks;
+import pw.rxj.iron_quarry.factory.ZTradeOffers;
 import pw.rxj.iron_quarry.interfaces.BlockAttackable;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
 import pw.rxj.iron_quarry.items.ZItems;
@@ -44,6 +45,8 @@ public class Main implements ModInitializer {
 		ZBlockEntities.register();
 		ZBlocks.register();
 		ZItems.register();
+
+		ZTradeOffers.register();
 
 		AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
 			if(ZUtil.getBlockOrItem(player.getStackInHand(hand)) instanceof BlockAttackable itemStack) {
