@@ -28,6 +28,8 @@ public enum DynamicText {
         return this.id;
     }
 
+    public boolean isEmpty() { return this.equals(DynamicText.EMPTY); }
+    public boolean isPresent() { return !this.isEmpty(); }
 
     public MutableText getText(Text text) {
         return this.getText(text, 0);
