@@ -20,13 +20,17 @@
     "item.iron_quarry.quarry_block.lore.capacity": "Capacity: ",
 
     "item.iron_quarry.augment": "Empty Augment",
+    "item.iron_quarry.silk_touch_augment": "Silk Touch Augment",
+
     "item.iron_quarry.augment.empty": "Empty Augment",
     "item.iron_quarry.augment.speed": "Speed Augment",
     "item.iron_quarry.augment.fortune": "Fortune Augment",
+    "item.iron_quarry.augment.silk_touch": "Silk Touch Augment",
     "item.iron_quarry.augment.lore.used": "Used %s/%s enhancements.",
     "item.iron_quarry.augment.lore.capacity_upgrades": "Capacity Upgrades (%s/%s):",
     "item.iron_quarry.augment.lore.benefit.speed": "+%s%% faster operation",
     "item.iron_quarry.augment.lore.benefit.fortune": "+%s%% yield from ores",
+    "item.iron_quarry.augment.lore.benefit.silk_touch": "Mines blocks with Silk Touch",
     "item.iron_quarry.augment.lore.drawback.energy": "+%s%% energy usage",
 
     "item.iron_quarry.blueprint": "Blueprint",
