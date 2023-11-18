@@ -33,6 +33,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.Global;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.blockentities.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blockentities.ZBlockEntities;
@@ -97,22 +98,22 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         float operations = (20.0F / this.ticksPerOperation) * machineUpgradesUtil.getSpeedMultiplier();
 
         MutableText LORE_USAGE_1 = Text.translatable("item.iron_quarry.quarry_block.lore.usage")
-                .setStyle(Style.EMPTY.withColor(0xA8A8A8));
+                .setStyle(Style.EMPTY.withColor(Global.RGB_LIGHT_GRAY));
         MutableText LORE_USAGE_2 = Screen.hasShiftDown() ?
                 Text.literal(String.format("%s RF/op", ZUtil.expandableFixedFloat(energy_usage * 20 / operations)))
-                        .setStyle(Style.EMPTY.withColor(0x8C5454)) :
+                        .setStyle(Style.EMPTY.withColor(Global.RGB_DRAWBACK)) :
                 Text.literal(String.format("%s RF/tick", integerFormat.format(energy_usage)))
-                        .setStyle(Style.EMPTY.withColor(0x8C5454));
+                        .setStyle(Style.EMPTY.withColor(Global.RGB_DRAWBACK));
 
         MutableText LORE_SPEED_1 = Text.translatable("item.iron_quarry.quarry_block.lore.speed")
-                .setStyle(Style.EMPTY.withColor(0xA8A8A8));
+                .setStyle(Style.EMPTY.withColor(Global.RGB_LIGHT_GRAY));
         MutableText LORE_SPEED_2 = Text.literal(String.format("%s op/s", ZUtil.expandableFixedFloat(operations)))
-                .setStyle(Style.EMPTY.withColor(0x688C54));
+                .setStyle(Style.EMPTY.withColor(Global.RGB_BENEFIT));
 
         MutableText LORE_YIELD_1 = Text.translatable("item.iron_quarry.quarry_block.lore.yield")
-                .setStyle(Style.EMPTY.withColor(0xA8A8A8));
+                .setStyle(Style.EMPTY.withColor(Global.RGB_LIGHT_GRAY));
         MutableText LORE_YIELD_2 = Text.literal(String.format("+%s%%", ZUtil.expandableFixedFloat(yield_bonus)))
-                .setStyle(Style.EMPTY.withColor(0x688C54));
+                .setStyle(Style.EMPTY.withColor(Global.RGB_BENEFIT));
 
         tooltip.add(LORE_USAGE_1.append(LORE_USAGE_2));
         tooltip.add(LORE_SPEED_1.append(LORE_SPEED_2));
@@ -123,14 +124,14 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
             long stored = this.getEnergyStored(stack);
 
             MutableText LORE_CAPACITY_1 = Text.translatable("item.iron_quarry.quarry_block.lore.capacity")
-                    .setStyle(Style.EMPTY.withColor(0xA8A8A8));
+                    .setStyle(Style.EMPTY.withColor(Global.RGB_LIGHT_GRAY));
             MutableText LORE_CAPACITY_2 = Text.literal(String.format("%s RF", integerFormat.format(capacity)))
-                    .setStyle(Style.EMPTY.withColor(0x54FCFC));
+                    .setStyle(Style.EMPTY.withColor(Global.RGB_WEAK_HIGHLIGHT));
 
             MutableText LORE_STORED_1 = Text.translatable("item.iron_quarry.quarry_block.lore.stored")
-                    .setStyle(Style.EMPTY.withColor(0xA8A8A8));
+                    .setStyle(Style.EMPTY.withColor(Global.RGB_LIGHT_GRAY));
             MutableText LORE_STORED_2 = Text.literal(String.format("%s RF", integerFormat.format(stored)))
-                    .setStyle(Style.EMPTY.withColor(0x54FCFC));
+                    .setStyle(Style.EMPTY.withColor(Global.RGB_WEAK_HIGHLIGHT));
 
             tooltip.add(Text.empty());
             tooltip.add(LORE_CAPACITY_1.append(LORE_CAPACITY_2));

@@ -28,6 +28,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.Global;
 import pw.rxj.iron_quarry.interfaces.IDynamicItemName;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
 import pw.rxj.iron_quarry.interfaces.IHandledSmithing;
@@ -121,16 +122,16 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
         if(!this.isUnique()) {
             MutableText LORE_UNUSED = Text.translatable("item.iron_quarry.augment.lore.used", stored, capacity)
-                    .setStyle(Style.EMPTY.withColor(0xA8A8A8));
+                    .setStyle(Style.EMPTY.withColor(Global.RGB_LIGHT_GRAY));
 
             tooltip.add(LORE_UNUSED);
         }
 
         if(augmentType.isPresent()) {
             MutableText LORE_BENEFITS = Text.translatable("item.iron_quarry.augment.lore.benefit." + augmentType.getName(), ZUtil.expandableFixedFloat(stored * augmentType.getMultiplier()))
-                    .setStyle(Style.EMPTY.withColor(0x688C54));
+                    .setStyle(Style.EMPTY.withColor(Global.RGB_BENEFIT));
             MutableText LORE_DRAWBACK = Text.translatable("item.iron_quarry.augment.lore.drawback.energy", ZUtil.expandableFixedFloat(stored * augmentType.getInefficiency()))
-                    .setStyle(Style.EMPTY.withColor(0x8C5454));
+                    .setStyle(Style.EMPTY.withColor(Global.RGB_DRAWBACK));
 
             tooltip.add(LORE_BENEFITS);
             tooltip.add(LORE_DRAWBACK);
@@ -151,18 +152,18 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             });
 
             MutableText LORE_INFO = Text.translatable("item.iron_quarry.augment.lore.capacity_upgrades", used_upgrades.size(), CAPACITY_UPGRADE_SLOTS)
-                    .setStyle(Style.EMPTY.withColor(0x00AAAA).withUnderline(true));
+                    .setStyle(Style.EMPTY.withColor(Global.RGB_STRONG_HIGHLIGHT).withUnderline(true));
 
             tooltip.add(Text.empty());
             tooltip.add(LORE_INFO);
 
             used_upgrades.forEach(item -> {
                 MutableText itemName = Text.literal("> ").append(item.getName().copy());
-                tooltip.add(itemName.setStyle(Style.EMPTY.withColor(0x54FCFC)));
+                tooltip.add(itemName.setStyle(Style.EMPTY.withColor(Global.RGB_WEAK_HIGHLIGHT)));
             });
             unused_upgrades.forEach(item -> {
                 MutableText itemName = Text.literal("> ").append(item.getName().copy());
-                tooltip.add(itemName.setStyle(Style.EMPTY.withColor(0x545454)));
+                tooltip.add(itemName.setStyle(Style.EMPTY.withColor(Global.RGB_DARK_GRAY)));
             });
 
             if(context.isAdvanced()) tooltip.add(Text.empty());
