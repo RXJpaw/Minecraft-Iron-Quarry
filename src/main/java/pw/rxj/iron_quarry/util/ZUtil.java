@@ -4,9 +4,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
 
@@ -50,5 +53,37 @@ public class ZUtil {
 
         double position = input % doubleRange;
         return position >= range ? doubleRange - position : position;
+    }
+
+    public static String capitalizeFirstLetter(String input) {
+        if (input == null || input.isEmpty()) return input;
+
+        return input.substring(0, 1).toUpperCase() + input.substring(1);
+    }
+
+    public static boolean equals(@Nullable RegistryKey<?> key1, @Nullable RegistryKey<?> key2) {
+        Identifier registry1 = key1 == null ? null : key1.getRegistry();
+        Identifier registry2 = key2 == null ? null : key2.getRegistry();
+        Identifier value1 = key1 == null ? null : key1.getValue();
+        Identifier value2 = key2 == null ? null : key2.getValue();
+
+        return registry1 == registry2 && value1 == value2;
+    }
+    public static String toString(RegistryKey<?> registryKey) {
+        String registry = registryKey.getRegistry().toString();
+        String value = registryKey.getValue().toString();
+
+        return registry + "/" + value;
+    }
+    public static <T> @Nullable RegistryKey<T> toRegistryKey(String string) {
+        String[] split = string.split("/");
+        if(split.length < 2) return null;
+
+        Identifier registry = Identifier.tryParse(split[0]);
+        if(registry == null) return null;
+        Identifier value = Identifier.tryParse(split[1]);
+        if(value == null) return null;
+
+        return RegistryKey.of(RegistryKey.ofRegistry(registry), value);
     }
 }
