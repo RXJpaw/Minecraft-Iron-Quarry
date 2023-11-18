@@ -17,6 +17,8 @@ import pw.rxj.iron_quarry.items.BlueprintItem;
 
 
 public class BlueprintPreviewRenderer {
+    public static final Identifier BLUEPRINT_PREVIEW_TEXTURE = new Identifier(Main.MOD_ID, "textures/world/blueprint_preview.png");
+
     public static void render(WorldRenderContext context) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if(player == null) return;
@@ -63,7 +65,7 @@ public class BlueprintPreviewRenderer {
         context.lightmapTextureManager().enable();
 
         RenderSystem.setShader(GameRenderer::getRenderTypeTranslucentShader);
-        RenderSystem.setShaderTexture(0, new Identifier(Main.MOD_ID, "textures/world/blueprint_preview.png"));
+        RenderSystem.setShaderTexture(0, BLUEPRINT_PREVIEW_TEXTURE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.depthFunc(GL11.GL_ALWAYS);
         RenderSystem.disableCull();
