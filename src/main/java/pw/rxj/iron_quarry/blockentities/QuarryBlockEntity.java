@@ -29,6 +29,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -42,7 +43,6 @@ import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.blocks.QuarryBlock;
 import pw.rxj.iron_quarry.interfaces.BasicMachineLogic;
 import pw.rxj.iron_quarry.items.BlueprintItem;
-import pw.rxj.iron_quarry.records.BlockPosState;
 import pw.rxj.iron_quarry.screenhandler.QuarryBlockScreenHandler;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.types.IoState;
@@ -262,7 +262,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     }
 
     //World Ticking
-    private final ArrayList<BlockPosState> MiningQueue = new ArrayList<>();
+    private final ArrayList<BlockPos> MiningQueue = new ArrayList<>();
     private ChunkPos currentChunk;
     private int blueprintHash = 0;
     private int cooldown = 0;
@@ -271,13 +271,28 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         if (thisWorld == null) return;
         if (thisWorld.isClient) return;
 
+        ServerWorld thisServerWorld = (ServerWorld) thisWorld;
+        MinecraftServer minecraftServer = thisServerWorld.getServer();
+
         QuarryBlock thisBlock = thisBlockEntity.getQuarryBlock();
         if (thisBlock == null) return;
 
-        ServerWorld serverWorld = (ServerWorld) thisWorld;
-
-        //Charging should be done every tick.
         thisBlockEntity.attemptCharge();
+        thisBlockEntity.attemptPushIo();
+
+        ItemStack blueprintStack = thisBlockEntity.BlueprintInventory.getStack(0);
+        int blueprintHash = blueprintStack.hashCode();
+
+        ServerWorld serverWorldToBreak = minecraftServer.getWorld(BlueprintItem.getWorldRegistryKey(blueprintStack));
+        if(serverWorldToBreak == null) return;
+
+        if(!BlueprintItem.isSealed(blueprintStack) || thisBlockEntity.blueprintHash != blueprintHash) {
+            thisBlockEntity.blueprintHash = blueprintHash;
+            thisBlockEntity.currentChunk = null;
+            thisBlockEntity.MiningQueue.clear();
+
+            ChunkLoadingManager.removeTickets(thisServerWorld, thisPos);
+        }
 
         MachineUpgradesUtil upgradesUtil = new MachineUpgradesUtil(thisBlockEntity.MachineUpgradesInventory);
         int threads = 1;
@@ -303,48 +318,35 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             thisBlockEntity.cooldown = ceiled_tpo - 1;
         }
 
-        //Io Rate increases with machine tier.
-        thisBlockEntity.attemptPushIo();
-
-        ItemStack blueprintStack = thisBlockEntity.BlueprintInventory.getStack(0);
-        if(!(blueprintStack.getItem() instanceof BlueprintItem)) return;
-        if(!BlueprintItem.isSealed(blueprintStack)) return;
-
-        int blueprintHash = blueprintStack.hashCode();
-        if(thisBlockEntity.blueprintHash != blueprintHash){
-            thisBlockEntity.blueprintHash = blueprintHash;
-            thisBlockEntity.MiningQueue.clear();
-            thisBlockEntity.currentChunk = null;
-
-            ChunkLoadingManager.removeTickets(serverWorld, thisPos);
-        }
-
         BlockPos firstPos = BlueprintItem.getFirstPos(blueprintStack);
         if(firstPos == null) return;
         BlockPos secondPos = BlueprintItem.getSecondPos(blueprintStack);
         if(secondPos == null) return;
 
-        ArrayList<BlockPosState> MiningQueue = thisBlockEntity.MiningQueue;
+        ArrayList<BlockPos> MiningQueue = thisBlockEntity.MiningQueue;
 
         if(MiningQueue.isEmpty()) {
             if(thisBlockEntity.currentChunk != null) {
+                ChunkLoadingManager.removeTicket(serverWorldToBreak, thisBlockEntity.currentChunk, thisServerWorld, thisPos);
                 BlueprintItem.increaseMinedChunks(blueprintStack);
-                ChunkLoadingManager.removeTicket(serverWorld, thisBlockEntity.currentChunk, thisPos);
+
+                thisBlockEntity.currentChunk = null;
             }
 
             List<ChunkPos> chunkPosList = BlueprintItem.getNextChunkPos(blueprintStack, 5);
             if(chunkPosList.isEmpty()) return;
 
-            thisBlockEntity.currentChunk = chunkPosList.get(0);
-            if(thisBlockEntity.currentChunk == null) return;
+            ChunkPos chunkPos = chunkPosList.get(0);
+            if(chunkPos == null) return;
 
-            for (ChunkPos chunkPos : chunkPosList) {
-                ChunkLoadingManager.addTicket(serverWorld, chunkPos, thisPos);
+            for (ChunkPos chunkPosToLoad : chunkPosList) {
+                ChunkLoadingManager.addTicket(serverWorldToBreak, chunkPosToLoad, thisServerWorld, thisPos);
             }
 
-            ChunkPos chunkPos = thisBlockEntity.currentChunk;
-            WorldChunk worldChunk = serverWorld.getChunkManager().getWorldChunk(chunkPos.x, chunkPos.z);
+            WorldChunk worldChunk = serverWorldToBreak.getChunkManager().getWorldChunk(chunkPos.x, chunkPos.z);
             if(worldChunk == null) return;
+
+            thisBlockEntity.currentChunk = chunkPos;
 
             //General Max/Min
             int minX = Math.min(firstPos.getX(), secondPos.getX());
@@ -372,7 +374,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
                         if(blockState.getBlock().getHardness() < 0) continue;
                         if(ZUtil.isActualBlockEntity(worldChunk, blockState, blockPos)) continue;
 
-                        MiningQueue.add(new BlockPosState(blockPos, blockState));
+                        MiningQueue.add(blockPos);
                     }
                 }
             }
@@ -382,23 +384,29 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
 
         for (int i = 0; i < threads; i++) {
             if(MiningQueue.isEmpty()) return;
-            BlockPosState queueItem = MiningQueue.remove(MiningQueue.size() - 1);
-            BlockState blockStateToBreak = queueItem.blockState();
-            BlockPos posToBreak = queueItem.blockPos();
+
+            BlockPos blockPosToBreak = MiningQueue.remove(MiningQueue.size() - 1);
+            WorldChunk worldChunkToBreak = serverWorldToBreak.getChunkManager().getWorldChunk(blockPosToBreak.getX() >> 4, blockPosToBreak.getZ() >> 4);
+
+            if(worldChunkToBreak == null) {
+                MiningQueue.add(blockPosToBreak); return;
+            }
+
+            BlockState blockStateToBreak = worldChunkToBreak.getBlockState(blockPosToBreak);;
 
             if(!blockStateToBreak.getFluidState().isEmpty()) {
-                thisWorld.setBlockState(posToBreak, Blocks.AIR.getDefaultState(), 2, 0); continue;
+                serverWorldToBreak.setBlockState(blockPosToBreak, Blocks.AIR.getDefaultState(), 2, 0); continue;
             }
 
             if(blockStateToBreak.isAir()) continue;
             if(blockStateToBreak.getBlock().getHardness() < 0) continue;
-            if(ZUtil.isActualBlockEntity(thisWorld, blockStateToBreak, posToBreak)) continue;
+            if(ZUtil.isActualBlockEntity(serverWorldToBreak, blockStateToBreak, blockPosToBreak)) continue;
 
             //Energy
             long actualEnergyConsumption = thisBlock.getActualEnergyConsumption(upgradesUtil, blockStateToBreak.getBlock());
 
             if(thisBlockEntity.EnergyContainer.getStored() < actualEnergyConsumption) {
-                MiningQueue.add(queueItem); return;
+                MiningQueue.add(blockPosToBreak); return;
             }
 
             //Loot
@@ -411,7 +419,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             }
 
             List<ItemStack> droppingItems = blockStateToBreak.getDroppedStacks(
-                    new LootContext.Builder((ServerWorld) thisWorld)
+                    new LootContext.Builder(serverWorldToBreak)
                             .parameter(LootContextParameters.BLOCK_STATE, thisBlockState)
                             .parameter(LootContextParameters.ORIGIN, new Vec3d(thisPos.getX(), thisPos.getY(), thisPos.getZ()))
                             .parameter(LootContextParameters.TOOL, breakingItem)
@@ -421,7 +429,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
 
             for (ItemStack droppingItem : droppingItems) {
                 if(!thisBlockEntity.OutputInventory.canInsert(droppingItem)) {
-                    MiningQueue.add(queueItem); return;
+                    MiningQueue.add(blockPosToBreak); return;
                 } else {
                     stacksToAward.add(droppingItem);
                 }
@@ -430,7 +438,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             stacksToAward.forEach(thisBlockEntity.OutputInventory::addStack);
 
             //Mining
-            thisWorld.setBlockState(posToBreak, Blocks.AIR.getDefaultState(), 2, 0);
+            serverWorldToBreak.setBlockState(blockPosToBreak, Blocks.AIR.getDefaultState(), 2, 0);
             thisBlockEntity.EnergyContainer.useEnergy(actualEnergyConsumption);
         }
     }

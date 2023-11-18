@@ -13,10 +13,12 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.interfaces.BlockAttackable;
@@ -24,6 +26,7 @@ import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
 import pw.rxj.iron_quarry.interfaces.IHandledSmithing;
 import pw.rxj.iron_quarry.recipes.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.util.ReadableString;
+import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,8 +87,11 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        BlockPos firstPos = getFirstPos(stack);
+        RegistryKey<World> worldKey = getWorldRegistryKey(stack);
+        Identifier worldId = worldKey != null ? worldKey.getValue() : null;
+
         BlockPos secondPos = getSecondPos(stack);
+        BlockPos firstPos = getFirstPos(stack);
 
         if(firstPos == null || secondPos == null) {
             MutableText LORE_UNUSABLE = Text.translatable("item.iron_quarry.blueprint.lore.unbound");
@@ -95,9 +101,12 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         }
 
         MutableText LORE_POS_EMPTY = Text.translatable("item.iron_quarry.blueprint.lore.empty");
+
+        MutableText LORE_WORLD = Text.translatable("item.iron_quarry.blueprint.lore.world", ReadableString.textFrom(worldId).orElse(LORE_POS_EMPTY));
         MutableText LORE_FIRST_POS = Text.translatable("item.iron_quarry.blueprint.lore.first_pos", ReadableString.textFrom(firstPos).orElse(LORE_POS_EMPTY));
         MutableText LORE_SECOND_POS = Text.translatable("item.iron_quarry.blueprint.lore.second_pos", ReadableString.textFrom(secondPos).orElse(LORE_POS_EMPTY));
 
+        tooltip.add(LORE_WORLD);
         tooltip.add(LORE_FIRST_POS);
         tooltip.add(LORE_SECOND_POS);
     }
@@ -132,6 +141,8 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         ItemStack stack = context.getStack();
         if(isSealed(stack)) return ActionResult.FAIL;
 
+        setWorld(stack, context.getWorld());
+
         BlockPos targetedPos = context.getBlockPos();
         NbtCompound blockPos = getBlockPosNbt(targetedPos);
         stack.getOrCreateNbt().put("SecondPosition", blockPos);
@@ -147,12 +158,33 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         ItemStack stack = player.getStackInHand(hand);
         if(isSealed(stack)) return ActionResult.FAIL;
 
+        setWorld(stack, world);
+
         NbtCompound blockPos = getBlockPosNbt(targetedPos);
         stack.getOrCreateNbt().put("FirstPosition", blockPos);
 
         player.sendMessage(Text.of(String.format("First position set to: §n%s", ReadableString.from(targetedPos).orElse("<error>"))), true);
 
         return ActionResult.SUCCESS;
+    }
+
+    public static void setWorld(ItemStack stack, World world) {
+        RegistryKey<World> oldWorldKey = getWorldRegistryKey(stack);
+        RegistryKey<World> newWorldKey = world.getRegistryKey();
+
+        if(!ZUtil.equals(oldWorldKey, newWorldKey)) {
+            resetPositions(stack);
+        }
+
+        String stringifiedKey = ZUtil.toString(newWorldKey);
+        stack.getOrCreateNbt().putString("World", stringifiedKey);
+    }
+    public static void resetPositions(ItemStack stack) {
+        NbtCompound nbt = stack.getNbt();
+        if(nbt == null) return;
+
+        nbt.remove("SecondPosition");
+        nbt.remove("FirstPosition");
     }
 
     public static BlockPos getFirstPos(ItemStack stack) {
@@ -177,7 +209,16 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
         return itemNbt.getInt("MinedChunks");
     }
+    public static @Nullable RegistryKey<World> getWorldRegistryKey(ItemStack stack) {
+        NbtCompound itemNbt = stack.getNbt();
+        if(itemNbt == null) return null;
+
+        String worldKey = itemNbt.getString("World");
+        return ZUtil.toRegistryKey(worldKey);
+    }
     public static boolean isSealed(ItemStack stack){
+        if(!(stack.getItem() instanceof BlueprintItem)) return false;
+
         NbtCompound nbt = stack.getNbt();
         if(nbt == null) return false;
 

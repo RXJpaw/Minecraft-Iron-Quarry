@@ -37,6 +37,7 @@
     "item.iron_quarry.blueprint.sealed": "Sealed Blueprint",
     "item.iron_quarry.blueprint.unbound": "(Unbound)",
     "item.iron_quarry.blueprint.lore.unbound": "§7§oUseless until both positions are set.",
+    "item.iron_quarry.blueprint.lore.world": "§7Dimension: %s",
     "item.iron_quarry.blueprint.lore.first_pos": "§7First Position: %s",
     "item.iron_quarry.blueprint.lore.second_pos": "§7Second Position: %s",
     "item.iron_quarry.blueprint.lore.empty": "<unset>",
