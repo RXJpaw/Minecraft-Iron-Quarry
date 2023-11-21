@@ -22,7 +22,6 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -33,7 +32,6 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import pw.rxj.iron_quarry.Global;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.blockentities.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blockentities.ZBlockEntities;
@@ -42,9 +40,7 @@ import pw.rxj.iron_quarry.interfaces.IHandledCrafting;
 import pw.rxj.iron_quarry.recipes.HandledCraftingRecipe;
 import pw.rxj.iron_quarry.records.TexturePosition;
 import pw.rxj.iron_quarry.types.Face;
-import pw.rxj.iron_quarry.util.ComplexInventory;
-import pw.rxj.iron_quarry.util.MachineUpgradesUtil;
-import pw.rxj.iron_quarry.util.ZUtil;
+import pw.rxj.iron_quarry.util.*;
 
 import java.text.DecimalFormat;
 import java.util.List;
@@ -97,47 +93,45 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         float energy_usage = this.baseConsumption * machineUpgradesUtil.getInefficiency();
         float operations = (20.0F / this.ticksPerOperation) * machineUpgradesUtil.getSpeedMultiplier();
 
-        MutableText LORE_USAGE_1 = Text.translatable("item.iron_quarry.quarry_block.lore.usage")
-                .setStyle(Style.EMPTY.withColor(Global.RGB_LIGHT_GRAY));
-        MutableText LORE_USAGE_2 = Screen.hasShiftDown() ?
-                Text.literal(String.format("%s RF/op", ZUtil.expandableFixedFloat(energy_usage * 20 / operations)))
-                        .setStyle(Style.EMPTY.withColor(Global.RGB_DRAWBACK)) :
-                Text.literal(String.format("%s RF/tick", integerFormat.format(energy_usage)))
-                        .setStyle(Style.EMPTY.withColor(Global.RGB_DRAWBACK));
+        SupplicableAlt<?> HasShiftDown = SupplicableAlt.when(Screen.hasShiftDown());
 
-        MutableText LORE_SPEED_1 = Text.translatable("item.iron_quarry.quarry_block.lore.speed")
-                .setStyle(Style.EMPTY.withColor(Global.RGB_LIGHT_GRAY));
-        MutableText LORE_SPEED_2 = Text.literal(String.format("%s op/s", ZUtil.expandableFixedFloat(operations)))
-                .setStyle(Style.EMPTY.withColor(Global.RGB_BENEFIT));
+        SupplicableAlt<String> PER_TYPE = HasShiftDown.<String>copy()
+                .then(() -> "per_operation")
+                .or(() -> "per_tick");
+        SupplicableAlt<String> PER_UNIT = HasShiftDown.<String>copy()
+                .then(() -> ZUtil.expandableFixedFloat(energy_usage * 20 / operations))
+                .or(() -> integerFormat.format(energy_usage));
 
-        MutableText LORE_YIELD_1 = Text.translatable("item.iron_quarry.quarry_block.lore.yield")
-                .setStyle(Style.EMPTY.withColor(Global.RGB_LIGHT_GRAY));
-        MutableText LORE_YIELD_2 = Text.literal(String.format("+%s%%", ZUtil.expandableFixedFloat(yield_bonus)))
-                .setStyle(Style.EMPTY.withColor(Global.RGB_BENEFIT));
+        MutableText LORE_USAGE_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy." + PER_TYPE.get(), PER_UNIT.get());
+        MutableText LORE_USAGE = ReadableString.translatable("item.iron_quarry.quarry_block.lore.usage", LORE_USAGE_DETAIL);
 
-        tooltip.add(LORE_USAGE_1.append(LORE_USAGE_2));
-        tooltip.add(LORE_SPEED_1.append(LORE_SPEED_2));
-        tooltip.add(LORE_YIELD_1.append(LORE_YIELD_2));
+        MutableText LORE_SPEED_DETAIL = ReadableString.translatable("item.iron_quarry.lore.operation.per_second", ZUtil.expandableFixedFloat(operations));
+        MutableText LORE_SPEED = ReadableString.translatable("item.iron_quarry.quarry_block.lore.speed", LORE_SPEED_DETAIL);
 
-        if(Screen.hasShiftDown()) {
+        MutableText LORE_YIELD_DETAIL = ReadableString.translatable("item.iron_quarry.lore.percentage.positive", ZUtil.expandableFixedFloat(yield_bonus));
+        MutableText LORE_YIELD = ReadableString.translatable("item.iron_quarry.quarry_block.lore.yield", LORE_YIELD_DETAIL);
+
+        tooltip.add(LORE_USAGE);
+        tooltip.add(LORE_SPEED);
+        tooltip.add(LORE_YIELD);
+
+        if(HasShiftDown.test()) {
             long capacity = this.getEnergyCapacity();
             long stored = this.getEnergyStored(stack);
 
-            MutableText LORE_CAPACITY_1 = Text.translatable("item.iron_quarry.quarry_block.lore.capacity")
-                    .setStyle(Style.EMPTY.withColor(Global.RGB_LIGHT_GRAY));
-            MutableText LORE_CAPACITY_2 = Text.literal(String.format("%s RF", integerFormat.format(capacity)))
-                    .setStyle(Style.EMPTY.withColor(Global.RGB_WEAK_HIGHLIGHT));
+            MutableText LORE_STORED_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy.unit", integerFormat.format(stored));
+            MutableText LORE_STORED = ReadableString.translatable("item.iron_quarry.quarry_block.lore.stored", LORE_STORED_DETAIL);
 
-            MutableText LORE_STORED_1 = Text.translatable("item.iron_quarry.quarry_block.lore.stored")
-                    .setStyle(Style.EMPTY.withColor(Global.RGB_LIGHT_GRAY));
-            MutableText LORE_STORED_2 = Text.literal(String.format("%s RF", integerFormat.format(stored)))
-                    .setStyle(Style.EMPTY.withColor(Global.RGB_WEAK_HIGHLIGHT));
+            MutableText LORE_CAPACITY_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy.unit", integerFormat.format(capacity));
+            MutableText LORE_CAPACITY = ReadableString.translatable("item.iron_quarry.quarry_block.lore.capacity", LORE_CAPACITY_DETAIL);
 
             tooltip.add(Text.empty());
-            tooltip.add(LORE_CAPACITY_1.append(LORE_CAPACITY_2));
-            tooltip.add(LORE_STORED_1.append(LORE_STORED_2));
+            tooltip.add(LORE_STORED);
+            tooltip.add(LORE_CAPACITY);
         } else {
-            MutableText LORE_DETAILS = Text.translatable("item.iron_quarry.lore.details");
+            MutableText LORE_DETAILS = ReadableString.translatable("item.iron_quarry.lore.details");
+
+
 
             tooltip.add(Text.empty());
             tooltip.add(LORE_DETAILS);

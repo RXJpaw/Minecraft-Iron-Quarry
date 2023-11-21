@@ -61,6 +61,13 @@ public class ZUtil {
         return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 
+    public static double normDeg(double degrees) {
+        return (degrees % 360.0f) / 360.0f;
+    }
+    public static float normDeg(float degrees) {
+        return (degrees % 360.0f) / 360.0f;
+    }
+
     public static boolean equals(@Nullable RegistryKey<?> key1, @Nullable RegistryKey<?> key2) {
         Identifier registry1 = key1 == null ? null : key1.getRegistry();
         Identifier registry2 = key2 == null ? null : key2.getRegistry();

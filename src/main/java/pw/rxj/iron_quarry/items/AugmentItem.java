@@ -20,7 +20,6 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.tag.TagKey;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
@@ -28,7 +27,6 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import pw.rxj.iron_quarry.Global;
 import pw.rxj.iron_quarry.interfaces.IDynamicItemName;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
 import pw.rxj.iron_quarry.interfaces.IHandledSmithing;
@@ -37,6 +35,7 @@ import pw.rxj.iron_quarry.recipes.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.records.AugmentStack;
 import pw.rxj.iron_quarry.types.AugmentType;
 import pw.rxj.iron_quarry.types.DynamicText;
+import pw.rxj.iron_quarry.util.ReadableString;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.ArrayList;
@@ -121,19 +120,15 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         int stored = this.getAmount(stack);
 
         if(!this.isUnique()) {
-            MutableText LORE_UNUSED = Text.translatable("item.iron_quarry.augment.lore.used", stored, capacity)
-                    .setStyle(Style.EMPTY.withColor(Global.RGB_LIGHT_GRAY));
-
+            MutableText LORE_UNUSED = ReadableString.translatable("item.iron_quarry.augment.lore.used", stored, capacity);
             tooltip.add(LORE_UNUSED);
         }
 
         if(augmentType.isPresent()) {
-            MutableText LORE_BENEFITS = Text.translatable("item.iron_quarry.augment.lore.benefit." + augmentType.getName(), ZUtil.expandableFixedFloat(stored * augmentType.getMultiplier()))
-                    .setStyle(Style.EMPTY.withColor(Global.RGB_BENEFIT));
-            MutableText LORE_DRAWBACK = Text.translatable("item.iron_quarry.augment.lore.drawback.energy", ZUtil.expandableFixedFloat(stored * augmentType.getInefficiency()))
-                    .setStyle(Style.EMPTY.withColor(Global.RGB_DRAWBACK));
-
+            MutableText LORE_BENEFITS = ReadableString.translatable("item.iron_quarry.augment.lore.benefit." + augmentType.getName(), ZUtil.expandableFixedFloat(stored * augmentType.getMultiplier()));
             tooltip.add(LORE_BENEFITS);
+
+            MutableText LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback.energy", ZUtil.expandableFixedFloat(stored * augmentType.getInefficiency()));
             tooltip.add(LORE_DRAWBACK);
         }
 
@@ -151,24 +146,23 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
                 else unused_upgrades.add(item);
             });
 
-            MutableText LORE_INFO = Text.translatable("item.iron_quarry.augment.lore.capacity_upgrades", used_upgrades.size(), CAPACITY_UPGRADE_SLOTS)
-                    .setStyle(Style.EMPTY.withColor(Global.RGB_STRONG_HIGHLIGHT).withUnderline(true));
+            MutableText LORE_INFO = ReadableString.translatable("item.iron_quarry.augment.lore.capacity_upgrades", used_upgrades.size(), CAPACITY_UPGRADE_SLOTS);
 
             tooltip.add(Text.empty());
             tooltip.add(LORE_INFO);
 
             used_upgrades.forEach(item -> {
-                MutableText itemName = Text.literal("> ").append(item.getName().copy());
-                tooltip.add(itemName.setStyle(Style.EMPTY.withColor(Global.RGB_WEAK_HIGHLIGHT)));
+                MutableText itemName = ReadableString.translatable("item.iron_quarry.lore.listing.used", item.getName().copy());
+                tooltip.add(itemName);
             });
             unused_upgrades.forEach(item -> {
-                MutableText itemName = Text.literal("> ").append(item.getName().copy());
-                tooltip.add(itemName.setStyle(Style.EMPTY.withColor(Global.RGB_DARK_GRAY)));
+                MutableText itemName = ReadableString.translatable("item.iron_quarry.lore.listing.unused", item.getName().copy());
+                tooltip.add(itemName);
             });
 
             if(context.isAdvanced()) tooltip.add(Text.empty());
         } else {
-            MutableText LORE_DETAILS = Text.translatable("item.iron_quarry.lore.details");
+            MutableText LORE_DETAILS = ReadableString.translatable("item.iron_quarry.lore.details");
 
             tooltip.add(Text.empty());
             tooltip.add(LORE_DETAILS);

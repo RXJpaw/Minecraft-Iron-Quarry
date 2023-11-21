@@ -94,17 +94,17 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         BlockPos firstPos = getFirstPos(stack);
 
         if(firstPos == null || secondPos == null) {
-            MutableText LORE_UNUSABLE = Text.translatable("item.iron_quarry.blueprint.lore.unbound");
+            MutableText LORE_UNUSABLE = ReadableString.translatable("item.iron_quarry.blueprint.lore.unbound");
 
             tooltip.add(LORE_UNUSABLE);
             tooltip.add(Text.empty());
         }
 
-        MutableText LORE_POS_EMPTY = Text.translatable("item.iron_quarry.blueprint.lore.empty");
+        MutableText LORE_POS_EMPTY = ReadableString.translatable("item.iron_quarry.blueprint.lore.empty");
 
-        MutableText LORE_WORLD = Text.translatable("item.iron_quarry.blueprint.lore.world", ReadableString.textFrom(worldId).orElse(LORE_POS_EMPTY));
-        MutableText LORE_FIRST_POS = Text.translatable("item.iron_quarry.blueprint.lore.first_pos", ReadableString.textFrom(firstPos).orElse(LORE_POS_EMPTY));
-        MutableText LORE_SECOND_POS = Text.translatable("item.iron_quarry.blueprint.lore.second_pos", ReadableString.textFrom(secondPos).orElse(LORE_POS_EMPTY));
+        MutableText LORE_WORLD = ReadableString.translatable("item.iron_quarry.blueprint.lore.world", ReadableString.textFrom(worldId).orElse(LORE_POS_EMPTY));
+        MutableText LORE_FIRST_POS = ReadableString.translatable("item.iron_quarry.blueprint.lore.first_pos", ReadableString.textFrom(firstPos).orElse(LORE_POS_EMPTY));
+        MutableText LORE_SECOND_POS = ReadableString.translatable("item.iron_quarry.blueprint.lore.second_pos", ReadableString.textFrom(secondPos).orElse(LORE_POS_EMPTY));
 
         tooltip.add(LORE_WORLD);
         tooltip.add(LORE_FIRST_POS);
