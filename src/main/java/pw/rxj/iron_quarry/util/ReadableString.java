@@ -6,6 +6,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import pw.rxj.iron_quarry.Global;
+import pw.rxj.iron_quarry.types.DynamicText;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -46,21 +47,30 @@ public class ReadableString {
         Matcher matcher = pattern.matcher(string);
 
         int offset = 0;
+        int textOffset = 0;
         while (matcher.find()) {
             offset = matcher.end();
+            String text = matcher.group(3);
             parsed.append(matcher.group(1));
 
             Object modifier = Global.get(matcher.group(2));
             if(modifier == null) {
-                parsed.append(matcher.group(3)); continue;
+                textOffset += text.length();
+                parsed.append(text);
+                continue;
             }
 
-            Style style = Style.EMPTY;
             if(modifier instanceof Integer rgb) {
-                style = style.withColor(rgb);
+                Style style = Style.EMPTY.withColor(rgb);
+
+                parsed.append(Text.literal(text).setStyle(style));
+            } else if(modifier instanceof DynamicText dynamicText) {
+                MutableText dynamicResult = dynamicText.getText(Text.literal(text), textOffset);
+
+                parsed.append(dynamicResult);
             }
 
-            parsed.append(Text.literal(matcher.group(3)).setStyle(style));
+            textOffset += text.length();
         }
 
         return parsed.append(string.substring(offset));
