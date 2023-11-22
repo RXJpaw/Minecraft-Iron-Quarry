@@ -13,8 +13,10 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.FormattedMessageFactory;
+import org.apache.logging.log4j.message.Message;
 import pw.rxj.iron_quarry.blockentities.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blockentities.ZBlockEntities;
 import pw.rxj.iron_quarry.blocks.ZBlocks;
@@ -31,7 +33,15 @@ import team.reborn.energy.api.EnergyStorage;
 
 public class Main implements ModInitializer {
 	public static final String MOD_ID = "iron_quarry";
-	public static final Logger LOGGER = LoggerFactory.getLogger("Iron Quarry");
+	public static final Logger LOGGER = LogManager.getLogger("Iron Quarry",
+		new FormattedMessageFactory() {
+			@Override
+			public Message newMessage(String message) {
+				return super.newMessage("[Iron Quarry] " + message);
+			}
+		}
+	);
+
 
 	public static final ScreenHandlerType<QuarryBlockScreenHandler> QUARRY_BLOCK_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(QuarryBlockScreenHandler::new);
 
