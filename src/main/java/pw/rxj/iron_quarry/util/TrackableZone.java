@@ -1,8 +1,8 @@
 package pw.rxj.iron_quarry.util;
 
+import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import reborncore.common.misc.TriConsumer;
 
 import java.util.function.BiConsumer;
 
