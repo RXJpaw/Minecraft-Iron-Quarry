@@ -1,79 +1,103 @@
 package pw.rxj.iron_quarry.util;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import reborncore.common.misc.TriConsumer;
+
+import java.util.function.BiConsumer;
+
 public class TrackableZone {
-    private int buttonX;
-    private int buttonY;
-    private int mouseX;
-    private int mouseY;
-    private int buttonHeight;
-    private int buttonWidth;
+    public static class Zone {
+        public int x;
+        public int y;
+        public int width;
+        public int height;
 
-    private float wasMouseOverMillis = 0;
-
-    public TrackableZone(int buttonX, int buttonY, int buttonWidth, int buttonHeight, int mouseX, int mouseY){
-        this.setAll(buttonX, buttonY, buttonWidth, buttonHeight, mouseX, mouseY);
-    }
-    public TrackableZone(int buttonX, int buttonY, int buttonWidth, int buttonHeight){
-        this.setAll(buttonX, buttonY, buttonWidth, buttonHeight, -1, -1);
-    }
-    public TrackableZone(){ }
-
-    public boolean isMouseOver(float delta, float maxDelta){
-        boolean wasMouseOver = mouseX >= buttonX && mouseY >= buttonY && mouseX < buttonX + buttonWidth && mouseY < buttonY + buttonHeight;
-
-        if(wasMouseOver) {
-            wasMouseOverMillis = Math.min(wasMouseOverMillis+delta, maxDelta);
-        } else {
-            wasMouseOverMillis = Math.max(wasMouseOverMillis-delta, 0);
+        private Zone(int x, int y, int width, int height) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
         }
 
-        return wasMouseOver;
+        public static Zone from(int x, int y, int width, int height) {
+            return new Zone(x, y, width, height);
+        }
+        public static Zone empty() {
+            return new Zone(0, 0, 0, 0);
+        }
     }
 
+    private @Nullable TriConsumer<Zone, Integer, Integer> mouseOverConsumer = null;
+    private @Nullable BiConsumer<Zone, Float> tickDeltaConsumer = null;
+    private float maxTicks;
+    private float ticks;
 
-    public boolean isMouseOver(){
-        return mouseX >= buttonX && mouseY >= buttonY && mouseX < buttonX + buttonWidth && mouseY < buttonY + buttonHeight;
-    }
+    public @NotNull Zone zone = Zone.empty();
+    private int mouseX;
+    private int mouseY;
 
+    private TrackableZone() {
 
-    public float wasMouseOverMillis(){
-        return wasMouseOverMillis;
-    }
-
-    public int getButtonX() {
-        return buttonX;
-    }
-    public int getButtonY() {
-        return buttonY;
-    }
-    public int getMouseX() {
-        return mouseX;
-    }
-    public int getMouseY() {
-        return mouseY;
-    }
-    public int getButtonHeight() {
-        return buttonHeight;
-    }
-    public int getButtonWidth() {
-        return buttonWidth;
     }
 
-    public TrackableZone setAll(int buttonX, int buttonY, int buttonWidth, int buttonHeight, int mouseX, int mouseY){
-        if(this.buttonX != -1) this.buttonX = buttonX;
-        if(this.buttonY != -1) this.buttonY = buttonY;
-        if(this.buttonWidth != -1) this.buttonWidth = buttonWidth;
-        if(this.buttonHeight != -1) this.buttonHeight = buttonHeight;
-        if(this.mouseX != -1) this.mouseX = mouseX;
-        if(this.mouseY != -1) this.mouseY = mouseY;
+    public static TrackableZone empty() { return new TrackableZone(); }
+    public static TrackableZone bake(Zone zone, int mouseX, int mouseY) {
+        return new TrackableZone().consume(zone, mouseX, mouseY);
+    }
+
+    public TrackableZone onMouseOver(TriConsumer<Zone, Integer, Integer> consumer) {
+        this.mouseOverConsumer = consumer;
+
+        return this;
+    }
+    public TrackableZone onTickDelta(float maxTicks, BiConsumer<Zone, Float> consumer) {
+        this.tickDeltaConsumer = consumer;
+        this.maxTicks = maxTicks;
 
         return this;
     }
 
-    public TrackableZone setMousePos(int x, int y) {
-        this.mouseX = x;
-        this.mouseY = y;
+    public boolean isMouseOver() {
+        return mouseX >= zone.x && mouseY >= zone.y && mouseX < zone.x + zone.width && mouseY < zone.y + zone.height;
+    }
+    public boolean consumeTickDelta(float tickDelta) {
+        if(this.isMouseOver()) {
+            this.ticks = Math.min(this.ticks + tickDelta, maxTicks);
+
+            if(this.mouseOverConsumer != null) this.mouseOverConsumer.accept(this.zone, this.mouseX, this.mouseY);
+        } else {
+            this.ticks = Math.max(this.ticks - tickDelta, 0);;
+        }
+
+        if(this.tickDeltaConsumer != null) this.tickDeltaConsumer.accept(this.zone, this.ticks);
+
+        return this.ticks > 0;
+    }
+
+    public float getTicks(){
+        return this.ticks;
+    }
+    public float getMaxTicks(){
+        return this.maxTicks;
+    }
+    public boolean isUsed(){
+        return this.ticks > 0;
+    }
+    public boolean isUnused(){
+        return !this.isUsed();
+    }
+
+    public TrackableZone consume(Zone zone, int mouseX, int mouseY) {
+        this.zone = zone;
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
+
+        return this;
+    }
+    public TrackableZone consume(Zone zone) {
+        this.zone = zone;
+
         return this;
     }
 }
-

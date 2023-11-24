@@ -33,9 +33,17 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     private final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/augmentation_configuration.png");
     private final BlockPos blockPos;
 
-    private TrackableZone EnergyDisplay = new TrackableZone();
-    private TrackableZone IoConfigIcon = new TrackableZone();
-    private TrackableZone AugmentsConfigIcon = new TrackableZone();
+    private final TrackableZone EnergyDisplay = TrackableZone.empty();
+    private final TrackableZone AugmentsConfig = TrackableZone.empty()
+            .onTickDelta(2, (zone, ticks) -> {
+                zone.width = (int) Math.min(22 + ticks * 39, 100);
+                zone.height = (int) Math.min(22 + ticks * 35, 92);
+            });
+    private final TrackableZone IoConfig = TrackableZone.empty()
+            .onTickDelta(2, (zone, ticks) -> {
+                zone.width = (int) Math.min(22 + ticks * 39, 100);
+                zone.height = (int) Math.min(22 + ticks * 35, 92);
+            });
 
     private final int expandableMenuWidth;
     private final int realBackgroundWidth;
@@ -84,8 +92,8 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        int backgroundX = (this.width - this.realBackgroundWidth) / 2;
-        int backgroundY = (this.height - this.realBackgroundHeight) / 2;
+        int backgroundX = this.x;
+        int backgroundY = this.y;
 
         RenderSystem.setShaderTexture(0, BACKGROUND_TEXTURE);
         drawTexture(matrices, backgroundX, backgroundY, 0, 0, this.realBackgroundWidth, this.realBackgroundHeight);
@@ -102,7 +110,8 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         }
 
         //Energy-Fill-% tooltip
-        EnergyDisplay = EnergyDisplay.setAll(backgroundX + 9, backgroundY + 16, 14, 42, mouseX, mouseY);
+        EnergyDisplay.consume(TrackableZone.Zone.from(backgroundX + 9, backgroundY + 16, 14, 42), mouseX, mouseY);
+
         if(EnergyDisplay.isMouseOver()){
             renderTooltip(matrices, Text.of(String.format("%s / %s RF", blockEntity.EnergyContainer.getStored(), blockEntity.EnergyContainer.getCapacity())), mouseX, mouseY);
         }
@@ -110,11 +119,12 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         //Augmentation Configuration
         int augmentsMenuX = backgroundX + this.realBackgroundWidth;
         int augmentsMenuY = backgroundY + 26;
-        int augmentsMenuWidth = (int) Math.min(22 + AugmentsConfigIcon.wasMouseOverMillis() * 40, 100);
-        int augmentsMenuHeight = (int) Math.min(22 + AugmentsConfigIcon.wasMouseOverMillis() * 40, 92);
+        int augmentsMenuWidth = AugmentsConfig.zone.width;
+        int augmentsMenuHeight = AugmentsConfig.zone.height;
 
-        AugmentsConfigIcon = AugmentsConfigIcon.setAll(augmentsMenuX, augmentsMenuY, augmentsMenuWidth, augmentsMenuHeight, mouseX, mouseY);
-        if(IoConfigIcon.wasMouseOverMillis() == 0 && (AugmentsConfigIcon.isMouseOver(delta, 2) || AugmentsConfigIcon.wasMouseOverMillis() > 0)){
+        AugmentsConfig.consume(TrackableZone.Zone.from(augmentsMenuX, augmentsMenuY, augmentsMenuWidth, augmentsMenuHeight), mouseX, mouseY);
+
+        if(IoConfig.isUnused() && AugmentsConfig.consumeTickDelta(delta)){
             RenderSystem.setShaderTexture(0, AUGMENTATION_CONFIGURATION_TEXTURE);
             drawTexture(matrices, augmentsMenuX, augmentsMenuY, 0, 0, augmentsMenuWidth, augmentsMenuHeight);
 
@@ -136,16 +146,17 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             });
         }
 
-        //Settings Configuration
-        int settingsMenuX = backgroundX + this.realBackgroundWidth;
-        int settingsMenuY = backgroundY + 4;
-        int settingsMenuWidth = (int) Math.min(22 + IoConfigIcon.wasMouseOverMillis() * 40, 100);
-        int settingsMenuHeight = (int) Math.min(22 + IoConfigIcon.wasMouseOverMillis() * 40, 92);
+        //Io Configuration
+        int ioConfigX = backgroundX + this.realBackgroundWidth;
+        int ioConfigY = backgroundY + 4;
+        int ioConfigWidth = IoConfig.zone.width;
+        int ioConfigHeight = IoConfig.zone.height;
 
-        IoConfigIcon = IoConfigIcon.setAll(settingsMenuX, settingsMenuY, settingsMenuWidth, settingsMenuHeight, mouseX, mouseY);
-        if(AugmentsConfigIcon.wasMouseOverMillis() == 0 && (IoConfigIcon.isMouseOver(delta, 2) || IoConfigIcon.wasMouseOverMillis() > 0)){
+        IoConfig.consume(TrackableZone.Zone.from(ioConfigX, ioConfigY, ioConfigWidth, ioConfigHeight), mouseX, mouseY);
+
+        if(AugmentsConfig.isUnused() && IoConfig.consumeTickDelta(delta)){
             RenderSystem.setShaderTexture(0, OPTIONS_CONFIGURATION_TEXTURE);
-            drawTexture(matrices, settingsMenuX, settingsMenuY, 0, 0, settingsMenuWidth, settingsMenuHeight);
+            drawTexture(matrices, ioConfigX, ioConfigY, 0, 0, ioConfigWidth, ioConfigHeight);
 
             IO_OPTIONS.forEach(ioOption -> {
                 int bgX = ioOption.bgX();
@@ -155,27 +166,27 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                 TexturePosition ioTexture = blockEntity.getIoTexturePosition(face);
                 TexturePosition bgTexture = block.getTexturePosition(face, ioState != IoState.BLOCKED);
 
-                if(settingsMenuWidth >= bgX && settingsMenuHeight >= bgY){
+                if(ioConfigWidth >= bgX && ioConfigHeight >= bgY){
                     RenderSystem.setShaderTexture(0, block.getTextureId());
                     drawTexture(matrices,
-                            settingsMenuX + bgX, settingsMenuY + bgY,
+                            ioConfigX + bgX, ioConfigY + bgY,
                             bgTexture.u(), bgTexture.v(),
-                            Math.min(bgTexture.width(), settingsMenuWidth - bgX), Math.min(bgTexture.height(), settingsMenuHeight - bgY));
+                            Math.min(bgTexture.width(), ioConfigWidth - bgX), Math.min(bgTexture.height(), ioConfigHeight - bgY));
                 }
 
-                if(settingsMenuWidth >= bgX + 4 && settingsMenuHeight >= bgY + 4){
+                if(ioConfigWidth >= bgX + 4 && ioConfigHeight >= bgY + 4){
                     RenderSystem.setShaderTexture(0, blockEntity.getIoTextureId());
                     drawTexture(matrices,
-                            settingsMenuX + bgX + 4, settingsMenuY + bgY + 4,
+                            ioConfigX + bgX + 4, ioConfigY + bgY + 4,
                             ioTexture.u(), ioTexture.v(),
-                            Math.min(ioTexture.width(), settingsMenuWidth - (bgX + 4)), Math.min(ioTexture.height(), settingsMenuHeight - (bgY + 4)));
+                            Math.min(ioTexture.width(), ioConfigWidth - (bgX + 4)), Math.min(ioTexture.height(), ioConfigHeight - (bgY + 4)));
 
                 }
             });
 
         } else {
             RenderSystem.setShaderTexture(0, OPTIONS_TEXTURE);
-            drawTexture(matrices, settingsMenuX, settingsMenuY, 0, 0, 22, 22);
+            drawTexture(matrices, ioConfigX, ioConfigY, 0, 0, 22, 22);
         }
     }
 
@@ -186,7 +197,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
 
     @Override
     protected boolean isClickOutsideBounds(double mouseX, double mouseY, int left, int top, int button) {
-        if(IoConfigIcon.isMouseOver() || AugmentsConfigIcon.isMouseOver()) return false;
+        if(IoConfig.isMouseOver() || AugmentsConfig.isMouseOver()) return false;
 
         int offsetX = 0;
         int offsetY = 0;
@@ -215,9 +226,17 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         if(this.client.interactionManager == null) return false;
         if(MinecraftInstance.cameraEntity == null) return false;
 
-        if(IoConfigIcon.wasMouseOverMillis() > 0) {
+        if(IoConfig.isUsed()) {
             IO_OPTIONS.forEach(ioOption -> {
-                TrackableZone ioButton = new TrackableZone(IoConfigIcon.getButtonX() + ioOption.bgX(), IoConfigIcon.getButtonY() + ioOption.bgY(), 16, 16, (int) mouseX, (int) mouseY);
+                TrackableZone.Zone ioButtonZone = TrackableZone.Zone.from(
+                        IoConfig.zone.x + ioOption.bgX(),
+                        IoConfig.zone.y + ioOption.bgY(),
+                        16,
+                        16
+                );
+
+                TrackableZone ioButton = TrackableZone.bake(ioButtonZone, (int) mouseX, (int) mouseY);
+
                 if(ioButton.isMouseOver()) {
                     MinecraftInstance.cameraEntity.playSound(SoundEvents.UI_BUTTON_CLICK, 0.2F, 1.0F);
 
