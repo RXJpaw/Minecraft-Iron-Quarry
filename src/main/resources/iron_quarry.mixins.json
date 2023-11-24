@@ -4,6 +4,9 @@
     "package": "pw.rxj.iron_quarry.mixin",
     "compatibilityLevel": "JAVA_17",
     "mixins": [
+        "BootstrapClientMixin",
+        "BootstrapResourceMixin",
+        "BootstrapServerMixin",
         "SmithingScreenHandlerMixin"
     ],
     "client": [

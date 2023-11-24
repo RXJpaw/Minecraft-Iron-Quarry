@@ -20,6 +20,7 @@ import org.apache.logging.log4j.message.Message;
 import pw.rxj.iron_quarry.blockentities.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blockentities.ZBlockEntities;
 import pw.rxj.iron_quarry.blocks.ZBlocks;
+import pw.rxj.iron_quarry.event.GameLifecycleCallback;
 import pw.rxj.iron_quarry.factory.ZTradeOffers;
 import pw.rxj.iron_quarry.interfaces.BlockAttackable;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
@@ -45,7 +46,7 @@ public class Main implements ModInitializer {
 
 	public static final ScreenHandlerType<QuarryBlockScreenHandler> QUARRY_BLOCK_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(QuarryBlockScreenHandler::new);
 
-	public  static final ItemGroup ITEM_GROUP = FabricItemGroupBuilder.create(new Identifier(MOD_ID, "universal")).icon(() -> ZBlocks.NETHERITE_QUARRY.getBlockItem().getDefaultStack()).build();
+	public static final ItemGroup ITEM_GROUP = FabricItemGroupBuilder.create(new Identifier(MOD_ID, "universal")).icon(() -> ZBlocks.NETHERITE_QUARRY.getBlockItem().getDefaultStack()).build();
 
 
 	@Override
@@ -56,7 +57,7 @@ public class Main implements ModInitializer {
 		ZBlocks.register();
 		ZItems.register();
 
-		ZTradeOffers.register();
+		GameLifecycleCallback.IMMINENT_FIRST_RELOAD.register(ZTradeOffers::register);
 
 		AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
 			if(ZUtil.getBlockOrItem(player.getStackInHand(hand)) instanceof BlockAttackable itemStack) {
