@@ -37,14 +37,11 @@ public enum AugmentType {
     public boolean isEmpty() { return this.equals(AugmentType.EMPTY); }
     public boolean isPresent() { return !this.isEmpty(); }
 
+    /**
+     *  C(U) = B * (1 + 0.25 * U * (U + 1))
+     */
     public int getCapacity(int capacityUpgrades) {
-        float capacity = this.baseAmount;
-
-        for (int i = 0; i < capacityUpgrades; i++) {
-            capacity += this.baseAmount * 0.5F * (i + 1);
-        }
-
-        return (int) capacity;
+        return (int) (this.baseAmount * (1 + 0.25F * capacityUpgrades * (capacityUpgrades + 1)));
     }
 
     public static AugmentType from(String name){
