@@ -7,6 +7,8 @@
         "BootstrapClientMixin",
         "BootstrapResourceMixin",
         "BootstrapServerMixin",
+        "GrindstoneInsertionMixin",
+        "GrindstoneScreenHandlerMixin",
         "SmithingScreenHandlerMixin"
     ],
     "client": [
