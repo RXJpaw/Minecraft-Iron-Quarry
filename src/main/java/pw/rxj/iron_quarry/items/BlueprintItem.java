@@ -130,7 +130,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         } else if(isSealed(stack)) {
             int mined = getMinedChunks(stack);
             int mineable = getMineableChunks(stack);
-            int percentage = mineable > 0 ? mined/mineable : 0;
+            float percentage = mineable > 0 ? (float) mined / mineable : 0;
 
             MutableText LORE_MINED = ReadableString.translatable("item.iron_quarry.blueprint.lore.mined", mined, mineable, ZUtil.expandableFixedFloat(percentage * 100));
 
