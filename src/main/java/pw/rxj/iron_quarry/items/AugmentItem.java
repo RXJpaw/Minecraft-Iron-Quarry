@@ -361,7 +361,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             ItemStack[] matchingStacks = addition.getMatchingStacks();
             if(matchingStacks.length == 0) return List.of();
 
-            long time = System.currentTimeMillis() / 500;
+            long time = System.currentTimeMillis() / 1000;
             int stackIndex = (int) (time % matchingStacks.length);
 
             return List.of(matchingStacks[stackIndex].getItem());

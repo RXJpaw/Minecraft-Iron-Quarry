@@ -20,10 +20,14 @@
     "environment": "*",
     "entrypoints": {
         "main": [
-            "pw.rxj.iron_quarry.Main"
+            "pw.rxj.iron_quarry.Main",
+            "pw.rxj.iron_quarry.compat.Compat"
         ],
         "client": [
             "pw.rxj.iron_quarry.Client"
+        ],
+        "rei_client": [
+            "pw.rxj.iron_quarry.compat.rei.ReiClient"
         ]
     },
     "mixins": [
@@ -31,12 +35,13 @@
     ],
 
     "depends": {
+        "team_reborn_energy": "2.3.0",
         "fabricloader": ">=0.14.21",
         "fabric-api": "*",
         "minecraft": "~1.19.2",
         "java": ">=17"
     },
     "suggests": {
-        "another-mod": "*"
+        "roughlyenoughitems": "*"
     }
 }

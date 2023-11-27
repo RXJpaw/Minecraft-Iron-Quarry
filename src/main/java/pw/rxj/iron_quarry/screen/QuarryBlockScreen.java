@@ -14,6 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.blockentities.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blocks.QuarryBlock;
+import pw.rxj.iron_quarry.compat.Compat;
 import pw.rxj.iron_quarry.records.IoOption;
 import pw.rxj.iron_quarry.records.TexturePosition;
 import pw.rxj.iron_quarry.screenhandler.QuarryBlockScreenHandler;
@@ -63,7 +64,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     public QuarryBlockScreen(QuarryBlockScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
 
-        this.expandableMenuWidth = 100;
+        this.expandableMenuWidth = Compat.REI_LOADED ? 0 : 100;
         this.realBackgroundWidth = 176;
         this.realBackgroundHeight = 224;
 
@@ -188,6 +189,10 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             RenderSystem.setShaderTexture(0, OPTIONS_TEXTURE);
             drawTexture(matrices, ioConfigX, ioConfigY, 0, 0, 22, 22);
         }
+    }
+
+    public List<TrackableZone.Zone> getExclusionZones(){
+        return List.of(IoConfig.zone, AugmentsConfig.zone);
     }
 
     @Override
