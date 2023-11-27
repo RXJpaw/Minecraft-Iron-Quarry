@@ -12,7 +12,6 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -53,6 +52,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         super(settings);
     }
 
+
     public AugmentItem dynamicName(DynamicText dynamicText) {
         this.dynamicName = dynamicText;
 
@@ -64,6 +64,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     public @NotNull DynamicText getDynamicName() {
         return this.dynamicName;
     }
+
 
     public AugmentItem unique(AugmentType augmentType) {
         this.uniqueType = augmentType;
@@ -134,7 +135,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
         if(this.isUnique()) return;
 
-        if(Screen.hasShiftDown()) {
+        if(Screen.hasShiftDown() || ZItemTags.AUGMENT_CAPACITY_ENHANCERS.equals(this.getSmithingPreviewAdditionTag(stack))) {
             List<Item> used_upgrades = new ArrayList<>();
             List<Item> unused_upgrades = new ArrayList<>();
 
@@ -222,7 +223,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             ItemStack stack = output.copy();
 
             if(addition.toJson().equals(Ingredient.fromTag(ZItemTags.AUGMENT_CAPACITY_ENHANCERS).toJson())) {
-                augmentItem.putUpgrade(stack, Items.OXIDIZED_COPPER.getDefaultStack());
+                augmentItem.makeSmithingPreview(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
 
                 return stack;
             } else {
@@ -353,6 +354,19 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     public List<Item> getUpgrades(@NotNull ItemStack stack) {
+        if(this.isSmithingPreview(stack)) {
+            Ingredient addition = this.getSmithingPreviewAdditionIngredient(stack);
+            if(addition == null) return List.of();
+
+            ItemStack[] matchingStacks = addition.getMatchingStacks();
+            if(matchingStacks.length == 0) return List.of();
+
+            long time = System.currentTimeMillis() / 500;
+            int stackIndex = (int) (time % matchingStacks.length);
+
+            return List.of(matchingStacks[stackIndex].getItem());
+        }
+
         NbtCompound stackNbt = stack.copy().getOrCreateNbt();
         NbtList nbtList = stackNbt.getList("Upgrades", NbtElement.COMPOUND_TYPE);
 
