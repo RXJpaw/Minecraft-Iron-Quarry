@@ -38,9 +38,17 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         super(settings);
     }
 
+    public static boolean isOf(ItemStack stack){
+        return ZUtil.getBlockOrItem(stack) instanceof BlueprintItem;
+    }
+    public static boolean isNotOf(ItemStack stack){
+        return !isOf(stack);
+    }
+
     @Override
     public ItemStack getSmithingOutput(HandledSmithingRecipe handler, Inventory inventory) {
         ItemStack output = handler.getOutput().copy();
+        if(BlueprintItem.isNotOf(output)) return ItemStack.EMPTY;
         ItemStack base = inventory.getStack(0).copy();
 
         if(isSealed(base)) return ItemStack.EMPTY;
@@ -175,7 +183,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
     }
 
     public static boolean isSealed(ItemStack stack){
-        if(!(stack.getItem() instanceof BlueprintItem)) return false;
+        if(BlueprintItem.isNotOf(stack)) return false;
 
         NbtCompound nbt = stack.getNbt();
         if(nbt == null) return false;

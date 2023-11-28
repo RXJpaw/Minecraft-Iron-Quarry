@@ -2,7 +2,6 @@ package pw.rxj.iron_quarry.recipes;
 
 import com.google.gson.JsonObject;
 import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.recipe.Ingredient;
@@ -58,12 +57,7 @@ public class HandledCraftingRecipe extends ShapedRecipe {
     public ItemStack craft(CraftingInventory craftingInventory) {
         ItemStack output = getOutput().copy();
 
-        if(output.getItem() instanceof BlockItem blockItem) {
-            if(blockItem.getBlock() instanceof IHandledCrafting handledCrafting) {
-                return handledCrafting.getCraftingOutput(this, craftingInventory);
-            }
-
-        } else if (output.getItem() instanceof IHandledCrafting handledCrafting) {
+        if(ZUtil.getBlockOrItem(output) instanceof IHandledCrafting handledCrafting) {
             return handledCrafting.getCraftingOutput(this, craftingInventory);
         }
 

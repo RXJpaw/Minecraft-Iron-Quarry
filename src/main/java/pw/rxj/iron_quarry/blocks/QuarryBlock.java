@@ -72,6 +72,13 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         this.augmentLimit = augmentLimit;
     }
 
+    public static boolean isOf(ItemStack stack){
+        return ZUtil.getBlockOrItem(stack) instanceof QuarryBlock;
+    }
+    public static boolean isNotOf(ItemStack stack){
+        return !isOf(stack);
+    }
+
     public int getAugmentLimit(){
         return this.augmentLimit;
     }
@@ -199,10 +206,17 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
 
     @Override
     public ItemStack getCraftingOutput(HandledCraftingRecipe handler, CraftingInventory craftingInventory) {
-        ItemStack slot5 = craftingInventory.getStack(4).copy();
         ItemStack output = handler.getOutput().copy();
 
-        if(slot5.hasNbt()) output.setNbt(slot5.getNbt());
+        for (int i = 0; i < craftingInventory.size(); i++) {
+            ItemStack stack = craftingInventory.getStack(i).copy();
+
+            if(QuarryBlock.isOf(stack)) {
+                if(stack.hasNbt()) output.setNbt(stack.getNbt());
+
+                break;
+            }
+        }
 
         return output;
     }

@@ -52,6 +52,13 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         super(settings);
     }
 
+    public static boolean isOf(ItemStack stack){
+        return ZUtil.getBlockOrItem(stack) instanceof AugmentItem;
+    }
+    public static boolean isNotOf(ItemStack stack){
+        return !isOf(stack);
+    }
+
 
     public AugmentItem dynamicName(DynamicText dynamicText) {
         this.dynamicName = dynamicText;
@@ -77,6 +84,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     public @NotNull AugmentType getUniqueType() {
         return this.uniqueType;
     }
+
 
     @Override
     public Text getName(ItemStack stack) {
@@ -184,6 +192,8 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     @Override
     public ItemStack getSmithingOutput(HandledSmithingRecipe handler, Inventory inventory) {
         ItemStack base = inventory.getStack(0).copy();
+        if(AugmentItem.isNotOf(base)) return ItemStack.EMPTY;
+
         ItemStack addition = inventory.getStack(1).copy();
         AugmentStack augmentStack = AugmentStack.from(addition);
 
@@ -246,6 +256,8 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     @Override
     public Boolean handleSmithingTakeOutput(PlayerEntity player, Inventory inputInv, CraftingResultInventory outputInv, ItemStack output, ScreenHandlerContext context) {
         ItemStack base = inputInv.getStack(0).copy();
+        if(AugmentItem.isNotOf(base)) return false;
+
         ItemStack addition = inputInv.getStack(1).copy();
         AugmentStack augmentStack = AugmentStack.from(addition);
 

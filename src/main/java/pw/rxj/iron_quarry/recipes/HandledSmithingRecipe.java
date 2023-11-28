@@ -2,7 +2,6 @@ package pw.rxj.iron_quarry.recipes;
 
 import com.google.gson.JsonObject;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.recipe.Ingredient;
@@ -60,13 +59,8 @@ public class HandledSmithingRecipe extends SmithingRecipe {
     public ItemStack craft(Inventory inventory) {
         ItemStack output = getOutput().copy();
 
-        if(output.getItem() instanceof BlockItem blockItem) {
-            if(blockItem.getBlock() instanceof IHandledSmithing handledCrafting) {
-                return handledCrafting.getSmithingOutput(this, inventory);
-            }
-
-        } else if (output.getItem() instanceof IHandledSmithing handledCrafting) {
-            return handledCrafting.getSmithingOutput(this, inventory);
+        if(ZUtil.getBlockOrItem(output) instanceof IHandledSmithing handledSmithing) {
+            return handledSmithing.getSmithingOutput(this, inventory);
         }
 
         return super.craft(inventory);
