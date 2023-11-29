@@ -37,6 +37,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.Nullable;
@@ -294,7 +295,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             ChunkLoadingManager.removeTickets(thisServerWorld, thisPos);
         }
 
-        MachineUpgradesUtil upgradesUtil = new MachineUpgradesUtil(thisBlockEntity.MachineUpgradesInventory);
+        MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(thisBlockEntity.MachineUpgradesInventory);
         int threads = 1;
 
         if(thisBlockEntity.cooldown > 0) {
@@ -530,7 +531,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     @Nullable
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
-        return new QuarryBlockScreenHandler(syncId, playerInventory, OutputInventory, BatteryInputInventory, MachineUpgradesInventory, BlueprintInventory, EnergyContainer, Configuration);
+        return new QuarryBlockScreenHandler(syncId, playerInventory, OutputInventory, BatteryInputInventory, MachineUpgradesInventory,BlueprintInventory, EnergyContainer, Configuration, this.getQuarryBlock());
     }
 
     @Override
@@ -540,6 +541,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
 
     @Override
     public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buffer) {
+        buffer.writeIdentifier(Registry.BLOCK.getId(this.getQuarryBlock()));
         buffer.writeBlockPos(pos);
     }
 }

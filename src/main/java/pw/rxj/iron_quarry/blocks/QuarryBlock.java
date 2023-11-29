@@ -72,6 +72,10 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         this.augmentLimit = augmentLimit;
     }
 
+    public static QuarryBlock getFallback() {
+        return (QuarryBlock) ZBlocks.COPPER_QUARRY.getBlock();
+    }
+
     public static boolean isOf(ItemStack stack){
         return ZUtil.getBlockOrItem(stack) instanceof QuarryBlock;
     }
@@ -93,7 +97,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         ComplexInventory MachineUpgradesInventory = new ComplexInventory(this.augmentLimit);
         MachineUpgradesInventory.read(MachineUpgradesNbt.getList("Items", NbtElement.COMPOUND_TYPE));
 
-        MachineUpgradesUtil machineUpgradesUtil = new MachineUpgradesUtil(MachineUpgradesInventory);
+        MachineUpgradesUtil machineUpgradesUtil = MachineUpgradesUtil.from(MachineUpgradesInventory);
 
         DecimalFormat integerFormat = new DecimalFormat("#,##0");
         float yield_bonus = (machineUpgradesUtil.getFortuneMultiplier() - 1) * 100.0F;

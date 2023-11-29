@@ -15,7 +15,7 @@ public class MachineUpgradesUtil {
     private float speedMultiplier = 1;
     private float inefficiency = 1;
 
-    public MachineUpgradesUtil(Inventory inventory){
+    private MachineUpgradesUtil(Inventory inventory){
         for (int i = 0; i < inventory.size(); i++) {
             ItemStack stack = inventory.getStack(i);
 
@@ -34,6 +34,10 @@ public class MachineUpgradesUtil {
 
             this.inefficiency += inefficiency/100;
         }
+    }
+
+    public static MachineUpgradesUtil from(Inventory inventory) {
+        return new MachineUpgradesUtil(inventory);
     }
 
     public boolean hasSilkTouch() { return this.hasSilkTouch; }

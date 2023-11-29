@@ -7,7 +7,9 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import pw.rxj.iron_quarry.Main;
+import pw.rxj.iron_quarry.blocks.QuarryBlock;
 import pw.rxj.iron_quarry.items.AugmentItem;
 import pw.rxj.iron_quarry.items.BlueprintItem;
 import pw.rxj.iron_quarry.types.Face;
@@ -23,24 +25,28 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
     private final ComplexInventory BatteryInputInventory;
     private final ComplexEnergyContainer EnergyContainer;
     private final ComplexInventory MachineUpgradesInventory;
+    private QuarryBlock quarryBlock;
     private BlockPos blockPos;
 
     //This constructor gets called on the client when the server wants it to open the screenHandler,
     //The client will call the other constructor with an empty Inventory and the screenHandler will automatically
     //sync this empty inventory with the inventory on the server.
     public QuarryBlockScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buffer) {
-        this(syncId, playerInventory, new ComplexInventory(18), new ComplexInventory(1), new ComplexInventory(6), new ComplexInventory(1), new ComplexEnergyContainer(), new MachineConfiguration());
+        this(syncId, playerInventory, new ComplexInventory(18), new ComplexInventory(1), new ComplexInventory(6),
+                new ComplexInventory(1), new ComplexEnergyContainer(), new MachineConfiguration(), QuarryBlock.getFallback());
 
-        blockPos = buffer.readBlockPos();
+        this.quarryBlock = (QuarryBlock) Registry.BLOCK.get(buffer.readIdentifier());
+        this.blockPos = buffer.readBlockPos();
     }
 
     //This constructor gets called from the BlockEntity on the server without calling the other constructor first, the server knows the inventory of the container
     //and can therefore directly provide it as an argument. This inventory will then be synced to the client.
     public QuarryBlockScreenHandler(int syncId, PlayerInventory playerInventory, ComplexInventory outputInventory, ComplexInventory batteryInputInventory, ComplexInventory machineUpgradesInventory,
-                                                ComplexInventory blueprintInventory, ComplexEnergyContainer energyContainer, MachineConfiguration configuration) {
+                                                ComplexInventory blueprintInventory, ComplexEnergyContainer energyContainer, MachineConfiguration configuration, QuarryBlock quarryBlock) {
         super(Main.QUARRY_BLOCK_SCREEN_HANDLER, syncId);
 
-        blockPos = BlockPos.ORIGIN;
+        this.quarryBlock = quarryBlock;
+        this.blockPos = BlockPos.ORIGIN;
 
         checkSize(machineUpgradesInventory, 6);
         checkSize(batteryInputInventory, 1);
@@ -66,7 +72,11 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
                 this.addSlot(new ManagedSlot(machineUpgradesInventory, (row * 3) + slot, 199 + slot * SLOT_SIZE, 52 + row * SLOT_SIZE) {
                     @Override
                     public boolean canInsert(ItemStack stack) {
-                        return stack.getItem() instanceof AugmentItem;
+                        return super.canInsert(stack) && stack.getItem() instanceof AugmentItem;
+                    }
+                    @Override
+                    public boolean isLocked() {
+                        return super.isLocked() || this.getIndex() >= QuarryBlockScreenHandler.this.quarryBlock.getAugmentLimit();
                     }
                 });
             }

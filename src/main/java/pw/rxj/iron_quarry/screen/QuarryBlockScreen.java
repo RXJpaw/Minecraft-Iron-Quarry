@@ -61,6 +61,20 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
 
     public static final List<Integer> AUGMENT_SLOTS = List.of(0, 1, 2, 3, 4, 5);
 
+    private void drawLockedSlot(MatrixStack matrices, Slot slot, int width, int height) {
+        if(width < 0) Main.LOGGER.warn("Tried to drawLockedSlot with width < 0 ({})", width);
+        if(width > 18) Main.LOGGER.warn("Tried to drawLockedSlot with width > 18 ({})", width);
+        if(height < 0) Main.LOGGER.warn("Tried to drawLockedSlot with height < 0 ({})", height);
+        if(height > 18) Main.LOGGER.warn("Tried to drawLockedSlot with height > 18 ({})", height);
+
+        int originalShaderTexture = RenderSystem.getShaderTexture(0);
+
+        RenderSystem.setShaderTexture(0, AUGMENTATION_CONFIGURATION_TEXTURE);
+        drawTexture(matrices, this.x + slot.x - 1, this.y + slot.y - 1, 100, 0, width, height);
+
+        RenderSystem.setShaderTexture(0, originalShaderTexture);
+    }
+
     public QuarryBlockScreen(QuarryBlockScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
 
@@ -130,13 +144,16 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             drawTexture(matrices, augmentsMenuX, augmentsMenuY, 0, 0, augmentsMenuWidth, augmentsMenuHeight);
 
             for (int slotIndex : AUGMENT_SLOTS) {
-                Slot slot = handler.slots.get(slotIndex);
+                ManagedSlot slot = (ManagedSlot) handler.slots.get(slotIndex);
 
-                int bgX = slot.x + 8;
-                int bgY = slot.y + 8;
-                boolean slotEnabled = (augmentsMenuWidth + this.realBackgroundWidth >= bgX) && (augmentsMenuHeight + 26 >= bgY);
+                int testX = augmentsMenuWidth + this.realBackgroundWidth;
+                int testY = augmentsMenuHeight + 26;
+
+                boolean slotEnabled = (testX >= slot.x + 8) && (testY >= slot.y + 8);
+                boolean slotVisible = (testX >= slot.x - 1) && (testY >= slot.y - 1);
 
                 if(handler.slots.get(slotIndex) instanceof ManagedSlot managedSlot) managedSlot.setEnabled(slotEnabled);
+                if(slot.isLocked() && slotVisible) drawLockedSlot(matrices, slot, Math.min(testX - slot.x + 1, 18), Math.min(testY - slot.y + 1, 18));
             }
         } else {
             RenderSystem.setShaderTexture(0, OPTIONS_TEXTURE);
