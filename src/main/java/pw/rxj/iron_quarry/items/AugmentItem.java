@@ -11,6 +11,7 @@ import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -22,6 +23,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -404,5 +406,35 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         Ingredient ingredient = Ingredient.fromTag(itemTag);
 
         return upgradeList.stream().filter(item -> ingredient.test(item.getDefaultStack())).toList();
+    }
+
+    public ItemStack withAllCapacityEnhancers() {
+        Ingredient ingredient = Ingredient.fromTag(ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
+        ItemStack stack = new ItemStack(this);
+
+        for (ItemStack enhancer : ingredient.getMatchingStacks()) {
+            this.putUpgrade(stack, enhancer);
+        }
+
+        return stack;
+    }
+    public ItemStack withAllEnhancers(AugmentType augmentType) {
+        ItemStack stack = this.withAllCapacityEnhancers();
+
+        this.setType(stack, augmentType);
+        this.setAmount(stack, augmentType.getCapacity(CAPACITY_UPGRADE_SLOTS));
+
+        return stack;
+    }
+
+    @Override
+    public void appendStacks(ItemGroup group, DefaultedList<ItemStack> stacks) {
+        super.appendStacks(group, stacks);
+
+        if(!this.isUnique() && this.isIn(group)) {
+            stacks.add(this.withAllCapacityEnhancers());
+            stacks.add(this.withAllEnhancers(AugmentType.SPEED));
+            stacks.add(this.withAllEnhancers(AugmentType.FORTUNE));
+        }
     }
 }

@@ -1,10 +1,13 @@
 package pw.rxj.iron_quarry.items;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.NbtCompound;
@@ -15,6 +18,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
@@ -354,5 +358,24 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         int currentChunkZ = minChunkZ + offsetChunkZ;
 
         return new ChunkPos(currentChunkX, currentChunkZ);
+    }
+
+    @Override
+    public void appendStacks(ItemGroup group, DefaultedList<ItemStack> stacks) {
+        super.appendStacks(group, stacks);
+
+        if(this.isIn(group)) {
+            ItemStack stack = new ItemStack(this);
+
+            MinecraftClient minecraftClient = MinecraftClient.getInstance();
+            ClientWorld clientWorld = minecraftClient.world;
+
+            this.setWorld(stack, clientWorld == null ? World.OVERWORLD : clientWorld.getRegistryKey());
+            this.setFirstPos(stack, new BlockPos(10000, 64, 10000));
+            this.setSecondPos(stack, new BlockPos(-10000, -64, -10000));
+            this.setSealed(stack, true);
+
+            stacks.add(stack);
+        }
     }
 }
