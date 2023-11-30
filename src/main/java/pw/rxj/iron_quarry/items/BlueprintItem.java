@@ -51,14 +51,11 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         if(BlueprintItem.isNotOf(output)) return ItemStack.EMPTY;
         ItemStack base = inventory.getStack(0).copy();
 
-        if(isSealed(base)) return ItemStack.EMPTY;
-        if(getFirstPos(base) == null) return ItemStack.EMPTY;
-        if(getSecondPos(base) == null) return ItemStack.EMPTY;
+        if(this.isSealed(base)) return ItemStack.EMPTY;
+        if(this.getFirstPos(base) == null) return ItemStack.EMPTY;
+        if(this.getSecondPos(base) == null) return ItemStack.EMPTY;
 
-        NbtCompound nbtCompound = base.getOrCreateNbt();
-        nbtCompound.putBoolean("Sealed", true);
-
-        output.setNbt(nbtCompound.copy());
+        this.setSealed(output, true);
 
         return output;
     }
@@ -67,8 +64,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         ItemStack preview = output.copy();
 
         if(addition.test(ZItems.CONDUCTIVE_AMETHYST.getItem().getDefaultStack())) {
-            NbtCompound nbtCompound = preview.getOrCreateNbt();
-            nbtCompound.putBoolean("Sealed", true);
+            this.setSealed(preview, true);
 
             return preview;
         }
@@ -78,7 +74,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
     @Override
     public boolean isGrindable(ItemStack stack) {
-        return isSealed(stack);
+        return this.isSealed(stack);
     }
     @Override
     public ItemStack getGrindingOutput(ItemStack stack, ItemStack follower) {
@@ -96,7 +92,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
     @Override
     public void handleItemEntity(ItemEntity itemEntity) {
-        if(isSealed(itemEntity.getStack())) itemEntity.setInvulnerable(true);
+        if(this.isSealed(itemEntity.getStack())) itemEntity.setInvulnerable(true);
     }
 
     private NbtCompound getBlockPosNbt(BlockPos blockPos) {
@@ -114,11 +110,11 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        RegistryKey<World> worldKey = getWorldRegistryKey(stack);
+        RegistryKey<World> worldKey = this.getWorldRegistryKey(stack);
         Identifier worldId = worldKey != null ? worldKey.getValue() : null;
 
-        BlockPos firstPos = getFirstPos(stack);
-        BlockPos secondPos = getSecondPos(stack);
+        BlockPos firstPos = this.getFirstPos(stack);
+        BlockPos secondPos = this.getSecondPos(stack);
 
         MutableText LORE_POS_EMPTY = ReadableString.translatable("item.iron_quarry.blueprint.lore.empty");
 
@@ -135,9 +131,9 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
             tooltip.add(Text.empty());
             tooltip.add(LORE_UNBOUND);
-        } else if(isSealed(stack)) {
-            int mined = getMinedChunks(stack);
-            int mineable = getMineableChunks(stack);
+        } else if(this.isSealed(stack)) {
+            int mined = this.getMinedChunks(stack);
+            int mineable = this.getMineableChunks(stack);
             float percentage = mineable > 0 ? (float) mined / mineable : 0;
 
             MutableText LORE_MINED = ReadableString.translatable("item.iron_quarry.blueprint.lore.mined", mined, mineable, ZUtil.expandableFixedFloat(percentage * 100));
@@ -150,7 +146,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
                 tooltip.add(LORE_COMPLETED);
             }
         } else {
-            int mineable = getMineableChunks(stack);
+            int mineable = this.getMineableChunks(stack);
 
             MutableText LORE_SELECTED = ReadableString.translatable("item.iron_quarry.blueprint.lore.selected", mineable);
 
@@ -162,11 +158,11 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
     @Override
     public Text getName(ItemStack stack) {
         String translationKey = "item.iron_quarry.blueprint";
-        if(isSealed(stack)) translationKey += ".sealed";
+        if(this.isSealed(stack)) translationKey += ".sealed";
 
         MutableText itemName = Text.translatable(translationKey);
 
-        if(getFirstPos(stack) == null || getSecondPos(stack) == null) {
+        if(this.getFirstPos(stack) == null || this.getSecondPos(stack) == null) {
             itemName.append(" ").append(Text.translatable("item.iron_quarry.blueprint.unbound"));
         } else if(allChunksMined(stack)) {
             itemName.append(" ").append(Text.translatable("item.iron_quarry.blueprint.completed"));
@@ -176,15 +172,20 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
     }
     @Override
     public Rarity getRarity(ItemStack stack) {
-        return BlueprintItem.isSealed(stack) ? Rarity.EPIC : Rarity.UNCOMMON;
+        return this.isSealed(stack) ? Rarity.EPIC : Rarity.UNCOMMON;
     }
     public boolean hasGlint(ItemStack stack) {
         return isSealed(stack);
     }
 
-    public static boolean isSealed(ItemStack stack){
-        if(BlueprintItem.isNotOf(stack)) return false;
-
+    public void setSealed(ItemStack stack, boolean sealed){
+        if(sealed) {
+            stack.getOrCreateNbt().putBoolean("Sealed", true);
+        } else if(stack.getNbt() != null) {
+            stack.getNbt().remove("Sealed");
+        }
+    }
+    public boolean isSealed(ItemStack stack){
         NbtCompound nbt = stack.getNbt();
         if(nbt == null) return false;
 
@@ -198,13 +199,12 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         PlayerEntity player = context.getPlayer();
         if(player == null) return ActionResult.FAIL;
         ItemStack stack = context.getStack();
-        if(isSealed(stack)) return ActionResult.FAIL;
-
-        setWorld(stack, context.getWorld());
+        if(this.isSealed(stack)) return ActionResult.FAIL;
 
         BlockPos targetedPos = context.getBlockPos();
-        NbtCompound blockPos = getBlockPosNbt(targetedPos);
-        stack.getOrCreateNbt().put("SecondPosition", blockPos);
+
+        this.setWorld(stack, context.getWorld());
+        this.setSecondPos(stack, targetedPos);
 
         player.sendMessage(Text.of(String.format("Second position set to: §n%s", ReadableString.from(targetedPos).orElse("<error>"))), true);
 
@@ -215,30 +215,30 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         if(!hand.equals(Hand.MAIN_HAND)) return ActionResult.PASS;
 
         ItemStack stack = player.getStackInHand(hand);
-        if(isSealed(stack)) return ActionResult.FAIL;
+        if(this.isSealed(stack)) return ActionResult.FAIL;
 
-        setWorld(stack, world);
-
-        NbtCompound blockPos = getBlockPosNbt(targetedPos);
-        stack.getOrCreateNbt().put("FirstPosition", blockPos);
+        this.setWorld(stack, world);
+        this.setFirstPos(stack, targetedPos);
 
         player.sendMessage(Text.of(String.format("First position set to: §n%s", ReadableString.from(targetedPos).orElse("<error>"))), true);
 
         return ActionResult.SUCCESS;
     }
 
-    public static void setWorld(ItemStack stack, World world) {
-        RegistryKey<World> oldWorldKey = getWorldRegistryKey(stack);
-        RegistryKey<World> newWorldKey = world.getRegistryKey();
+    public void setWorld(ItemStack stack, World world) {
+        this.setWorld(stack, world.getRegistryKey());
+    }
+    public void setWorld(ItemStack stack, RegistryKey<World> newWorldKey) {
+        RegistryKey<World> oldWorldKey = this.getWorldRegistryKey(stack);
 
         if(!ZUtil.equals(oldWorldKey, newWorldKey)) {
-            resetPositions(stack);
+            this.resetPositions(stack);
         }
 
         String stringifiedKey = ZUtil.toString(newWorldKey);
         stack.getOrCreateNbt().putString("World", stringifiedKey);
     }
-    public static @Nullable RegistryKey<World> getWorldRegistryKey(ItemStack stack) {
+    public @Nullable RegistryKey<World> getWorldRegistryKey(ItemStack stack) {
         NbtCompound itemNbt = stack.getNbt();
         if(itemNbt == null) return null;
 
@@ -246,14 +246,20 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         return ZUtil.toRegistryKey(worldKey);
     }
 
-    public static void resetPositions(ItemStack stack) {
+    public void resetPositions(ItemStack stack) {
         NbtCompound nbt = stack.getNbt();
         if(nbt == null) return;
 
-        nbt.remove("SecondPosition");
         nbt.remove("FirstPosition");
+        nbt.remove("SecondPosition");
     }
-    public static BlockPos getFirstPos(ItemStack stack) {
+    public void setFirstPos(ItemStack stack, BlockPos blockPos) {
+        stack.getOrCreateNbt().put("FirstPosition", this.getBlockPosNbt(blockPos));
+    }
+    public void setSecondPos(ItemStack stack, BlockPos blockPos) {
+        stack.getOrCreateNbt().put("SecondPosition", this.getBlockPosNbt(blockPos));
+    }
+    public BlockPos getFirstPos(ItemStack stack) {
         NbtCompound itemNbt = stack.getNbt();
         if(itemNbt == null) return null;
         NbtCompound firstPosNbt = itemNbt.getCompound("FirstPosition");
@@ -261,7 +267,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
         return new BlockPos(firstPosNbt.getInt("x"), firstPosNbt.getInt("y"), firstPosNbt.getInt("z"));
     }
-    public static BlockPos getSecondPos(ItemStack stack) {
+    public BlockPos getSecondPos(ItemStack stack) {
         NbtCompound itemNbt = stack.getNbt();
         if(itemNbt == null) return null;
         NbtCompound secondPosNbt = itemNbt.getCompound("SecondPosition");
@@ -270,16 +276,16 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         return new BlockPos(secondPosNbt.getInt("x"), secondPosNbt.getInt("y"), secondPosNbt.getInt("z"));
     }
 
-    public static int getMinedChunks(ItemStack stack) {
+    public int getMinedChunks(ItemStack stack) {
         NbtCompound itemNbt = stack.getNbt();
         if(itemNbt == null) return 0;
 
         return itemNbt.getInt("MinedChunks");
     }
-    public static int getMineableChunks(ItemStack stack) {
-        BlockPos firstPos = getFirstPos(stack);
+    public int getMineableChunks(ItemStack stack) {
+        BlockPos firstPos = this.getFirstPos(stack);
         if(firstPos == null) return 0;
-        BlockPos secondPos = getSecondPos(stack);
+        BlockPos secondPos = this.getSecondPos(stack);
         if(secondPos == null) return 0;
 
         int firstChunkX = firstPos.getX() >> 4;
@@ -291,40 +297,40 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         int chunksOnZ = Math.abs(firstChunkZ - secondChunkZ) + 1;
         return chunksOnX * chunksOnZ;
     }
-    public static boolean allChunksMined(ItemStack stack) {
-        int mineable = getMineableChunks(stack);
+    public boolean allChunksMined(ItemStack stack) {
+        int mineable = this.getMineableChunks(stack);
         if(mineable == 0) return false;
-        int mined = getMinedChunks(stack);
+        int mined = this.getMinedChunks(stack);
 
         return mined == mineable;
     }
-    public static void increaseMinedChunks(ItemStack stack) {
-        increaseMinedChunks(stack, 1);
+    public void increaseMinedChunks(ItemStack stack) {
+        this.increaseMinedChunks(stack, 1);
     }
-    public static void increaseMinedChunks(ItemStack stack, int amount) {
-        int minedChunks = getMinedChunks(stack);
+    public void increaseMinedChunks(ItemStack stack, int amount) {
+        int minedChunks = this.getMinedChunks(stack);
 
         stack.getOrCreateNbt().putInt("MinedChunks", minedChunks + amount);
     }
 
-    public static List<@NotNull ChunkPos> getNextChunkPos(ItemStack stack, int maxPositions){
+    public List<@NotNull ChunkPos> getNextChunkPos(ItemStack stack, int maxPositions){
         List<@NotNull ChunkPos> chunkPosList = new ArrayList<>();
 
         for (int i = 0; i < maxPositions; i++) {
-            ChunkPos chunkPos = getNextChunkPosWithOffset(stack, i);
+            ChunkPos chunkPos = this.getNextChunkPosWithOffset(stack, i);
             if(chunkPos == null) return chunkPosList;
             chunkPosList.add(chunkPos);
         }
 
         return chunkPosList;
     }
-    public static @Nullable ChunkPos getNextChunkPos(ItemStack stack) {
-        return getNextChunkPosWithOffset(stack, 0);
+    public @Nullable ChunkPos getNextChunkPos(ItemStack stack) {
+        return this.getNextChunkPosWithOffset(stack, 0);
     }
-    public static @Nullable ChunkPos getNextChunkPosWithOffset(ItemStack stack, int offset){
-        BlockPos firstPos = getFirstPos(stack);
+    public @Nullable ChunkPos getNextChunkPosWithOffset(ItemStack stack, int offset){
+        BlockPos firstPos = this.getFirstPos(stack);
         if(firstPos == null) return null;
-        BlockPos secondPos = getSecondPos(stack);
+        BlockPos secondPos = this.getSecondPos(stack);
         if(secondPos == null) return null;
 
         int firstChunkX = firstPos.getX() >> 4;
@@ -336,7 +342,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         int chunksOnZ = Math.abs(firstChunkZ - secondChunkZ) + 1;
         int chunksToMine = chunksOnX * chunksOnZ;
 
-        int currentChunkIndex = getMinedChunks(stack) + offset;
+        int currentChunkIndex = this.getMinedChunks(stack) + offset;
         if(currentChunkIndex >= chunksToMine) return null;
 
         int minChunkX = Math.min(firstChunkX, secondChunkX);
