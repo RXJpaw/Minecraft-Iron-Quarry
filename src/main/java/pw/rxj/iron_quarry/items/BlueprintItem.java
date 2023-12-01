@@ -145,7 +145,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
             tooltip.add(Text.empty());
             tooltip.add(LORE_MINED);
 
-            if(allChunksMined(stack)) {
+            if(this.allChunksMined(stack)) {
                 MutableText LORE_COMPLETED = ReadableString.translatable("item.iron_quarry.blueprint.lore.completed");
                 tooltip.add(LORE_COMPLETED);
             }
@@ -168,7 +168,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
         if(this.getFirstPos(stack) == null || this.getSecondPos(stack) == null) {
             itemName.append(" ").append(Text.translatable("item.iron_quarry.blueprint.unbound"));
-        } else if(allChunksMined(stack)) {
+        } else if(this.allChunksMined(stack)) {
             itemName.append(" ").append(Text.translatable("item.iron_quarry.blueprint.completed"));
         }
 

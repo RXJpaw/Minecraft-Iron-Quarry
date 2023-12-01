@@ -37,6 +37,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
@@ -80,7 +81,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     @Override
     public void markRemoved() {
         if(world == null) return;
-        if(world.isClient) return;
+        if(world.isClient()) return;
 
         ChunkLoadingManager.removeTickets((ServerWorld) this.world, this.pos);
 
@@ -151,11 +152,11 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     }
 
     public void attemptCharge() {
-        if (world == null) return;
-        if (world.isClient) return;
+        if(world == null) return;
+        if(world.isClient()) return;
 
         long chargeEnergy = Math.min(EnergyContainer.getFreeSpace(), EnergyContainer.getMaxInsert(null));
-        if (chargeEnergy <= 0) return;
+        if(chargeEnergy <= 0) return;
 
         if(BatteryInputInventory.getStack(0).isEmpty()) return;
 
@@ -270,14 +271,16 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     private int cooldown = 0;
 
     public static void tick(World thisWorld, BlockPos thisPos, BlockState thisBlockState, QuarryBlockEntity thisBlockEntity) {
-        if (thisWorld == null) return;
-        if (thisWorld.isClient) return;
+        if(thisWorld == null) return;
+        if(thisWorld.isClient()) return;
+
+        Random random = thisWorld.random;
 
         ServerWorld thisServerWorld = (ServerWorld) thisWorld;
         MinecraftServer minecraftServer = thisServerWorld.getServer();
 
         QuarryBlock thisBlock = thisBlockEntity.getQuarryBlock();
-        if (thisBlock == null) return;
+        if(thisBlock == null) return;
 
         thisBlockEntity.attemptCharge();
         thisBlockEntity.attemptPushIo();
@@ -293,14 +296,23 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             ChunkLoadingManager.removeTickets(thisServerWorld, thisPos);
         }
 
-        if (!(blueprintStack.getItem() instanceof BlueprintItem blueprintItem)) return;
-        if(!blueprintItem.isSealed(blueprintStack)) return;
+        if(blueprintStack.isEmpty()) return;
+        if(!(blueprintStack.getItem() instanceof BlueprintItem blueprintItem)) return;
+        if(!blueprintItem.isSealed(blueprintStack) || blueprintItem.allChunksMined(blueprintStack)) return;
+
+        BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack);
+        if(firstPos == null) return;
+        BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack);
+        if(secondPos == null) return;
 
         RegistryKey<World> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack);
         ServerWorld serverWorldToBreak = minecraftServer.getWorld(worldRegistryKey);
         if(serverWorldToBreak == null) return;
 
         MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(thisBlockEntity.MachineUpgradesInventory);
+        long minimumEnergyConsumption = thisBlock.getActualEnergyConsumption(upgradesUtil, Blocks.STONE);
+        if(thisBlockEntity.EnergyContainer.getStored() < minimumEnergyConsumption) return;
+
         int threads = 1;
 
         if(thisBlockEntity.cooldown > 0) {
@@ -315,19 +327,14 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
                     float messy_threads = 1.0F / messy_tpo;
                     threads = (int) Math.floor(messy_threads);
 
-                    if(Math.random() <= messy_threads - threads) threads++;
+                    if(random.nextFloat() <= messy_threads - threads) threads++;
                 } else {
-                    if(Math.random() <= operation_leftover) ceiled_tpo--;
+                    if(random.nextFloat() <= operation_leftover) ceiled_tpo--;
                 }
             }
 
             thisBlockEntity.cooldown = ceiled_tpo - 1;
         }
-
-        BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack);
-        if(firstPos == null) return;
-        BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack);
-        if(secondPos == null) return;
 
         ArrayList<BlockPos> MiningQueue = thisBlockEntity.MiningQueue;
 
@@ -339,7 +346,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
                 thisBlockEntity.currentChunk = null;
             }
 
-            List<ChunkPos> chunkPosList = blueprintItem.getNextChunkPos(blueprintStack, 5);
+            List<ChunkPos> chunkPosList = blueprintItem.getNextChunkPos(blueprintStack, 2);
             if(chunkPosList.isEmpty()) return;
 
             ChunkPos chunkPos = chunkPosList.get(0);
