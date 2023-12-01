@@ -6,88 +6,128 @@ import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import pw.rxj.iron_quarry.records.ChunkTicket;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class ChunkLoadingManager {
-    private static final ChunkTicketType<ChunkPos> QUARRY_EXPRESS = ChunkTicketType.create("iron_quarry:quarry_express", Comparator.comparingLong(ChunkPos::toLong));
-    private static final List<ChunkTicket> LOADED_CHUNKS = new ArrayList<>();
-    private static boolean listenerRegistered = false;
+    private static final ChunkTicketType<ChunkPos> QUARRY_EXPRESS = ChunkTicketType.create("iron_quarry:quarry_express", Comparator.comparingLong(ChunkPos::toLong), 20);
+    private static final List<Ticket> LOADED_CHUNKS = new ArrayList<>();
+    private static boolean initialized = false;
 
-    public static ChunkTicket addTicket(ServerWorld serverWorld, ChunkPos chunkPos, ServerWorld sourceWorld, BlockPos sourcePos) {
-        Optional<ChunkTicket> existingCheck = getTicket(serverWorld, chunkPos, sourceWorld, sourcePos);
-        if(existingCheck.isPresent()) return existingCheck.get();
+    public static void addTicket(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceBlockPos) {
+        Optional<Ticket> existingCheck = getTicket(loadedWorld, loadedChunkPos, sourceWorld, sourceBlockPos);
+        if(existingCheck.isPresent()) return;
 
-        ChunkTicket chunkTicket = new ChunkTicket(serverWorld, chunkPos, sourceWorld, sourcePos);
-        LOADED_CHUNKS.add(chunkTicket);
-        addTicket(chunkTicket);
-
-        return chunkTicket;
+        Ticket ticket = Ticket.from(loadedWorld, loadedChunkPos, sourceWorld, sourceBlockPos);
+        LOADED_CHUNKS.add(ticket);
+        addTicket(ticket);
     }
-    public static void addTicket(ChunkTicket chunkTicket) {
-        ChunkPos chunkPos = chunkTicket.chunkPos();
+    private static void addTicket(Ticket ticket) {
+        ChunkPos chunkPos = ticket.getLoadedChunkPos();
 
-        chunkTicket.serverWorld().getChunkManager().addTicket(QUARRY_EXPRESS, chunkPos, 1, chunkPos);
+        ticket.getLoadedWorld().getChunkManager().addTicket(QUARRY_EXPRESS, chunkPos, 0, chunkPos);
     }
 
-    public static Optional<ChunkTicket> getTicket(ServerWorld serverWorld, ChunkPos chunkPos, ServerWorld sourceWorld, BlockPos sourcePos){
+    private static Optional<Ticket> getTicket(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceBlockPos){
         return LOADED_CHUNKS.stream()
-                .filter(chunkTicket -> chunkTicket.serverWorld().equals(serverWorld))
-                .filter(chunkTicket -> chunkTicket.sourcePos().equals(sourcePos))
-                .filter(chunkTicket -> chunkTicket.sourceWorld().equals(sourceWorld))
-                .filter(chunkTicket -> chunkTicket.chunkPos().equals(chunkPos))
+                .filter(ticket -> ticket.getLoadedWorld().equals(loadedWorld))
+                .filter(ticket -> ticket.getLoadedChunkPos().equals(loadedChunkPos))
+                .filter(ticket -> ticket.getSourceWorld().equals(sourceWorld))
+                .filter(ticket -> ticket.getSourceBlockPos().equals(sourceBlockPos))
                 .findFirst();
     }
-    public static List<ChunkTicket> getTickets(ServerWorld sourceWorld, BlockPos sourcePos){
+    private static List<Ticket> getTickets(ServerWorld sourceWorld, BlockPos sourceBlockPos){
         return LOADED_CHUNKS.stream()
-                .filter(chunkTicket -> chunkTicket.sourceWorld().equals(sourceWorld))
-                .filter(chunkTicket -> chunkTicket.sourcePos().equals(sourcePos))
+                .filter(ticket -> ticket.getSourceWorld().equals(sourceWorld))
+                .filter(ticket -> ticket.getSourceBlockPos().equals(sourceBlockPos))
                 .toList();
     }
 
-    public static void removeTicket(ServerWorld serverWorld, ChunkPos chunkPos, ServerWorld sourceWorld, BlockPos sourcePos) {
-        getTicket(serverWorld, chunkPos, sourceWorld, sourcePos).ifPresent(ChunkLoadingManager::removeTicket);
+    public static void removeTicket(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceBlockPos) {
+        getTicket(loadedWorld, loadedChunkPos, sourceWorld, sourceBlockPos).ifPresent(ChunkLoadingManager::removeTicket);
     }
-    public static void removeTickets(ServerWorld sourceWorld, BlockPos sourcePos) {
-        getTickets(sourceWorld, sourcePos).forEach(ChunkLoadingManager::removeTicket);
+    public static void removeTickets(ServerWorld sourceWorld, BlockPos sourceBlockPos) {
+        getTickets(sourceWorld, sourceBlockPos).forEach(ChunkLoadingManager::removeTicket);
     }
-    public static void removeTicket(ChunkTicket chunkTicket) {
-        ChunkPos chunkPos = chunkTicket.chunkPos();
-
-        chunkTicket.serverWorld().getChunkManager().removeTicket(QUARRY_EXPRESS, chunkPos, 1, chunkPos);
-
-        LOADED_CHUNKS.remove(chunkTicket);
+    private static void removeTicket(Ticket ticket) {
+        ticket.markRemoved();
     }
 
-    public static boolean isTicketPresent(ServerWorld serverWorld, ChunkPos chunkPos, ServerWorld sourceWorld, BlockPos sourcePos) {
-        return getTicket(serverWorld, chunkPos, sourceWorld, sourcePos).isPresent();
+    public static boolean isTicketEmpty(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceBlockPos) {
+        return getTicket(loadedWorld, loadedChunkPos, sourceWorld, sourceBlockPos).isEmpty();
     }
-    public static boolean isTicketEmpty(ServerWorld serverWorld, ChunkPos chunkPos, ServerWorld sourceWorld, BlockPos sourcePos) {
-        return getTicket(serverWorld, chunkPos, sourceWorld, sourcePos).isEmpty();
+    public static boolean isTicketPresent(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceBlockPos) {
+        return !isTicketEmpty(loadedWorld, loadedChunkPos, sourceWorld, sourceBlockPos);
     }
 
     public static boolean isEmpty(){
         return LOADED_CHUNKS.isEmpty();
+    }
+    public static boolean isPresent(){
+        return !isEmpty();
     }
     public static int size() {
         return LOADED_CHUNKS.size();
     }
 
     public static void register() {
-        if(listenerRegistered) return;
-        listenerRegistered = true;
+        if(initialized) return; initialized = true;
 
         ServerTickEvents.START_WORLD_TICK.register(serverWorld -> {
             if(!LOADED_CHUNKS.isEmpty()) serverWorld.resetIdleTimeout();
+            Iterator<Ticket> iterator = LOADED_CHUNKS.iterator();
 
-            LOADED_CHUNKS.forEach(ChunkLoadingManager::addTicket);
+            while(iterator.hasNext()) {
+                Ticket ticket = iterator.next();
+
+                if(ticket.isMarkedForRemoval()) {
+                    iterator.remove();
+                } else {
+                    addTicket(ticket);
+                }
+            }
         });
 
         ServerWorldEvents.UNLOAD.register((server, serverWorld) -> LOADED_CHUNKS.clear());
         ServerWorldEvents.LOAD.register((server, serverWorld) -> LOADED_CHUNKS.clear());
+    }
+
+    private static class Ticket {
+        private final ServerWorld loadedWorld;
+        private final ChunkPos loadedChunkPos;
+        private final ServerWorld sourceWorld;
+        private final BlockPos sourceChunkPos;
+        private boolean markedForRemoval = false;
+
+        private Ticket(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceChunkPos) {
+            this.loadedWorld = loadedWorld;
+            this.loadedChunkPos = loadedChunkPos;
+            this.sourceWorld = sourceWorld;
+            this.sourceChunkPos = sourceChunkPos;
+        }
+
+        public static Ticket from(ServerWorld serverWorld, ChunkPos chunkPos, ServerWorld sourceWorld, BlockPos sourcePos) {
+            return new Ticket(serverWorld, chunkPos, sourceWorld, sourcePos);
+        }
+
+        public ServerWorld getLoadedWorld() {
+            return this.loadedWorld;
+        }
+        public ChunkPos getLoadedChunkPos() {
+            return this.loadedChunkPos;
+        }
+        public ServerWorld getSourceWorld() {
+            return this.sourceWorld;
+        }
+        public BlockPos getSourceBlockPos() {
+            return this.sourceChunkPos;
+        }
+        public boolean isMarkedForRemoval() {
+            return this.markedForRemoval;
+        }
+
+        public void markRemoved() {
+            this.markedForRemoval = true;
+        }
     }
 }
