@@ -59,7 +59,8 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         if(this.getFirstPos(base) == null) return ItemStack.EMPTY;
         if(this.getSecondPos(base) == null) return ItemStack.EMPTY;
 
-        this.setSealed(output, true);
+        this.setSealed(base, true);
+        output.setNbt(base.getNbt());
 
         return output;
     }
