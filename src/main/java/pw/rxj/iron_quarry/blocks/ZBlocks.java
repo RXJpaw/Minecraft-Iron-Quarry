@@ -18,27 +18,27 @@ import java.util.List;
 
 public class ZBlocks {
     public static final BlockEntryBuilder COPPER_QUARRY = new BlockEntryBuilder()
-            .setBlock(new QuarryBlock(Blocks.COPPER_BLOCK, "block/copper_quarry",1, 40, 12_000, 48))
+            .setBlock(new QuarryBlock(Blocks.COPPER_BLOCK, "block/copper_quarry",0, 40, 2_000, 16)) //640 RF ~ 50% Coal Generator
             .setItemSettings(new FabricItemSettings().group(Main.ITEM_GROUP))
             .setIdentifier(Main.MOD_ID, "copper_quarry");
     public static final BlockEntryBuilder IRON_QUARRY = new BlockEntryBuilder()
-            .setBlock(new QuarryBlock(Blocks.IRON_BLOCK, "block/iron_quarry", 2, 30, 40_000, 96))
+            .setBlock(new QuarryBlock(Blocks.IRON_BLOCK, "block/iron_quarry", 1, 30, 8_000, 48)) //1.440 RF ~ 12 Advanced Solar Panels (day/night average)
             .setItemSettings(new FabricItemSettings().group(Main.ITEM_GROUP))
             .setIdentifier(Main.MOD_ID, "iron_quarry");
     public static final BlockEntryBuilder GOLD_QUARRY = new BlockEntryBuilder()
-            .setBlock(new QuarryBlock(Blocks.GOLD_BLOCK, "block/gold_quarry", 3, 20, 135_000, 216))
+            .setBlock(new QuarryBlock(Blocks.GOLD_BLOCK, "block/gold_quarry", 2, 20, 40_000, 160)) //3.200 RF ~ 16 Industrial Solar Panels (day/night average)
             .setItemSettings(new FabricItemSettings().group(Main.ITEM_GROUP))
             .setIdentifier(Main.MOD_ID, "gold_quarry");
     public static final BlockEntryBuilder DIAMOND_QUARRY = new BlockEntryBuilder()
-            .setBlock(new QuarryBlock(Blocks.DIAMOND_BLOCK, "block/diamond_quarry", 4, 10, 450_000, 648))
+            .setBlock(new QuarryBlock(Blocks.DIAMOND_BLOCK, "block/diamond_quarry", 3, 10, 200_000, 640)) //6.400 RF ~ 32 Ultimate Solar Panels (day/night average)
             .setItemSettings(new FabricItemSettings().group(Main.ITEM_GROUP))
             .setIdentifier(Main.MOD_ID, "diamond_quarry");
     public static final BlockEntryBuilder NETHERITE_QUARRY = new BlockEntryBuilder()
-            .setBlock(new QuarryBlock(Blocks.NETHERITE_BLOCK, "block/netherite_quarry", 5, 5, 1_500_000, 1_944))
+            .setBlock(new QuarryBlock(Blocks.NETHERITE_BLOCK, "block/netherite_quarry", 4, 5, 1_000_000, 2_500)) //12.500 RF ~ Nitro Reactor with Packed Ice
             .setItemSettings(new FabricItemSettings().group(Main.ITEM_GROUP).fireproof())
             .setIdentifier(Main.MOD_ID, "netherite_quarry");
     public static final BlockEntryBuilder NETHER_STAR_QUARRY = new BlockEntryBuilder()
-            .setBlock(new QuarryBlock(Blocks.NETHERITE_BLOCK, "block/nether_star_quarry", 6, 2, 5_000_000, 7_290))
+            .setBlock(new QuarryBlock(Blocks.NETHERITE_BLOCK, "block/nether_star_quarry", 6, 2, 5_000_000, 12_300)) //24.600 RF ~ Nitro Reactor with Blue Ice
             .setItemSettings(new FabricItemSettings().group(Main.ITEM_GROUP).rarity(Rarity.UNCOMMON).fireproof())
             .setIdentifier(Main.MOD_ID, "nether_star_quarry");
     public static final BlockEntryBuilder REINFORCED_REDSTONE_BLOCK = new BlockEntryBuilder()
