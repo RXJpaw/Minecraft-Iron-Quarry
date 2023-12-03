@@ -4,6 +4,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.OrderedText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
@@ -62,7 +63,7 @@ public class ZUtil {
     }
 
     public static double normDeg(double degrees) {
-        return (degrees % 360.0f) / 360.0f;
+        return (degrees % 360.0d) / 360.0d;
     }
     public static float normDeg(float degrees) {
         return (degrees % 360.0f) / 360.0f;
@@ -81,6 +82,16 @@ public class ZUtil {
         String value = registryKey.getValue().toString();
 
         return registry + "/" + value;
+    }
+    public static String toString(OrderedText orderedText) {
+        StringBuilder builder = new StringBuilder();
+
+        orderedText.accept((index, style, codePoint) -> {
+            builder.append(Character.toChars(codePoint));
+            return true;
+        });
+
+        return builder.toString();
     }
     public static <T> @Nullable RegistryKey<T> toRegistryKey(String string) {
         String[] split = string.split("/");

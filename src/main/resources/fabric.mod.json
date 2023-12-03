@@ -2,6 +2,7 @@
     "schemaVersion": 1,
     "id": "iron_quarry",
     "version": "${version}",
+    "license": "Apache-2.0",
 
     "name": "Iron Quarry",
     "description": "Ever wanted to excavate 5 Chunks in a minute? No? Well.. now you can!",
@@ -13,8 +14,6 @@
         "sources": "https://github.com/RXJpaw/Fabric-Iron-Quarry",
         "issues": "https://github.com/RXJpaw/Fabric-Iron-Quarry/issues"
     },
-
-    "license": "Apache-2.0",
     "icon": "assets/iron_quarry/icon.png",
 
     "environment": "*",
@@ -33,6 +32,7 @@
     "mixins": [
         "iron_quarry.mixins.json"
     ],
+    "accessWidener": "iron_quarry.accesswidener",
 
     "depends": {
         "team_reborn_energy": "2.3.0",

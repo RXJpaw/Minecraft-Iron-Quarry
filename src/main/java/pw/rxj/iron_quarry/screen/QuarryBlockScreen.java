@@ -28,11 +28,10 @@ import java.util.Optional;
 
 public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     //A path to the gui texture. In this example we use the texture from the dispenser
-    private final Identifier BACKGROUND_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/quarry_block_interface.png");
-    private final Identifier OPTIONS_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/options.png");
-    private final Identifier OPTIONS_CONFIGURATION_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/options_configuration.png");
-    private final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/augmentation_configuration.png");
-    private final BlockPos blockPos;
+    public static final Identifier BACKGROUND_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/quarry_block_interface.png");
+    public static final Identifier OPTIONS_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/options.png");
+    public static final Identifier OPTIONS_CONFIGURATION_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/options_configuration.png");
+    public static final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/augmentation_configuration.png");
 
     private final TrackableZone EnergyDisplay = TrackableZone.empty();
     private final TrackableZone AugmentsConfig = TrackableZone.empty()
@@ -49,6 +48,8 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     private final int expandableMenuWidth;
     private final int realBackgroundWidth;
     private final int realBackgroundHeight;
+
+    private final BlockPos blockPos;
 
     public static final List<IoOption> IO_OPTIONS = List.of(
             new IoOption(Face.TOP, Face.TOP, 40, 24),

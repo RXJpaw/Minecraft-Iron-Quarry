@@ -13,7 +13,10 @@
     ],
     "client": [
         "DynamicItemNameRendererMixin",
-        "EnergyBarMixin"
+        "EnergyBarMixin",
+        "TooltipComponentMixin",
+        "TooltipDataMixin",
+        "TooltipRenderMixin"
     ],
     "injectors": {
         "defaultRequire": 1

@@ -10,6 +10,7 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipData;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.CraftingInventory;
@@ -31,10 +32,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.blockentities.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blockentities.ZBlockEntities;
+import pw.rxj.iron_quarry.gui.AugmentInventoryData;
+import pw.rxj.iron_quarry.gui.CustomTooltipData;
+import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
 import pw.rxj.iron_quarry.interfaces.IEnergyContainer;
 import pw.rxj.iron_quarry.interfaces.IHandledCrafting;
 import pw.rxj.iron_quarry.recipes.HandledCraftingRecipe;
@@ -44,8 +49,9 @@ import pw.rxj.iron_quarry.util.*;
 
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Optional;
 
-public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IEnergyContainer {
+public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IEnergyContainer, ITooltipDataProvider {
     private final String textureReference;
     private final int ticksPerOperation;
     private final int baseConsumption;
@@ -86,18 +92,27 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     public int getAugmentLimit(){
         return this.augmentLimit;
     }
+    public @NotNull ComplexInventory getAugmentInventory(ItemStack stack) {
+        ComplexInventory MachineUpgradesInventory = new ComplexInventory(this.getAugmentLimit());
+
+        if(stack == null) return MachineUpgradesInventory;
+        NbtCompound tag = stack.getNbt();
+        if(tag == null) return MachineUpgradesInventory;
+
+        NbtCompound Storage = tag.getCompound("BlockEntityTag").getCompound("rxj.pw/Storage");
+        NbtCompound StorageMachineUpgradesInventory = Storage.getCompound("MachineUpgradesInventory");
+        MachineUpgradesInventory.read(StorageMachineUpgradesInventory.getList("Items", NbtElement.COMPOUND_TYPE));
+
+        return MachineUpgradesInventory;
+    }
 
     @Override
+    public Optional<TooltipData> getTooltipData(ItemStack stack) {
+        return Screen.hasShiftDown() ? Optional.of(AugmentInventoryData.from(this.getAugmentInventory(stack), this.getAugmentLimit())) : Optional.empty();
+    }
+    @Override
     public void appendTooltip(ItemStack stack, @Nullable BlockView world, List<Text> tooltip, TooltipContext options) {
-        ItemStack quarryBlockStack = stack.copy();
-
-        NbtCompound nbt = quarryBlockStack.getOrCreateNbt();
-        NbtCompound MachineUpgradesNbt = nbt.getCompound("BlockEntityTag").getCompound("rxj.pw/Storage").getCompound("MachineUpgradesInventory");
-
-        ComplexInventory MachineUpgradesInventory = new ComplexInventory(this.augmentLimit);
-        MachineUpgradesInventory.read(MachineUpgradesNbt.getList("Items", NbtElement.COMPOUND_TYPE));
-
-        MachineUpgradesUtil machineUpgradesUtil = MachineUpgradesUtil.from(MachineUpgradesInventory);
+        MachineUpgradesUtil machineUpgradesUtil = MachineUpgradesUtil.from(this.getAugmentInventory(stack));
 
         DecimalFormat integerFormat = new DecimalFormat("#,##0");
         float yield_bonus = (machineUpgradesUtil.getFortuneMultiplier() - 1) * 100.0F;
@@ -139,10 +154,10 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
             tooltip.add(Text.empty());
             tooltip.add(LORE_STORED);
             tooltip.add(LORE_CAPACITY);
+
+            tooltip.add(CustomTooltipData.MARKER);
         } else {
             MutableText LORE_DETAILS = ReadableString.translatable("item.iron_quarry.lore.details");
-
-
 
             tooltip.add(Text.empty());
             tooltip.add(LORE_DETAILS);

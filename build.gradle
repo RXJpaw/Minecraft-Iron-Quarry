@@ -10,6 +10,10 @@ repositories {
 	maven { url 'https://maven.shedaniel.me/' }
 }
 
+loom {
+	accessWidenerPath = file("src/main/resources/iron_quarry.accesswidener")
+}
+
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -24,7 +28,7 @@ dependencies {
 
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 
-	include modApi ("teamreborn:energy:${project.energy_api_version}") { transitive = false }
+	include modApi("teamreborn:energy:${project.energy_api_version}") { transitive = false }
 
 	modApi("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
 	modApi("dev.architectury:architectury-fabric:${project.architectury_version}")
