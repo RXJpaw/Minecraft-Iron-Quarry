@@ -109,7 +109,7 @@ public class QuarryModel implements ComplexModel {
 
     @Override
     public boolean isSideLit() {
-        return false;
+        return true;
     }
 
     @Override
