@@ -53,7 +53,6 @@ import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.util.*;
 
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -128,7 +127,6 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     public void appendTooltip(ItemStack stack, @Nullable BlockView world, List<Text> tooltip, TooltipContext options) {
         MachineUpgradesUtil machineUpgradesUtil = MachineUpgradesUtil.from(this.getAugmentInventory(stack));
 
-        DecimalFormat integerFormat = new DecimalFormat("#,##0");
         float yield_bonus = (machineUpgradesUtil.getFortuneMultiplier() - 1) * 100.0F;
         float energy_usage = this.baseConsumption * machineUpgradesUtil.getInefficiency();
         float operations = (20.0F / this.ticksPerOperation) * machineUpgradesUtil.getSpeedMultiplier();
@@ -140,7 +138,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
                 .or(() -> "per_tick");
         SupplicableAlt<String> PER_UNIT = HasShiftDown.<String>copy()
                 .then(() -> ZUtil.expandableFixedFloat(energy_usage * 20 / operations))
-                .or(() -> integerFormat.format(energy_usage));
+                .or(() -> ReadableString.intFrom(energy_usage));
 
         MutableText LORE_USAGE_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy." + PER_TYPE.get(), PER_UNIT.get());
         MutableText LORE_USAGE = ReadableString.translatable("item.iron_quarry.quarry_block.lore.usage", LORE_USAGE_DETAIL);
@@ -159,10 +157,10 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
             long capacity = this.getEnergyCapacity();
             long stored = this.getEnergyStored(stack);
 
-            MutableText LORE_STORED_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy.unit", integerFormat.format(stored));
+            MutableText LORE_STORED_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy.unit", ReadableString.intFrom(stored));
             MutableText LORE_STORED = ReadableString.translatable("item.iron_quarry.quarry_block.lore.stored", LORE_STORED_DETAIL);
 
-            MutableText LORE_CAPACITY_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy.unit", integerFormat.format(capacity));
+            MutableText LORE_CAPACITY_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy.unit", ReadableString.intFrom(capacity));
             MutableText LORE_CAPACITY = ReadableString.translatable("item.iron_quarry.quarry_block.lore.capacity", LORE_CAPACITY_DETAIL);
 
             tooltip.add(Text.empty());

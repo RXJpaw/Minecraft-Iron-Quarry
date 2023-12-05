@@ -20,8 +20,7 @@ import pw.rxj.iron_quarry.records.TexturePosition;
 import pw.rxj.iron_quarry.screenhandler.QuarryBlockScreenHandler;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.types.IoState;
-import pw.rxj.iron_quarry.util.ManagedSlot;
-import pw.rxj.iron_quarry.util.TrackableZone;
+import pw.rxj.iron_quarry.util.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -105,6 +104,9 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         QuarryBlock block = blockEntity.getQuarryBlock();
         if(block == null) return;
 
+        ComplexEnergyContainer EnergyContainer = blockEntity.EnergyContainer;
+        MachineConfiguration MachineConfiguration = blockEntity.Configuration;
+
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
@@ -115,8 +117,8 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         drawTexture(matrices, backgroundX, backgroundY, 0, 0, this.realBackgroundWidth, this.realBackgroundHeight);
 
         //Energy-Fill-% rendering
-        if(blockEntity.EnergyContainer.getStored() > 0) {
-            int chargedPixels = Math.max(0, Math.min(40, (int) (blockEntity.EnergyContainer.getFillPercent() * 40)));
+        if(EnergyContainer.getStored() > 0) {
+            int chargedPixels = Math.max(0, Math.min(40, (int) (EnergyContainer.getFillPercent() * 40)));
             drawTexture(matrices, backgroundX + 10, backgroundY + 57 - chargedPixels, 179, 57 - chargedPixels, 12, chargedPixels);
         }
 
@@ -129,7 +131,9 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         EnergyDisplay.consume(TrackableZone.Zone.from(backgroundX + 9, backgroundY + 16, 14, 42), mouseX, mouseY);
 
         if(EnergyDisplay.isMouseOver()){
-            renderTooltip(matrices, Text.of(String.format("%s / %s RF", blockEntity.EnergyContainer.getStored(), blockEntity.EnergyContainer.getCapacity())), mouseX, mouseY);
+            String tooltip = String.format("%s / %s RF", ReadableString.intFrom(EnergyContainer.getStored()), ReadableString.intFrom(EnergyContainer.getCapacity()));
+
+            renderTooltip(matrices, Text.literal(tooltip), mouseX, mouseY);
         }
 
         //Augmentation Configuration
@@ -181,8 +185,8 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                 int bgX = ioOption.bgX();
                 int bgY = ioOption.bgY();
                 Face face = ioOption.frontFace();
-                IoState ioState = blockEntity.Configuration.getIoState(face);
-                TexturePosition ioTexture = IoState.getTexturePosition(blockEntity.Configuration.getIoState(face));
+                IoState ioState = MachineConfiguration.getIoState(face);
+                TexturePosition ioTexture = IoState.getTexturePosition(MachineConfiguration.getIoState(face));
                 TexturePosition bgTexture = block.getTexturePosition(face, ioState != IoState.BLOCKED);
 
                 if(ioConfigWidth >= bgX && ioConfigHeight >= bgY){

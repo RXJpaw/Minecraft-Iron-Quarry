@@ -8,11 +8,28 @@ import net.minecraft.util.math.BlockPos;
 import pw.rxj.iron_quarry.Global;
 import pw.rxj.iron_quarry.types.DynamicText;
 
+import java.text.DecimalFormat;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ReadableString {
+    private static DecimalFormat getIntegerFormatter() {
+        return new DecimalFormat("#,##0");
+    }
+    public static String intFrom(int number) {
+        return getIntegerFormatter().format(number);
+    }
+    public static String intFrom(long number) {
+        return getIntegerFormatter().format(number);
+    }
+    public static String intFrom(float number) {
+        return getIntegerFormatter().format(number);
+    }
+    public static String intFrom(double number) {
+        return getIntegerFormatter().format(number);
+    }
+
     public static Optional<String> from(BlockPos blockPos) {
         if(blockPos == null) return Optional.empty();
 
