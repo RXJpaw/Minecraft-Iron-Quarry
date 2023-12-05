@@ -29,7 +29,7 @@ public class BlockEntryBuilder {
     public Block getBlock() {
         return block;
     }
-    public Identifier getIdentifier() {
+    public Identifier getId() {
         return identifier;
     }
     public BlockItem getBlockItem(){

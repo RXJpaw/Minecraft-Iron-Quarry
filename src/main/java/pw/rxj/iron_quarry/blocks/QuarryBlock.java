@@ -1,5 +1,8 @@
 package pw.rxj.iron_quarry.blocks;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -11,6 +14,8 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.item.TooltipData;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.CraftingInventory;
@@ -19,8 +24,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -44,6 +49,7 @@ import pw.rxj.iron_quarry.interfaces.IEnergyContainer;
 import pw.rxj.iron_quarry.interfaces.IHandledCrafting;
 import pw.rxj.iron_quarry.recipes.HandledCraftingRecipe;
 import pw.rxj.iron_quarry.records.TexturePosition;
+import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.util.*;
 
@@ -64,12 +70,6 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
 
         this.setDefaultState(this.stateManager.getDefaultState()
                 .with(FACING, Direction.NORTH)
-                .with(OPEN_FRONT, false)
-                .with(OPEN_BACK, false)
-                .with(OPEN_RIGHT, false)
-                .with(OPEN_LEFT, false)
-                .with(OPEN_TOP, false)
-                .with(OPEN_BOTTOM, false)
         );
 
         this.ticksPerOperation = ticksPerOperation;
@@ -77,6 +77,8 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         this.energyCapacity = energyCapacity;
         this.augmentLimit = augmentLimit;
     }
+
+    public static final DirectionProperty FACING = DirectionProperty.of("facing");
 
     public static QuarryBlock getFallback() {
         return (QuarryBlock) ZBlocks.COPPER_QUARRY.getBlock();
@@ -104,6 +106,18 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         MachineUpgradesInventory.read(StorageMachineUpgradesInventory.getList("Items", NbtElement.COMPOUND_TYPE));
 
         return MachineUpgradesInventory;
+    }
+    public @NotNull MachineConfiguration getMachineConfiguration(ItemStack stack) {
+        MachineConfiguration MachineConfiguration = new MachineConfiguration();
+
+        if(stack == null) return MachineConfiguration;
+        NbtCompound tag = stack.getNbt();
+        if(tag == null) return MachineConfiguration;
+
+        NbtCompound Config = tag.getCompound("BlockEntityTag").getCompound("rxj.pw/Config");
+        MachineConfiguration.read(Config);
+
+        return MachineConfiguration;
     }
 
     @Override
@@ -172,40 +186,6 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         return (long) (this.baseConsumption * blockHardnessPenalty * inefficiencyPenalty * 20 / operations);
     }
 
-    public static final DirectionProperty FACING = DirectionProperty.of("facing");
-    public static final BooleanProperty OPEN_FRONT = BooleanProperty.of("open_front");
-    public static final BooleanProperty OPEN_BACK = BooleanProperty.of("open_back");
-    public static final BooleanProperty OPEN_RIGHT = BooleanProperty.of("open_right");
-    public static final BooleanProperty OPEN_LEFT = BooleanProperty.of("open_left");
-    public static final BooleanProperty OPEN_TOP = BooleanProperty.of("open_top");
-    public static final BooleanProperty OPEN_BOTTOM = BooleanProperty.of("open_bottom");
-
-    public static BooleanProperty getFacingProperty(Face face){
-        switch(face) {
-            case BOTTOM -> {
-                return OPEN_BOTTOM;
-            }
-            case TOP -> {
-                return OPEN_TOP;
-            }
-            case FRONT -> {
-                return OPEN_FRONT;
-            }
-            case BACK -> {
-                return OPEN_BACK;
-            }
-            case LEFT -> {
-                return OPEN_LEFT;
-            }
-            case RIGHT -> {
-                return OPEN_RIGHT;
-            }
-            default -> {
-                return null;
-            }
-        }
-    }
-
     @Override
     public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
@@ -250,7 +230,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager) {
-        stateManager.add(FACING, OPEN_FRONT, OPEN_BACK, OPEN_RIGHT, OPEN_LEFT, OPEN_TOP, OPEN_BOTTOM);
+        stateManager.add(FACING);
     }
 
     public BlockState getPlacementState(ItemPlacementContext ctx) {
@@ -259,6 +239,21 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
 
     public Identifier getTextureId(){
         return new Identifier(Main.MOD_ID, "textures/" + this.textureReference + ".png");
+    }
+    public Identifier getParticleTextureId(){
+        return new Identifier(Main.MOD_ID, "textures/" + this.textureReference + "_particles.png");
+    }
+    public SpriteIdentifier getSpriteId(){
+        return new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, this.textureReference));
+    }
+    public SpriteIdentifier getParticleSpriteId(){
+        return new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, this.textureReference + "_particles"));
+    }
+    @Environment(EnvType.CLIENT)
+    public void initClient() {
+        ResourceReloadListener.include(this.getTextureId());
+        ResourceReloadListener.include(this.getParticleTextureId());
+        BlockRenderLayerMap.INSTANCE.putBlock(this, RenderLayer.getCutoutMipped());
     }
 
     public TexturePosition getTexturePosition(Face face, Boolean alt){

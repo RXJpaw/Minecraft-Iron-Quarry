@@ -1,7 +1,0 @@
-{
-    "parent": "iron_quarry:template/quarry/quarry_open_front",
-    "textures": {
-        "0": "iron_quarry:block/copper_quarry",
-        "particle": "iron_quarry:block/copper_quarry_particles"
-    }
-}

@@ -1,7 +1,0 @@
-{
-    "parent": "iron_quarry:template/quarry/full_quarry_model",
-    "textures": {
-        "0": "iron_quarry:block/diamond_quarry",
-        "particle": "iron_quarry:block/diamond_quarry_particles"
-    }
-}

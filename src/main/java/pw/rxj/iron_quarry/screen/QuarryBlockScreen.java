@@ -182,7 +182,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                 int bgY = ioOption.bgY();
                 Face face = ioOption.frontFace();
                 IoState ioState = blockEntity.Configuration.getIoState(face);
-                TexturePosition ioTexture = blockEntity.getIoTexturePosition(face);
+                TexturePosition ioTexture = IoState.getTexturePosition(blockEntity.Configuration.getIoState(face));
                 TexturePosition bgTexture = block.getTexturePosition(face, ioState != IoState.BLOCKED);
 
                 if(ioConfigWidth >= bgX && ioConfigHeight >= bgY){
@@ -194,7 +194,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                 }
 
                 if(ioConfigWidth >= bgX + 4 && ioConfigHeight >= bgY + 4){
-                    RenderSystem.setShaderTexture(0, blockEntity.getIoTextureId());
+                    RenderSystem.setShaderTexture(0, IoState.getTextureId());
                     drawTexture(matrices,
                             ioConfigX + bgX + 4, ioConfigY + bgY + 4,
                             ioTexture.u(), ioTexture.v(),

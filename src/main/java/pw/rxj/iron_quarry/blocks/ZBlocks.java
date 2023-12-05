@@ -1,14 +1,10 @@
 package pw.rxj.iron_quarry.blocks;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.RedstoneBlock;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.registry.Registry;
 import pw.rxj.iron_quarry.Main;
@@ -41,6 +37,15 @@ public class ZBlocks {
             .setBlock(new QuarryBlock(Blocks.NETHERITE_BLOCK, "block/nether_star_quarry", 6, 2, 5_000_000, 12_300)) //24.600 RF ~ Nitro Reactor with Blue Ice
             .setItemSettings(new FabricItemSettings().group(Main.ITEM_GROUP).rarity(Rarity.UNCOMMON).fireproof())
             .setIdentifier(Main.MOD_ID, "nether_star_quarry");
+    public static final List<QuarryBlock> quarryBlockList = List.of(
+            (QuarryBlock) COPPER_QUARRY.getBlock(),
+            (QuarryBlock) IRON_QUARRY.getBlock(),
+            (QuarryBlock) GOLD_QUARRY.getBlock(),
+            (QuarryBlock) DIAMOND_QUARRY.getBlock(),
+            (QuarryBlock) NETHERITE_QUARRY.getBlock(),
+            (QuarryBlock) NETHER_STAR_QUARRY.getBlock()
+    );
+
     public static final BlockEntryBuilder REINFORCED_REDSTONE_BLOCK = new BlockEntryBuilder()
             .setBlock(new RedstoneBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_BLOCK)))
             .setItemSettings(new FabricItemSettings().group(Main.ITEM_GROUP))
@@ -63,12 +68,8 @@ public class ZBlocks {
 
     public static void register(){
         for (BlockEntryBuilder blockEntry : blockEntryList) {
-            Registry.register(Registry.BLOCK, blockEntry.getIdentifier(), blockEntry.getBlock());
-            Registry.register(Registry.ITEM, blockEntry.getIdentifier(), blockEntry.getBlockItem());
-
-            if(FabricLoader.getInstance().getEnvironmentType().equals(EnvType.SERVER)) continue;
-
-            BlockRenderLayerMap.INSTANCE.putBlock(blockEntry.getBlock(), RenderLayer.getCutoutMipped());
+            Registry.register(Registry.BLOCK, blockEntry.getId(), blockEntry.getBlock());
+            Registry.register(Registry.ITEM, blockEntry.getId(), blockEntry.getBlockItem());
         }
     }
 }

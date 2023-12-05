@@ -6,21 +6,28 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.util.Identifier;
-import pw.rxj.iron_quarry.blockentities.ZBlockEntities;
+import pw.rxj.iron_quarry.blocks.QuarryBlock;
+import pw.rxj.iron_quarry.blocks.ZBlocks;
 import pw.rxj.iron_quarry.interfaces.IModelPredicateProvider;
+import pw.rxj.iron_quarry.model.ZModels;
 import pw.rxj.iron_quarry.renderer.BlueprintPreviewRenderer;
-import pw.rxj.iron_quarry.renderer.QuarryBlockEntityRenderer;
+import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
+import pw.rxj.iron_quarry.types.IoState;
 
 @Environment(EnvType.CLIENT)
 public class Client implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        HandledScreens.register(Main.QUARRY_BLOCK_SCREEN_HANDLER, QuarryBlockScreen::new);
+        ZBlocks.quarryBlockList.forEach(QuarryBlock::initClient);
 
-        BlockEntityRendererFactories.register(ZBlockEntities.QUARRY_BLOCK_ENTITY, QuarryBlockEntityRenderer::new);
+        ResourceReloadListener.include(IoState.getTextureId());
+        ResourceReloadListener.register();
+
+        ZModels.register();
+
+        HandledScreens.register(Main.QUARRY_BLOCK_SCREEN_HANDLER, QuarryBlockScreen::new);
 
         WorldRenderEvents.END.register(BlueprintPreviewRenderer::render);
 

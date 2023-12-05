@@ -44,7 +44,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.blocks.QuarryBlock;
-import pw.rxj.iron_quarry.interfaces.BasicMachineLogic;
 import pw.rxj.iron_quarry.items.BlueprintItem;
 import pw.rxj.iron_quarry.screenhandler.QuarryBlockScreenHandler;
 import pw.rxj.iron_quarry.types.Face;
@@ -56,7 +55,7 @@ import team.reborn.energy.api.EnergyStorageUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, BasicMachineLogic {
+public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory {
     public QuarryBlockEntity(BlockPos pos, BlockState state) {
         super(ZBlockEntities.QUARRY_BLOCK_ENTITY, pos, state);
     }
@@ -93,16 +92,11 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         @Override
         public void markDirty() {
             QuarryBlockEntity.this.markDirty();
-            QuarryBlockEntity.this.updateListeners();
         }
 
         @Override
         public void onIoUpdated(Face face, IoState ioState) {
-            if(world == null) return;
-
-            BlockState blockState = getCachedState();
-
-            world.setBlockState(pos, blockState.with(QuarryBlock.getFacingProperty(face), ioState != IoState.BLOCKED));
+            QuarryBlockEntity.this.updateListeners();
         }
 
         @Override
@@ -114,11 +108,6 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             return usedIo;
         }
     };
-
-    @Override
-    public MachineConfiguration getMachineConfiguration() {
-        return Configuration;
-    }
 
     //Energy Handling
     public final ComplexEnergyContainer EnergyContainer = new ComplexEnergyContainer() {
@@ -202,7 +191,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     public InventoryStorage getItemSideConfiguration(Direction direction){
         if(direction == null) return null;
 
-        Face face = Face.from(direction, getCachedState().get(QuarryBlock.FACING));
+        Face face = Face.from(direction, this.getCachedState().get(QuarryBlock.FACING));
         Object object = this.Configuration.getLinkedIo(face);
 
         if(object instanceof Inventory inventory) {
@@ -254,7 +243,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     public SingleFluidStorage getFluidSideConfiguration(Direction direction){
         if(direction == null) return null;
 
-        Face face = Face.from(direction, getCachedState().get(QuarryBlock.FACING));
+        Face face = Face.from(direction, this.getCachedState().get(QuarryBlock.FACING));
         Object object = this.Configuration.getLinkedIo(face);
 
         if(object instanceof SingleFluidStorage fluidStorage) {
@@ -405,18 +394,19 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
                 MiningQueue.add(blockPosToBreak); return;
             }
 
-            BlockState blockStateToBreak = worldChunkToBreak.getBlockState(blockPosToBreak);;
+            BlockState blockStateToBreak = worldChunkToBreak.getBlockState(blockPosToBreak);
+            Block blockToBreak = blockStateToBreak.getBlock();
 
             if(!blockStateToBreak.getFluidState().isEmpty()) {
                 serverWorldToBreak.setBlockState(blockPosToBreak, Blocks.AIR.getDefaultState(), 2, 0); continue;
             }
 
             if(blockStateToBreak.isAir()) continue;
-            if(blockStateToBreak.getBlock().getHardness() < 0) continue;
+            if(blockToBreak.getHardness() < 0) continue;
             if(ZUtil.isActualBlockEntity(serverWorldToBreak, blockStateToBreak, blockPosToBreak)) continue;
 
             //Energy
-            long actualEnergyConsumption = thisBlock.getActualEnergyConsumption(upgradesUtil, blockStateToBreak.getBlock());
+            long actualEnergyConsumption = thisBlock.getActualEnergyConsumption(upgradesUtil, blockToBreak);
 
             if(thisBlockEntity.EnergyContainer.getStored() < actualEnergyConsumption) {
                 MiningQueue.add(blockPosToBreak); return;
@@ -453,6 +443,10 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             //Mining
             serverWorldToBreak.setBlockState(blockPosToBreak, Blocks.AIR.getDefaultState(), 2, 0);
             thisBlockEntity.EnergyContainer.useEnergy(actualEnergyConsumption);
+
+//            if (!(blockToBreak instanceof AbstractFireBlock)) {
+//                serverWorldToBreak.syncWorldEvent(2001, blockPosToBreak, Block.getRawIdFromState(blockStateToBreak));
+//            }
         }
     }
 
@@ -548,7 +542,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
 
     @Override
     public Text getDisplayName() {
-        return Text.translatable(getCachedState().getBlock().getTranslationKey());
+        return Text.translatable(this.getCachedState().getBlock().getTranslationKey());
     }
 
     @Override
