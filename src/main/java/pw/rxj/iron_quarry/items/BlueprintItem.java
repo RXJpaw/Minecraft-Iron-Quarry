@@ -264,7 +264,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
     public void setSecondPos(ItemStack stack, BlockPos blockPos) {
         stack.getOrCreateNbt().put("SecondPosition", this.getBlockPosNbt(blockPos));
     }
-    public BlockPos getFirstPos(ItemStack stack) {
+    public @Nullable BlockPos getFirstPos(ItemStack stack) {
         NbtCompound itemNbt = stack.getNbt();
         if(itemNbt == null) return null;
         NbtCompound firstPosNbt = itemNbt.getCompound("FirstPosition");
@@ -272,7 +272,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
         return new BlockPos(firstPosNbt.getInt("x"), firstPosNbt.getInt("y"), firstPosNbt.getInt("z"));
     }
-    public BlockPos getSecondPos(ItemStack stack) {
+    public @Nullable BlockPos getSecondPos(ItemStack stack) {
         NbtCompound itemNbt = stack.getNbt();
         if(itemNbt == null) return null;
         NbtCompound secondPosNbt = itemNbt.getCompound("SecondPosition");

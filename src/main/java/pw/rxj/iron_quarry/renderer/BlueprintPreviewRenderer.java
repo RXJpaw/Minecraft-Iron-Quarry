@@ -11,6 +11,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.*;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.World;
 import org.lwjgl.opengl.GL11;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.blocks.QuarryBlock;
@@ -23,7 +25,9 @@ public class BlueprintPreviewRenderer {
     public static final Identifier BLUEPRINT_PREVIEW_TEXTURE = Identifier.of(Main.MOD_ID, "textures/world/blueprint_preview.png");
 
     private static void render(WorldRenderContext context) {
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        if(minecraftClient.world == null) return;
+        ClientPlayerEntity player = minecraftClient.player;
         if(player == null) return;
 
         final ItemStack blueprintStack;
@@ -47,8 +51,12 @@ public class BlueprintPreviewRenderer {
 
         final BlueprintItem blueprintItem = (BlueprintItem) blueprintStack.getItem();
 
+        RegistryKey<World> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack);
+        if(!minecraftClient.world.getRegistryKey().equals(worldRegistryKey)) return;
         BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack);
+        if(firstPos == null) return;
         BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack);
+        if(secondPos == null) return;
 
         double midX = firstPos.getX() - ((double) (firstPos.getX() - secondPos.getX()) / 2);
         double midY = firstPos.getY() - ((double) (firstPos.getY() - secondPos.getY()) / 2);
