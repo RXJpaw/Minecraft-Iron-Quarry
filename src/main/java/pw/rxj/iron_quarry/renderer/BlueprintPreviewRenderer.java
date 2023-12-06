@@ -2,47 +2,53 @@ package pw.rxj.iron_quarry.renderer;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.*;
 import org.lwjgl.opengl.GL11;
 import pw.rxj.iron_quarry.Main;
+import pw.rxj.iron_quarry.blocks.QuarryBlock;
 import pw.rxj.iron_quarry.items.BlueprintItem;
+import pw.rxj.iron_quarry.resource.ResourceReloadListener;
+import pw.rxj.iron_quarry.util.ZUtil;
 
 
 public class BlueprintPreviewRenderer {
-    public static final Identifier BLUEPRINT_PREVIEW_TEXTURE = new Identifier(Main.MOD_ID, "textures/world/blueprint_preview.png");
+    public static final Identifier BLUEPRINT_PREVIEW_TEXTURE = Identifier.of(Main.MOD_ID, "textures/world/blueprint_preview.png");
 
-    public static void render(WorldRenderContext context) {
+    private static void render(WorldRenderContext context) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if(player == null) return;
 
-        final ItemStack stackInHand;
+        final ItemStack blueprintStack;
 
         ItemStack stackInMainHand = player.getStackInHand(Hand.MAIN_HAND);
         ItemStack stackInOffHand = player.getStackInHand(Hand.OFF_HAND);
 
-        if(stackInMainHand.getItem() instanceof BlueprintItem) {
-            stackInHand = stackInMainHand;
-        } else if(stackInOffHand.getItem() instanceof BlueprintItem) {
-            stackInHand = stackInOffHand;
+        if(BlueprintItem.isOf(stackInMainHand)) {
+            blueprintStack = stackInMainHand;
+        } else if(BlueprintItem.isOf(stackInOffHand)) {
+            blueprintStack = stackInOffHand;
+        } else if(ZUtil.getBlockOrItem(stackInMainHand) instanceof QuarryBlock quarryBlock) {
+            ItemStack stack = quarryBlock.getBlueprintStack(stackInMainHand);
+            if(stack.isEmpty()) return;
+            blueprintStack = stack;
+        } else if(ZUtil.getBlockOrItem(stackInOffHand) instanceof QuarryBlock quarryBlock) {
+            ItemStack stack = quarryBlock.getBlueprintStack(stackInOffHand);
+            if(stack.isEmpty()) return;
+            blueprintStack = stack;
         } else return;
 
-        NbtCompound itemNbt = stackInHand.getNbt();
-        if(itemNbt == null) return;
-        NbtCompound firstPosNbt = itemNbt.getCompound("FirstPosition");
-        if(firstPosNbt.isEmpty()) return;
-        NbtCompound secondPosNbt = itemNbt.getCompound("SecondPosition");
-        if(secondPosNbt.isEmpty()) return;
+        final BlueprintItem blueprintItem = (BlueprintItem) blueprintStack.getItem();
 
-        Vec3i firstPos = new Vec3i(firstPosNbt.getInt("x"), firstPosNbt.getInt("y"), firstPosNbt.getInt("z"));
-        Vec3i secondPos = new Vec3i(secondPosNbt.getInt("x"), secondPosNbt.getInt("y"), secondPosNbt.getInt("z"));
+        BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack);
+        BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack);
 
         double midX = firstPos.getX() - ((double) (firstPos.getX() - secondPos.getX()) / 2);
         double midY = firstPos.getY() - ((double) (firstPos.getY() - secondPos.getY()) / 2);
@@ -100,10 +106,10 @@ public class BlueprintPreviewRenderer {
 
             switch (direction) {
                 case UP -> {
-                    anchor_tl = new Vec3f(maxX, maxY, maxZ); //oben links
-                    anchor_bl = new Vec3f(maxX, maxY, minZ); //unten links
-                    anchor_br = new Vec3f(minX, maxY, minZ); //unten rechts
-                    anchor_tr = new Vec3f(minX, maxY, maxZ); //oben rechts
+                    anchor_tl = new Vec3f(maxX, maxY, maxZ); //top left
+                    anchor_bl = new Vec3f(maxX, maxY, minZ); //bottom left
+                    anchor_br = new Vec3f(minX, maxY, minZ); //bottom right
+                    anchor_tr = new Vec3f(minX, maxY, maxZ); //top right
                 }
                 case NORTH -> {
                     anchor_tl = new Vec3f(maxX, maxY, minZ);
@@ -150,5 +156,10 @@ public class BlueprintPreviewRenderer {
         RenderSystem.disableBlend();
 
         context.lightmapTextureManager().disable();
+    }
+
+    public static void register() {
+        ResourceReloadListener.include(BLUEPRINT_PREVIEW_TEXTURE);
+        WorldRenderEvents.END.register(BlueprintPreviewRenderer::render);
     }
 }

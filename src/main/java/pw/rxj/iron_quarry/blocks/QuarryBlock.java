@@ -118,6 +118,19 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
 
         return MachineConfiguration;
     }
+    public @NotNull ItemStack getBlueprintStack(ItemStack stack) {
+        ComplexInventory BlueprintInventory = new ComplexInventory(1);
+
+        if(stack == null) return ItemStack.EMPTY;
+        NbtCompound tag = stack.getNbt();
+        if(tag == null) return ItemStack.EMPTY;
+
+        NbtCompound Storage = tag.getCompound("BlockEntityTag").getCompound("rxj.pw/Storage");
+        NbtCompound StorageBlueprintInventoryInventory = Storage.getCompound("BlueprintInventory");
+        BlueprintInventory.read(StorageBlueprintInventoryInventory.getList("Items", NbtElement.COMPOUND_TYPE));
+
+        return BlueprintInventory.getStack(0);
+    }
 
     @Override
     public Optional<TooltipData> getTooltipData(ItemStack stack) {

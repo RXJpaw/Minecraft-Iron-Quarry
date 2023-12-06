@@ -3,7 +3,6 @@ package pw.rxj.iron_quarry;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.util.Identifier;
@@ -21,15 +20,13 @@ public class Client implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ZBlocks.quarryBlockList.forEach(QuarryBlock::initClient);
-
         ResourceReloadListener.include(IoState.getTextureId());
-        ResourceReloadListener.register();
 
+        BlueprintPreviewRenderer.register();
+        ResourceReloadListener.register();
         ZModels.register();
 
         HandledScreens.register(Main.QUARRY_BLOCK_SCREEN_HANDLER, QuarryBlockScreen::new);
-
-        WorldRenderEvents.END.register(BlueprintPreviewRenderer::render);
 
         ModelPredicateProviderRegistry.register(new Identifier(Main.MOD_ID, "handled_model_predicate"), (stack, world, entity, seed) -> {
             if(stack.getItem() instanceof IModelPredicateProvider modelPredicateProvider) {
