@@ -33,7 +33,9 @@ public class TrackableZone {
     private float maxTicks;
     private float ticks;
 
+    public @NotNull Zone preconsumptionZone = Zone.empty();
     public @NotNull Zone zone = Zone.empty();
+
     private int mouseX;
     private int mouseY;
 
@@ -93,13 +95,15 @@ public class TrackableZone {
     }
 
     public TrackableZone consume(Zone zone, int mouseX, int mouseY) {
-        this.zone = zone;
+        this.preconsumptionZone = this.zone;
         this.mouseX = mouseX;
         this.mouseY = mouseY;
+        this.zone = zone;
 
         return this;
     }
     public TrackableZone consume(Zone zone) {
+        this.preconsumptionZone = this.zone;
         this.zone = zone;
 
         return this;

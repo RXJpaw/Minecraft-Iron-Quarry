@@ -97,8 +97,6 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
 
     @Override
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
-        MinecraftClient MinecraftInstance = MinecraftClient.getInstance();
-        if(MinecraftInstance.world == null) return;
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
         if(minecraftClient.world == null) return;
 
@@ -160,12 +158,11 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                 int testX = augmentsMenuWidth + this.realBackgroundWidth;
                 int testY = augmentsMenuHeight + 26;
 
-                boolean slotEnabled = (testX >= slot.x + 8) && (testY >= slot.y + 8);
                 boolean slotVisible = (testX >= slot.x - 1) && (testY >= slot.y - 1);
 
-                if(handler.slots.get(slotIndex) instanceof ManagedSlot managedSlot) managedSlot.setEnabled(slotEnabled);
-                if(slot.isLocked() && slotVisible) drawLockedSlot(matrices, slot, Math.min(testX - slot.x + 1, 18), Math.min(testY - slot.y + 1, 18));
-            }
+                if(handler.slots.get(slotIndex) instanceof ManagedSlot managedSlot) {
+                    managedSlot.setEnabled(slotVisible);
+                }
                 if(slot.isLocked() && slotVisible) {
                     this.drawLockedSlot(matrices, slot, Math.min(testX - slot.x + 1, 18), Math.min(testY - slot.y + 1, 18));
                     if(TrackableZone.isMouseOver(this.x + slot.x - 1, this.y + slot.y - 1, 18, 18, mouseX, mouseY)) mouseOverSlot = slot;
@@ -224,6 +221,19 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         } else {
             RenderSystem.setShaderTexture(0, OPTIONS_TEXTURE);
             drawTexture(matrices, ioConfigX, ioConfigY, 0, 0, 22, 22);
+        }
+    }
+
+    @Override
+    protected void drawSlot(MatrixStack matrices, Slot slot) {
+        if(AUGMENT_SLOTS.contains(slot.getIndex())) {
+            TrackableZone.Zone zone = AugmentsConfig.preconsumptionZone;
+            ZUtil.runScissored(zone.x, zone.y, zone.width, zone.height, () -> {
+                super.drawSlot(matrices, slot);
+            });
+
+        } else {
+            super.drawSlot(matrices, slot);
         }
     }
 
