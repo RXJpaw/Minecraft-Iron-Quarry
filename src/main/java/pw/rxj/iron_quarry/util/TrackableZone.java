@@ -43,7 +43,7 @@ public class TrackableZone {
 
     public static TrackableZone empty() { return new TrackableZone(); }
     public static TrackableZone bake(Zone zone, int mouseX, int mouseY) {
-        return new TrackableZone().consume(zone, mouseX, mouseY);
+        return TrackableZone.empty().consume(zone, mouseX, mouseY);
     }
 
     public TrackableZone onMouseOver(TriConsumer<Zone, Integer, Integer> consumer) {
@@ -59,8 +59,12 @@ public class TrackableZone {
     }
 
     public boolean isMouseOver() {
-        return mouseX >= zone.x && mouseY >= zone.y && mouseX < zone.x + zone.width && mouseY < zone.y + zone.height;
+        return isMouseOver(zone.x, zone.y, zone.width, zone.height, mouseX, mouseY);
     }
+    public static boolean isMouseOver(int x, int y, int width, int height, int mouseX, int mouseY) {
+        return mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + height;
+    }
+
     public boolean consumeTickDelta(float tickDelta) {
         if(this.isMouseOver()) {
             this.ticks = Math.min(this.ticks + tickDelta, maxTicks);

@@ -14,6 +14,7 @@ public class Global {
     public static final int RGB_LIGHT_GRAY = Color.HSBtoRGB(ZUtil.normDeg(0), 0.0F, 0.6F);
     public static final int RGB_WEAK_HIGHLIGHT = Color.HSBtoRGB(ZUtil.normDeg(210), 0.4F, 0.5F);
     public static final int RGB_STRONG_HIGHLIGHT = Color.HSBtoRGB(ZUtil.normDeg(210), 0.6F, 0.5F);
+    public static final int RGB_TAB_TITLE = 0xE1C92F;
 
     public static final DynamicText DYN_RAINBOW = DynamicText.RAINBOW;
     public static final DynamicText DYN_EMERALD = DynamicText.EMERALD;

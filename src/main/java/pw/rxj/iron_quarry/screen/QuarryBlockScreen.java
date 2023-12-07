@@ -70,9 +70,11 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         int originalShaderTexture = RenderSystem.getShaderTexture(0);
 
         RenderSystem.setShaderTexture(0, AUGMENTATION_CONFIGURATION_TEXTURE);
-        drawTexture(matrices, this.x + slot.x - 1, this.y + slot.y - 1, 100, 0, width, height);
-
+        this.drawTexture(matrices, this.x + slot.x - 1, this.y + slot.y - 1, 100, 0, width, height);
         RenderSystem.setShaderTexture(0, originalShaderTexture);
+    }
+    private void drawLockedSlotTooltip(MatrixStack matrices, int mouseX, int mouseY) {
+        this.renderTooltip(matrices, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.locked_augment_slot"), mouseX, mouseY);
     }
 
     public QuarryBlockScreen(QuarryBlockScreenHandler handler, PlayerInventory inventory, Text title) {
@@ -97,8 +99,10 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
         MinecraftClient MinecraftInstance = MinecraftClient.getInstance();
         if(MinecraftInstance.world == null) return;
+        MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        if(minecraftClient.world == null) return;
 
-        QuarryBlockEntity blockEntity = (QuarryBlockEntity) MinecraftInstance.world.getBlockEntity(blockPos);
+        QuarryBlockEntity blockEntity = (QuarryBlockEntity) minecraftClient.world.getBlockEntity(blockPos);
         if(blockEntity == null) return;
 
         QuarryBlock block = blockEntity.getQuarryBlock();
@@ -145,6 +149,8 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         AugmentsConfig.consume(TrackableZone.Zone.from(augmentsMenuX, augmentsMenuY, augmentsMenuWidth, augmentsMenuHeight), mouseX, mouseY);
 
         if(IoConfig.isUnused() && AugmentsConfig.consumeTickDelta(delta)){
+            Slot mouseOverSlot = null;
+
             RenderSystem.setShaderTexture(0, AUGMENTATION_CONFIGURATION_TEXTURE);
             drawTexture(matrices, augmentsMenuX, augmentsMenuY, 0, 0, augmentsMenuWidth, augmentsMenuHeight);
 
@@ -160,6 +166,14 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                 if(handler.slots.get(slotIndex) instanceof ManagedSlot managedSlot) managedSlot.setEnabled(slotEnabled);
                 if(slot.isLocked() && slotVisible) drawLockedSlot(matrices, slot, Math.min(testX - slot.x + 1, 18), Math.min(testY - slot.y + 1, 18));
             }
+                if(slot.isLocked() && slotVisible) {
+                    this.drawLockedSlot(matrices, slot, Math.min(testX - slot.x + 1, 18), Math.min(testY - slot.y + 1, 18));
+                    if(TrackableZone.isMouseOver(this.x + slot.x - 1, this.y + slot.y - 1, 18, 18, mouseX, mouseY)) mouseOverSlot = slot;
+                }
+            }
+
+            if(mouseOverSlot != null) this.drawLockedSlotTooltip(matrices, mouseX, mouseY);
+
         } else {
             RenderSystem.setShaderTexture(0, OPTIONS_TEXTURE);
             drawTexture(matrices, augmentsMenuX, augmentsMenuY, 0, 22, 22, 22);
