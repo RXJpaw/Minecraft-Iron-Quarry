@@ -152,6 +152,10 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             RenderSystem.setShaderTexture(0, AUGMENTATION_CONFIGURATION_TEXTURE);
             drawTexture(matrices, augmentsMenuX, augmentsMenuY, 0, 0, augmentsMenuWidth, augmentsMenuHeight);
 
+            ZUtil.runScissored(augmentsMenuX, augmentsMenuY, augmentsMenuWidth, augmentsMenuHeight, () -> {
+                textRenderer.drawWithShadow(matrices, ReadableString.translatable("screen.iron_quarry.quarry_block.title.augmentation"), augmentsMenuX + 20, augmentsMenuY + 7, 0xFFFFFF);
+            });
+
             for (int slotIndex : AUGMENT_SLOTS) {
                 ManagedSlot slot = (ManagedSlot) handler.slots.get(slotIndex);
 
@@ -191,6 +195,10 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         if(AugmentsConfig.isUnused() && IoConfig.consumeTickDelta(delta)){
             RenderSystem.setShaderTexture(0, OPTIONS_CONFIGURATION_TEXTURE);
             drawTexture(matrices, ioConfigX, ioConfigY, 0, 0, ioConfigWidth, ioConfigHeight);
+
+            ZUtil.runScissored(ioConfigX, ioConfigY, ioConfigWidth, ioConfigHeight, () -> {
+                textRenderer.drawWithShadow(matrices, ReadableString.translatable("screen.iron_quarry.quarry_block.title.configuration"), ioConfigX + 20, ioConfigY + 7, 0xFFFFFF);
+            });
 
             IO_OPTIONS.forEach(ioOption -> {
                 int bgX = ioOption.bgX();

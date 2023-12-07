@@ -55,8 +55,9 @@
 
     "item.iron_quarry.lore.listing.used": "§{RGB_WEAK_HIGHLIGHT > %s}",
     "item.iron_quarry.lore.listing.unused": "§{RGB_DARK_GRAY > %s}",
-    "item.iron_quarry.lore.details": "§{RGB_LIGHT_GRAY Hold} §{RGB_WEAK_HIGHLIGHT Left Shift} §{RGB_LIGHT_GRAY for more information}"
     "item.iron_quarry.lore.details": "§{RGB_LIGHT_GRAY Hold} §{RGB_WEAK_HIGHLIGHT Left Shift} §{RGB_LIGHT_GRAY for more information}",
 
     "screen.iron_quarry.quarry_block.tooltip.locked_augment_slot": "§{RGB_TAB_TITLE Upgrade quarry to unlock augment slot!}",
+    "screen.iron_quarry.quarry_block.title.configuration": "§{RGB_TAB_TITLE Configuration}",
+    "screen.iron_quarry.quarry_block.title.augmentation": "§{RGB_TAB_TITLE Augmentation}"
 }
