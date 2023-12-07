@@ -35,14 +35,14 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
 
     private final TrackableZone EnergyDisplay = TrackableZone.empty();
     private final TrackableZone AugmentsConfig = TrackableZone.empty()
-            .onTickDelta(2, (zone, ticks) -> {
-                zone.width = (int) Math.min(22 + ticks * 39, 100);
-                zone.height = (int) Math.min(22 + ticks * 35, 92);
+            .onTickDelta(2.5F, (zone, ticks) -> {
+                zone.width = (int) Math.min(22 + ticks * 31.2F, 100);
+                zone.height = (int) Math.min(22 + ticks * 28.0F, 92);
             });
     private final TrackableZone IoConfig = TrackableZone.empty()
-            .onTickDelta(2, (zone, ticks) -> {
-                zone.width = (int) Math.min(22 + ticks * 39, 100);
-                zone.height = (int) Math.min(22 + ticks * 35, 92);
+            .onTickDelta(2.5F, (zone, ticks) -> {
+                zone.width = (int) Math.min(22 + ticks * 31.2F, 100);
+                zone.height = (int) Math.min(22 + ticks * 28.0F, 92);
             });
 
     private final int expandableMenuWidth;
