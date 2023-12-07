@@ -203,8 +203,8 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                 int bgY = ioOption.bgY();
                 Face face = ioOption.frontFace();
                 IoState ioState = MachineConfiguration.getIoState(face);
-                TexturePosition ioTexture = IoState.getTexturePosition(MachineConfiguration.getIoState(face));
                 TexturePosition bgTexture = block.getTexturePosition(face, ioState != IoState.BLOCKED);
+                TexturePosition ioTexture = IoState.getTexturePosition(MachineConfiguration.getIoState(face));
 
                 if(ioConfigWidth >= bgX && ioConfigHeight >= bgY){
                     RenderSystem.setShaderTexture(0, block.getTextureId());
@@ -221,6 +221,10 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                             ioTexture.u(), ioTexture.v(),
                             Math.min(ioTexture.width(), ioConfigWidth - (bgX + 4)), Math.min(ioTexture.height(), ioConfigHeight - (bgY + 4)));
 
+                }
+
+                if(TrackableZone.isMouseOver(ioConfigX + bgX, ioConfigY + bgY, bgTexture.width(), bgTexture.height(), mouseX, mouseY)) {
+                    drawIoHighlight(matrices, ioConfigX + bgX, ioConfigY + bgY, this.getZOffset());
                 }
             });
 
@@ -344,5 +348,13 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         super.init();
         this.x = (this.width - this.realBackgroundWidth) / 2;
         this.y = (this.height - this.realBackgroundHeight) / 2;
+    }
+
+    public static void drawIoHighlight(MatrixStack matrices, int x, int y, int z) {
+        RenderSystem.disableDepthTest();
+        RenderSystem.colorMask(true, true, true, false);
+        fillGradient(matrices, x, y, x + 16, y + 16, 1612718112, 1612718112, z);
+        RenderSystem.colorMask(true, true, true, true);
+        RenderSystem.enableDepthTest();
     }
 }
