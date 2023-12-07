@@ -39,6 +39,7 @@
     "item.iron_quarry.blueprint.completed": "(Completed)",
     "item.iron_quarry.blueprint.lore.unbound": "§{RGB_DARK_GRAY §nTip:} §{RGB_LIGHT_GRAY Set positions by left/right-clicking blocks!}",
     "item.iron_quarry.blueprint.lore.selected": "§{RGB_DARK_GRAY §nTip:} §{RGB_LIGHT_GRAY You selected %s Chunk(s)!}",
+    "item.iron_quarry.blueprint.lore.seal_first": "§{RGB_DARK_GRAY §nTip:} §{RGB_LIGHT_GRAY Must be sealed before being used in quarry!}",
     "item.iron_quarry.blueprint.lore.mined": "§{RGB_DARK_GRAY §nProgress:} §{RGB_LIGHT_GRAY %s/%s Chunk(s) (%s%%)}",
     "item.iron_quarry.blueprint.lore.completed": "§{RGB_DARK_GRAY §nTip:} §{RGB_LIGHT_GRAY Use on grindstone to unseal & reset!}",
     "item.iron_quarry.blueprint.lore.world": "§{RGB_LIGHT_GRAY Dimension:} %s",

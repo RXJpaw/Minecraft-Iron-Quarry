@@ -31,6 +31,7 @@ import pw.rxj.iron_quarry.interfaces.IHandledGrinding;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
 import pw.rxj.iron_quarry.interfaces.IHandledSmithing;
 import pw.rxj.iron_quarry.recipes.HandledSmithingRecipe;
+import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
 import pw.rxj.iron_quarry.util.ReadableString;
 import pw.rxj.iron_quarry.util.ZUtil;
 
@@ -151,12 +152,18 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
                 tooltip.add(LORE_COMPLETED);
             }
         } else {
-            int mineable = this.getMineableChunks(stack);
-
-            MutableText LORE_SELECTED = ReadableString.translatable("item.iron_quarry.blueprint.lore.selected", mineable);
-
             tooltip.add(Text.empty());
-            tooltip.add(LORE_SELECTED);
+
+            if(MinecraftClient.getInstance().currentScreen instanceof QuarryBlockScreen) {
+                MutableText LORE_SEAL_FIRST = ReadableString.translatable("item.iron_quarry.blueprint.lore.seal_first");
+
+                tooltip.add(LORE_SEAL_FIRST);
+            } else {
+                MutableText LORE_SELECTED = ReadableString.translatable("item.iron_quarry.blueprint.lore.selected", this.getMineableChunks(stack));
+
+                tooltip.add(LORE_SELECTED);
+
+            }
         }
     }
 
