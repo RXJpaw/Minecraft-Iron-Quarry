@@ -1,10 +1,14 @@
 package pw.rxj.iron_quarry.util;
 
+import net.minecraft.screen.slot.Slot;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 public class TrackableZone {
     public static class Zone {
@@ -33,8 +37,8 @@ public class TrackableZone {
     private float maxTicks;
     private float ticks;
 
-    public @NotNull Zone preconsumptionZone = Zone.empty();
     public @NotNull Zone zone = Zone.empty();
+    private @NotNull Supplier<MutableText> supplier = Text::empty;
 
     private int mouseX;
     private int mouseY;
@@ -61,7 +65,13 @@ public class TrackableZone {
     }
 
     public boolean isMouseOver() {
+        return isMouseOver(mouseX, mouseY);
+    }
+    public boolean isMouseOver(int mouseX, int mouseY) {
         return isMouseOver(zone.x, zone.y, zone.width, zone.height, mouseX, mouseY);
+    }
+    public static boolean isMouseOver(Slot slot, int screenX, int screenY, int mouseX, int mouseY) {
+        return isMouseOver(slot.x + screenX - 1, slot.y + screenY - 1, 18, 18, mouseX, mouseY);
     }
     public static boolean isMouseOver(int x, int y, int width, int height, int mouseX, int mouseY) {
         return mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + height;
@@ -95,17 +105,16 @@ public class TrackableZone {
     }
 
     public TrackableZone consume(Zone zone, int mouseX, int mouseY) {
-        this.preconsumptionZone = this.zone;
         this.mouseX = mouseX;
         this.mouseY = mouseY;
         this.zone = zone;
 
         return this;
     }
-    public TrackableZone consume(Zone zone) {
-        this.preconsumptionZone = this.zone;
-        this.zone = zone;
-
-        return this;
+    public void supplyText(Supplier<MutableText> supplier) {
+        this.supplier = supplier;
+    }
+    public MutableText getSuppliedText() {
+        return this.supplier.get();
     }
 }
