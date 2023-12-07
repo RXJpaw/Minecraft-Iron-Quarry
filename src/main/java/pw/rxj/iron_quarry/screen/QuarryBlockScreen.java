@@ -267,7 +267,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             this.renderTooltip(matrices, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.battery_info"), mouseX, mouseY);
         } else if(AugmentsConfig.isMouseOver()) {
             for (ManagedSlot slot : AUGMENT_SLOTS) {
-                if(slot.getStack().isEmpty() && TrackableZone.isMouseOver(slot, this.x, this.y, mouseX, mouseY)) {
+                if(slot.isLocked() && TrackableZone.isMouseOver(slot, this.x, this.y, mouseX, mouseY)) {
                     this.renderTooltip(matrices, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.locked_augment_slot"), mouseX, mouseY);
 
                     break;
@@ -336,8 +336,6 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-//        if(this.handler.slots.get(31) instanceof ManagedSlot testSlot) testSlot.setEnabled(false);
-
         renderBackground(matrices);
         super.render(matrices, mouseX, mouseY, delta);
         drawMouseoverTooltip(matrices, mouseX, mouseY);
