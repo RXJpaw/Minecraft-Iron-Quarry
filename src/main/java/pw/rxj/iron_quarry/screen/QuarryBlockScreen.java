@@ -22,6 +22,7 @@ import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.types.IoState;
 import pw.rxj.iron_quarry.util.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,7 +51,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
 
     private final BlockPos blockPos;
 
-    public static final List<IoOption> IO_OPTIONS = List.of(
+    private final List<IoOption> IO_OPTIONS = List.of(
             new IoOption(Face.TOP, Face.TOP, 40, 24),
             new IoOption(Face.LEFT, Face.RIGHT, 20, 44),
             new IoOption(Face.FRONT, Face.FRONT, 40, 44),
@@ -58,8 +59,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             new IoOption(Face.BOTTOM, Face.BOTTOM, 40, 64),
             new IoOption(Face.BACK, Face.BACK, 60, 64)
     );
-
-    public static final List<Integer> AUGMENT_SLOTS = List.of(0, 1, 2, 3, 4, 5);
+    private final List<ManagedSlot> AUGMENT_SLOTS = new ArrayList<>();
 
     private void drawLockedSlot(MatrixStack matrices, Slot slot, int width, int height) {
         if(width < 0) Main.LOGGER.warn("Tried to drawLockedSlot with width < 0 ({})", width);
@@ -93,6 +93,8 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         this.playerInventoryTitleX = 8;
 
         blockPos = handler.getPos();
+
+        for (int i = 0; i < 6; i++) AUGMENT_SLOTS.add((ManagedSlot) handler.getSlot(i));
     }
 
     @Override
@@ -156,17 +158,13 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                 textRenderer.drawWithShadow(matrices, ReadableString.translatable("screen.iron_quarry.quarry_block.title.augmentation"), augmentsMenuX + 20, augmentsMenuY + 7, 0xFFFFFF);
             });
 
-            for (int slotIndex : AUGMENT_SLOTS) {
-                ManagedSlot slot = (ManagedSlot) handler.slots.get(slotIndex);
-
+            for (ManagedSlot slot: AUGMENT_SLOTS) {
                 int testX = augmentsMenuWidth + this.realBackgroundWidth;
                 int testY = augmentsMenuHeight + 26;
 
                 boolean slotVisible = (testX >= slot.x - 1) && (testY >= slot.y - 1);
+                slot.setEnabled(slotVisible);
 
-                if(handler.slots.get(slotIndex) instanceof ManagedSlot managedSlot) {
-                    managedSlot.setEnabled(slotVisible);
-                }
                 if(slot.isLocked() && slotVisible) {
                     this.drawLockedSlot(matrices, slot, Math.min(testX - slot.x + 1, 18), Math.min(testY - slot.y + 1, 18));
                     if(TrackableZone.isMouseOver(this.x + slot.x - 1, this.y + slot.y - 1, 18, 18, mouseX, mouseY)) mouseOverSlot = slot;
@@ -179,9 +177,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             RenderSystem.setShaderTexture(0, OPTIONS_TEXTURE);
             drawTexture(matrices, augmentsMenuX, augmentsMenuY, 0, 22, 22, 22);
 
-            AUGMENT_SLOTS.forEach(slotIndex -> {
-                if(handler.slots.get(slotIndex) instanceof ManagedSlot slot) slot.setEnabled(false);
-            });
+            AUGMENT_SLOTS.forEach(slot -> slot.setEnabled(false));
         }
 
         //Io Configuration
@@ -234,12 +230,11 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
 
     @Override
     protected void drawSlot(MatrixStack matrices, Slot slot) {
-        if(AUGMENT_SLOTS.contains(slot.getIndex())) {
+        if(AUGMENT_SLOTS.contains((ManagedSlot) slot)) {
             TrackableZone.Zone zone = AugmentsConfig.preconsumptionZone;
             ZUtil.runScissored(zone.x, zone.y, zone.width, zone.height, () -> {
                 super.drawSlot(matrices, slot);
             });
-
         } else {
             super.drawSlot(matrices, slot);
         }
