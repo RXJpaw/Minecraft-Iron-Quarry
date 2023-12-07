@@ -49,6 +49,7 @@
 
 
     "item.iron_quarry.lore.energy.unit": "%s RF",
+    "item.iron_quarry.lore.energy.capacity": "%s / %s RF",
     "item.iron_quarry.lore.energy.per_tick": "%s RF/tick",
     "item.iron_quarry.lore.energy.per_operation": "%s RF/op",
     "item.iron_quarry.lore.operation.per_second": "%s op/s",
@@ -58,7 +59,9 @@
     "item.iron_quarry.lore.listing.unused": "§{RGB_DARK_GRAY > %s}",
     "item.iron_quarry.lore.details": "§{RGB_LIGHT_GRAY Hold} §{RGB_WEAK_HIGHLIGHT Left Shift} §{RGB_LIGHT_GRAY for more information}",
 
-    "screen.iron_quarry.quarry_block.tooltip.locked_augment_slot": "§{RGB_TAB_TITLE Upgrade quarry to unlock augment slot!}",
+    "screen.iron_quarry.quarry_block.tooltip.locked_augment_slot": "§{RGB_TAB_TITLE Upgrade the quarry to unlock this augment slot!}",
+    "screen.iron_quarry.quarry_block.tooltip.blueprint_info": "§{RGB_TAB_TITLE Insert §lSealed Blueprint§r to start the quarry.}",
+    "screen.iron_quarry.quarry_block.tooltip.battery_info": "§{RGB_TAB_TITLE Insert §la battery§r to charge the quarry externally.}",
     "screen.iron_quarry.quarry_block.title.configuration": "§{RGB_TAB_TITLE Configuration}",
     "screen.iron_quarry.quarry_block.title.augmentation": "§{RGB_TAB_TITLE Augmentation}"
 }
