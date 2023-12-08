@@ -130,17 +130,20 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         int capacity = this.getCapacity(stack);
         int stored = this.getAmount(stack);
 
-        if(!this.isUnique()) {
-            MutableText LORE_UNUSED = ReadableString.translatable("item.iron_quarry.augment.lore.used", stored, capacity);
-            tooltip.add(LORE_UNUSED);
-        }
-
         if(augmentType.isPresent()) {
+            if(!this.isUnique()) {
+                MutableText LORE_UNUSED = ReadableString.translatable("item.iron_quarry.augment.lore.used", stored, capacity);
+                tooltip.add(LORE_UNUSED);
+            }
+
             MutableText LORE_BENEFITS = ReadableString.translatable("item.iron_quarry.augment.lore.benefit." + augmentType.getName(), ZUtil.expandableFixedFloat(stored * augmentType.getMultiplier()));
             tooltip.add(LORE_BENEFITS);
 
             MutableText LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback.energy", ZUtil.expandableFixedFloat(stored * augmentType.getInefficiency()));
             tooltip.add(LORE_DRAWBACK);
+        } else if(!this.isUnique()) {
+            MutableText LORE_EMPTY = ReadableString.translatable("item.iron_quarry.lore.use_rei", stored, capacity);
+            tooltip.add(LORE_EMPTY);
         }
 
         if(this.isUnique()) return;
@@ -170,8 +173,6 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
                 MutableText itemName = ReadableString.translatable("item.iron_quarry.lore.listing.unused", item.getName().copy());
                 tooltip.add(itemName);
             });
-
-            if(context.isAdvanced()) tooltip.add(Text.empty());
         } else {
             MutableText LORE_DETAILS = ReadableString.translatable("item.iron_quarry.lore.details");
 

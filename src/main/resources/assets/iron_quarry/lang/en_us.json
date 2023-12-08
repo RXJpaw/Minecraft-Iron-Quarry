@@ -58,6 +58,7 @@
     "item.iron_quarry.lore.listing.used": "§{RGB_WEAK_HIGHLIGHT > %s}",
     "item.iron_quarry.lore.listing.unused": "§{RGB_DARK_GRAY > %s}",
     "item.iron_quarry.lore.details": "§{RGB_LIGHT_GRAY Hold} §{RGB_WEAK_HIGHLIGHT Left Shift} §{RGB_LIGHT_GRAY for more information}",
+    "item.iron_quarry.lore.use_rei": "§{RGB_WARNING Press U in EMI/JEI/REI to view recipes.}",
 
     "screen.iron_quarry.quarry_block.tooltip.locked_augment_slot": "§{RGB_TAB_TITLE Upgrade the quarry to unlock this augment slot!}",
     "screen.iron_quarry.quarry_block.tooltip.blueprint_info": "§{RGB_TAB_TITLE Insert §lSealed Blueprint§r to start the quarry.}",
