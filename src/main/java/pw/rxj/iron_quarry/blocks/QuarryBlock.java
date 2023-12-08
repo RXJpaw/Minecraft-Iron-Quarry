@@ -42,9 +42,9 @@ import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.blockentities.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blockentities.ZBlockEntities;
-import pw.rxj.iron_quarry.gui.AugmentInventoryData;
 import pw.rxj.iron_quarry.gui.CustomTooltipData;
 import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
+import pw.rxj.iron_quarry.gui.TooltipAugmentInventoryData;
 import pw.rxj.iron_quarry.interfaces.IEnergyContainer;
 import pw.rxj.iron_quarry.interfaces.IHandledCrafting;
 import pw.rxj.iron_quarry.recipes.HandledCraftingRecipe;
@@ -134,7 +134,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
 
     @Override
     public Optional<TooltipData> getTooltipData(ItemStack stack) {
-        return Screen.hasShiftDown() ? Optional.of(AugmentInventoryData.from(this.getAugmentInventory(stack), this.getAugmentLimit())) : Optional.empty();
+        return Screen.hasShiftDown() ? Optional.of(TooltipAugmentInventoryData.from(this.getAugmentInventory(stack), this.getAugmentLimit())) : Optional.empty();
     }
     @Override
     public void appendTooltip(ItemStack stack, @Nullable BlockView world, List<Text> tooltip, TooltipContext options) {

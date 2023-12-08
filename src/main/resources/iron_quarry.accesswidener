@@ -1,3 +1,4 @@
 accessWidener v2 named
 accessible field net/minecraft/client/gui/tooltip/OrderedTextTooltipComponent text Lnet/minecraft/text/OrderedText;
+accessible method net/minecraft/client/gui/DrawableHelper fillGradient (Lnet/minecraft/client/util/math/MatrixStack;IIIIIII)V
 extendable method net/minecraft/client/gui/screen/ingame/HandledScreen drawSlot (Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/screen/slot/Slot;)V

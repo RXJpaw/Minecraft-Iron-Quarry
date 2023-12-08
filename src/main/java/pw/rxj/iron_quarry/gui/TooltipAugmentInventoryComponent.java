@@ -12,14 +12,14 @@ import net.minecraft.util.math.Matrix4f;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
 import pw.rxj.iron_quarry.util.ComplexInventory;
 
-public class AugmentInventoryComponent implements CustomTooltipComponent {
+public class TooltipAugmentInventoryComponent implements CustomTooltipComponent {
     private static final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = QuarryBlockScreen.AUGMENTATION_CONFIGURATION_TEXTURE;
 
-    public final AugmentInventoryData augmentInventoryData;
+    public final TooltipAugmentInventoryData augmentInventoryData;
     public final ComplexInventory MachineUpgradesInventory;
     public final int augmentLimit;
 
-    private AugmentInventoryComponent(AugmentInventoryData tooltipData) {
+    private TooltipAugmentInventoryComponent(TooltipAugmentInventoryData tooltipData) {
         this.augmentInventoryData = tooltipData;
         this.MachineUpgradesInventory = tooltipData.getMachineUpgradesInventory();
         this.augmentLimit = tooltipData.getAugmentLimit();
@@ -30,18 +30,18 @@ public class AugmentInventoryComponent implements CustomTooltipComponent {
         return this.augmentInventoryData;
     }
 
-    public static AugmentInventoryComponent of(AugmentInventoryData tooltipData) {
-        return new AugmentInventoryComponent(tooltipData);
+    public static TooltipAugmentInventoryComponent of(TooltipAugmentInventoryData tooltipData) {
+        return new TooltipAugmentInventoryComponent(tooltipData);
     }
 
     @Override
     public int getHeight() {
-        return 24;
+        return 22;
     }
 
     @Override
     public int getWidth(TextRenderer textRenderer) {
-        return 112;
+        return 108;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class AugmentInventoryComponent implements CustomTooltipComponent {
     @Override
     public void drawItems(TextRenderer textRenderer, int x, int y, MatrixStack matrices, ItemRenderer itemRenderer, int z) {
         for(int index = 0; index < 6; ++index) {
-            int slotX = x + index * 18 + 2;
+            int slotX = x + index * 18;
             int slotY = y + 2;
 
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
