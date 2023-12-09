@@ -1,4 +1,4 @@
-package pw.rxj.iron_quarry.renderer;
+package pw.rxj.iron_quarry.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -15,8 +15,8 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.lwjgl.opengl.GL11;
 import pw.rxj.iron_quarry.Main;
-import pw.rxj.iron_quarry.blocks.QuarryBlock;
-import pw.rxj.iron_quarry.items.BlueprintItem;
+import pw.rxj.iron_quarry.block.QuarryBlock;
+import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.util.ZUtil;
 

@@ -1,4 +1,4 @@
-package pw.rxj.iron_quarry.blocks;
+package pw.rxj.iron_quarry.block;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -40,14 +40,14 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
-import pw.rxj.iron_quarry.blockentities.QuarryBlockEntity;
-import pw.rxj.iron_quarry.blockentities.ZBlockEntities;
+import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
+import pw.rxj.iron_quarry.blockentity.ZBlockEntities;
 import pw.rxj.iron_quarry.gui.CustomTooltipData;
 import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
 import pw.rxj.iron_quarry.gui.TooltipAugmentInventoryData;
 import pw.rxj.iron_quarry.interfaces.IEnergyContainer;
 import pw.rxj.iron_quarry.interfaces.IHandledCrafting;
-import pw.rxj.iron_quarry.recipes.HandledCraftingRecipe;
+import pw.rxj.iron_quarry.recipe.HandledCraftingRecipe;
 import pw.rxj.iron_quarry.records.TexturePosition;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.types.Face;

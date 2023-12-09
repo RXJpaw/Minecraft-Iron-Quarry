@@ -4,7 +4,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.tag.TagKey;
-import pw.rxj.iron_quarry.items.ZItemTags;
+import pw.rxj.iron_quarry.item.ZItemTags;
 import pw.rxj.iron_quarry.types.AugmentType;
 
 public record AugmentStack(AugmentType type, int amount) {

@@ -1,4 +1,4 @@
-package pw.rxj.iron_quarry.items;
+package pw.rxj.iron_quarry.item;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
@@ -30,7 +30,7 @@ import pw.rxj.iron_quarry.interfaces.BlockAttackable;
 import pw.rxj.iron_quarry.interfaces.IHandledGrinding;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
 import pw.rxj.iron_quarry.interfaces.IHandledSmithing;
-import pw.rxj.iron_quarry.recipes.HandledSmithingRecipe;
+import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
 import pw.rxj.iron_quarry.util.ReadableString;
 import pw.rxj.iron_quarry.util.ZUtil;

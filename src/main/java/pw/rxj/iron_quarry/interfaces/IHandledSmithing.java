@@ -12,7 +12,7 @@ import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
-import pw.rxj.iron_quarry.recipes.HandledSmithingRecipe;
+import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 
 public interface IHandledSmithing {
     ItemStack getSmithingOutput(HandledSmithingRecipe handler, Inventory inventory);

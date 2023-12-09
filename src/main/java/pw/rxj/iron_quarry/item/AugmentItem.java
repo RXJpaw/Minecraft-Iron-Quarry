@@ -1,4 +1,4 @@
-package pw.rxj.iron_quarry.items;
+package pw.rxj.iron_quarry.item;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -36,7 +36,7 @@ import pw.rxj.iron_quarry.interfaces.IDynamicItemName;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
 import pw.rxj.iron_quarry.interfaces.IHandledSmithing;
 import pw.rxj.iron_quarry.interfaces.IModelPredicateProvider;
-import pw.rxj.iron_quarry.recipes.HandledSmithingRecipe;
+import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.records.AugmentStack;
 import pw.rxj.iron_quarry.types.AugmentType;
 import pw.rxj.iron_quarry.types.DynamicText;

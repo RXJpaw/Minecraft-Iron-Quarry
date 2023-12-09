@@ -1,4 +1,4 @@
-package pw.rxj.iron_quarry.items;
+package pw.rxj.iron_quarry.item;
 
 import net.minecraft.item.Item;
 import net.minecraft.tag.TagKey;

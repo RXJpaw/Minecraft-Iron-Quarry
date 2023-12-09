@@ -1,4 +1,4 @@
-package pw.rxj.iron_quarry.blocks;
+package pw.rxj.iron_quarry.block;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.AbstractBlock;

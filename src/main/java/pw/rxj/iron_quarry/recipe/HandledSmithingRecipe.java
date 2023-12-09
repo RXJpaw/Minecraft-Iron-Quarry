@@ -1,4 +1,4 @@
-package pw.rxj.iron_quarry.recipes;
+package pw.rxj.iron_quarry.recipe;
 
 import com.google.gson.JsonObject;
 import net.minecraft.inventory.Inventory;

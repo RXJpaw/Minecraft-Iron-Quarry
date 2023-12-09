@@ -9,7 +9,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.VillagerProfession;
-import pw.rxj.iron_quarry.items.ZItems;
+import pw.rxj.iron_quarry.item.ZItems;
 
 import java.util.Optional;
 

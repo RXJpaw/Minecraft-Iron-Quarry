@@ -1,4 +1,4 @@
-package pw.rxj.iron_quarry.items;
+package pw.rxj.iron_quarry.item;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.item.Item;

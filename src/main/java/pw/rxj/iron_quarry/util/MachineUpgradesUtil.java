@@ -2,7 +2,7 @@ package pw.rxj.iron_quarry.util;
 
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import pw.rxj.iron_quarry.items.AugmentItem;
+import pw.rxj.iron_quarry.item.AugmentItem;
 import pw.rxj.iron_quarry.types.AugmentType;
 
 public class MachineUpgradesUtil {

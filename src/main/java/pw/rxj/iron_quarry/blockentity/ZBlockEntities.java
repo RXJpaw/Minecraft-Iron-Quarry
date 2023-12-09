@@ -1,11 +1,11 @@
-package pw.rxj.iron_quarry.blockentities;
+package pw.rxj.iron_quarry.blockentity;
 
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import pw.rxj.iron_quarry.Main;
-import pw.rxj.iron_quarry.blocks.ZBlocks;
+import pw.rxj.iron_quarry.block.ZBlocks;
 
 public class ZBlockEntities {
     public static final BlockEntityType<QuarryBlockEntity> QUARRY_BLOCK_ENTITY = Registry.register(

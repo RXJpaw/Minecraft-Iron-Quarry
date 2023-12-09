@@ -7,8 +7,8 @@ import net.minecraft.client.render.model.UnbakedModel;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
-import pw.rxj.iron_quarry.blocks.QuarryBlock;
-import pw.rxj.iron_quarry.blocks.ZBlocks;
+import pw.rxj.iron_quarry.block.QuarryBlock;
+import pw.rxj.iron_quarry.block.ZBlocks;
 
 import java.util.List;
 

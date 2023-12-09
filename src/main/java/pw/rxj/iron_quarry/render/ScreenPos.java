@@ -1,4 +1,4 @@
-package pw.rxj.iron_quarry.renderer;
+package pw.rxj.iron_quarry.render;
 
 import net.minecraft.util.math.Vector4f;
 

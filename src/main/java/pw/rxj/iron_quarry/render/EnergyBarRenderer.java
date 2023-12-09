@@ -1,4 +1,4 @@
-package pw.rxj.iron_quarry.renderer;
+package pw.rxj.iron_quarry.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.font.TextRenderer;
