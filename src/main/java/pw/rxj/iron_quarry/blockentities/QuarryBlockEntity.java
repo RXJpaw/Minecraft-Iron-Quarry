@@ -45,6 +45,8 @@ import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.blocks.QuarryBlock;
 import pw.rxj.iron_quarry.items.BlueprintItem;
+import pw.rxj.iron_quarry.network.PacketQuarryBlockBreak;
+import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.screenhandler.QuarryBlockScreenHandler;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.types.IoState;
@@ -444,9 +446,9 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             serverWorldToBreak.setBlockState(blockPosToBreak, Blocks.AIR.getDefaultState(), 2, 0);
             thisBlockEntity.EnergyContainer.useEnergy(actualEnergyConsumption);
 
-//            if (!(blockToBreak instanceof AbstractFireBlock)) {
-//                serverWorldToBreak.syncWorldEvent(2001, blockPosToBreak, Block.getRawIdFromState(blockStateToBreak));
-//            }
+            ZNetwork.sendToAround(serverWorldToBreak, blockPosToBreak, 32.0, player -> {
+                return PacketQuarryBlockBreak.bake(blockPosToBreak, blockStateToBreak);
+            });
         }
     }
 

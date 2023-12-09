@@ -25,6 +25,7 @@ import pw.rxj.iron_quarry.factory.ZTradeOffers;
 import pw.rxj.iron_quarry.interfaces.BlockAttackable;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
 import pw.rxj.iron_quarry.items.ZItems;
+import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.recipes.HandledCraftingRecipe;
 import pw.rxj.iron_quarry.recipes.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.screenhandler.QuarryBlockScreenHandler;
@@ -83,6 +84,8 @@ public class Main implements ModInitializer {
 
 		Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(MOD_ID, "handled_crafting_recipe"), HandledCraftingRecipe.SERIALIZER);
 		Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(MOD_ID, "handled_smithing_recipe"), HandledSmithingRecipe.SERIALIZER);
+
+		ZNetwork.registerServer();
 
 		LOGGER.info("Henlo from Iron Quarry :)");
 	}

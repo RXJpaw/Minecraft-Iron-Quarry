@@ -10,6 +10,7 @@ import pw.rxj.iron_quarry.blocks.QuarryBlock;
 import pw.rxj.iron_quarry.blocks.ZBlocks;
 import pw.rxj.iron_quarry.interfaces.IModelPredicateProvider;
 import pw.rxj.iron_quarry.model.ZModels;
+import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.renderer.BlueprintPreviewRenderer;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
@@ -35,5 +36,7 @@ public class Client implements ClientModInitializer {
 
             return 0.0F;
         });
+
+        ZNetwork.registerClient();
     }
 }
