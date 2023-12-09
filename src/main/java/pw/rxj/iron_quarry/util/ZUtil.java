@@ -1,8 +1,6 @@
 package pw.rxj.iron_quarry.util;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
@@ -107,17 +105,4 @@ public class ZUtil {
         return RegistryKey.of(RegistryKey.ofRegistry(registry), value);
     }
 
-    public static void enableScaledScissor(int x, int y, int width, int height) {
-        int scaleFactor = (int) MinecraftClient.getInstance().getWindow().getScaleFactor();
-
-        RenderSystem.enableScissor(x * scaleFactor, MinecraftClient.getInstance().getWindow().getFramebufferHeight() - (y + height) * scaleFactor, width * scaleFactor, height * scaleFactor);
-    }
-    public static void disableScaledScissor() {
-        RenderSystem.disableScissor();
-    }
-    public static void runScissored(int x, int y, int width, int height, Runnable runnable) {
-        ZUtil.enableScaledScissor(x, y, width, height);
-        runnable.run();
-        ZUtil.disableScaledScissor();
-    }
 }

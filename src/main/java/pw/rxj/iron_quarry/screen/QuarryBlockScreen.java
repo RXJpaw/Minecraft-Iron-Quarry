@@ -17,6 +17,7 @@ import pw.rxj.iron_quarry.blocks.QuarryBlock;
 import pw.rxj.iron_quarry.compat.Compat;
 import pw.rxj.iron_quarry.records.IoOption;
 import pw.rxj.iron_quarry.records.TexturePosition;
+import pw.rxj.iron_quarry.renderer.RenderUtil;
 import pw.rxj.iron_quarry.screenhandler.QuarryBlockScreenHandler;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.types.IoState;
@@ -155,7 +156,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             RenderSystem.setShaderTexture(0, AUGMENTATION_CONFIGURATION_TEXTURE);
             this.drawTexture(matrices, augmentsMenuX, augmentsMenuY, 0, 0, augmentsMenuWidth, augmentsMenuHeight);
 
-            ZUtil.runScissored(augmentsMenuX, augmentsMenuY, augmentsMenuWidth, augmentsMenuHeight, () -> {
+            RenderUtil.runScissored(augmentsMenuX, augmentsMenuY, augmentsMenuWidth, augmentsMenuHeight, () -> {
                 this.textRenderer.drawWithShadow(matrices, ReadableString.translatable("screen.iron_quarry.quarry_block.title.augmentation"), augmentsMenuX + 20, augmentsMenuY + 7, 0xFFFFFF);
             });
 
@@ -194,7 +195,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             RenderSystem.setShaderTexture(0, OPTIONS_CONFIGURATION_TEXTURE);
             drawTexture(matrices, ioConfigX, ioConfigY, 0, 0, ioConfigWidth, ioConfigHeight);
 
-            ZUtil.runScissored(ioConfigX, ioConfigY, ioConfigWidth, ioConfigHeight, () -> {
+            RenderUtil.runScissored(ioConfigX, ioConfigY, ioConfigWidth, ioConfigHeight, () -> {
                 textRenderer.drawWithShadow(matrices, ReadableString.translatable("screen.iron_quarry.quarry_block.title.configuration"), ioConfigX + 20, ioConfigY + 7, 0xFFFFFF);
             });
 
@@ -238,7 +239,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     protected void drawSlot(MatrixStack matrices, Slot slot) {
         if(AUGMENT_SLOTS.contains((ManagedSlot) slot)) {
             TrackableZone.Zone zone = AugmentsConfig.zone;
-            ZUtil.runScissored(zone.x, zone.y, zone.width, zone.height, () -> {
+            RenderUtil.runScissored(zone.x, zone.y, zone.width, zone.height, () -> {
                 super.drawSlot(matrices, slot);
             });
         } else {
