@@ -20,6 +20,8 @@ import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.util.ZUtil;
 
+import java.util.HashSet;
+
 
 public class BlueprintPreviewRenderer {
     public static final Identifier BLUEPRINT_PREVIEW_TEXTURE = Identifier.of(Main.MOD_ID, "textures/world/blueprint_preview.png");
@@ -58,25 +60,41 @@ public class BlueprintPreviewRenderer {
         BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack);
         if(secondPos == null) return;
 
-        double midX = firstPos.getX() - ((double) (firstPos.getX() - secondPos.getX()) / 2);
-        double midY = firstPos.getY() - ((double) (firstPos.getY() - secondPos.getY()) / 2);
-        double midZ = firstPos.getZ() - ((double) (firstPos.getZ() - secondPos.getZ()) / 2);
-
-        int absX = Math.abs(firstPos.getX() - secondPos.getX());
-        int absY = Math.abs(firstPos.getY() - secondPos.getY());
-        int absZ = Math.abs(firstPos.getZ() - secondPos.getZ());
+        int light = 14680272;
+        float tickDelta = context.tickDelta();
+        double viewDistance = Math.min(minecraftClient.options.getClampedViewDistance() * 16 * 4, 2048.0);
 
         Camera camera = context.camera();
+        MatrixStack matrices = context.matrixStack();
+        LightmapTextureManager lightmapTextureManager = context.lightmapTextureManager();
 
-        Vec3d targetPosition = new Vec3d(midX, midY, midZ);
-        Vec3d transformedPosition = targetPosition.subtract(camera.getPos());
+        matrices.push();
 
-        MatrixStack matrixStack = new MatrixStack();
-        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(camera.getPitch()));
-        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(camera.getYaw() + 180.0F));
-        matrixStack.translate(transformedPosition.x, transformedPosition.y, transformedPosition.z);
+        Vec3d lerpedPlayerPos = player.getLerpedPos(tickDelta);
 
-        context.lightmapTextureManager().enable();
+        Vec3d lowest = new Vec3d(
+                Math.min(firstPos.getX(), secondPos.getX()),
+                Math.min(firstPos.getY(), secondPos.getY()),
+                Math.min(firstPos.getZ(), secondPos.getZ())
+        ).subtract(lerpedPlayerPos);
+        Vec3d highest = new Vec3d(
+                Math.max(firstPos.getX(), secondPos.getX()),
+                Math.max(firstPos.getY(), secondPos.getY()),
+                Math.max(firstPos.getZ(), secondPos.getZ())
+        ).subtract(lerpedPlayerPos).add(1, 1, 1);
+
+        Vec3d limitedLowest = RenderUtil.minMaxVec3d(lowest, viewDistance, -viewDistance);
+        Vec3d limitedHighest = RenderUtil.minMaxVec3d(highest, viewDistance, -viewDistance);
+        HashSet<Direction> limitedDirections = RenderUtil.limitedDirections(lowest, limitedLowest, highest, limitedHighest);
+
+        Vec3d playerToCameraPos = lerpedPlayerPos.subtract(camera.getPos());
+        matrices.translate(playerToCameraPos.x, playerToCameraPos.y, playerToCameraPos.z);
+
+        Matrix4f positionMatrix = matrices.peek().getPositionMatrix();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+
+        lightmapTextureManager.enable();
 
         RenderSystem.setShader(GameRenderer::getRenderTypeTranslucentShader);
         RenderSystem.setShaderTexture(0, BLUEPRINT_PREVIEW_TEXTURE);
@@ -85,76 +103,28 @@ public class BlueprintPreviewRenderer {
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
 
-        Matrix4f positionMatrix = matrixStack.peek().getPositionMatrix();
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
+        /*
+         * WorldRenderEvents.END doesn't call this when the world border is rendered.
+         * Resulting in transparency and brightness being way off.
+         */
+        RenderSystem.defaultBlendFunc();
 
         buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
 
+        float minU = 0.0F;
+        float maxU = 1.0F;
+        float minV = 0.0F;
+        float maxV = 1.0F;
+
         for (Direction direction : Direction.values()) {
-            int light = 14680272;
+            if(limitedDirections.contains(direction)) continue;
 
-            float minU = 0.0F;
-            float maxU = 1.0F;
-            float minV = 0.0F;
-            float maxV = 1.0F;
+            SpriteVec anchors = RenderUtil.anchorsFrom(direction, new Vec3f(limitedLowest), new Vec3f(limitedHighest));
 
-            Vec3f anchor_tl = null;
-            Vec3f anchor_bl = null;
-            Vec3f anchor_br = null;
-            Vec3f anchor_tr = null;
-
-            float minX = -((float) absX / 2);
-            float minY = -((float) absY / 2);
-            float minZ = -((float) absZ / 2);
-
-            float maxX = 1 + (float) absX / 2;
-            float maxY = 1 + (float) absY / 2;
-            float maxZ = 1 + (float) absZ / 2;
-
-            switch (direction) {
-                case UP -> {
-                    anchor_tl = new Vec3f(maxX, maxY, maxZ); //top left
-                    anchor_bl = new Vec3f(maxX, maxY, minZ); //bottom left
-                    anchor_br = new Vec3f(minX, maxY, minZ); //bottom right
-                    anchor_tr = new Vec3f(minX, maxY, maxZ); //top right
-                }
-                case NORTH -> {
-                    anchor_tl = new Vec3f(maxX, maxY, minZ);
-                    anchor_bl = new Vec3f(maxX, minY, minZ);
-                    anchor_br = new Vec3f(minX, minY, minZ);
-                    anchor_tr = new Vec3f(minX, maxY, minZ);
-                }
-                case WEST -> {
-                    anchor_tl = new Vec3f(minX, maxY, minZ);
-                    anchor_bl = new Vec3f(minX, minY, minZ);
-                    anchor_br = new Vec3f(minX, minY, maxZ);
-                    anchor_tr = new Vec3f(minX, maxY, maxZ);
-                }
-                case SOUTH -> {
-                    anchor_tl = new Vec3f(minX, maxY, maxZ);
-                    anchor_bl = new Vec3f(minX, minY, maxZ);
-                    anchor_br = new Vec3f(maxX, minY, maxZ);
-                    anchor_tr = new Vec3f(maxX, maxY, maxZ);
-                }
-                case EAST -> {
-                    anchor_tl = new Vec3f(maxX, maxY, maxZ);
-                    anchor_bl = new Vec3f(maxX, minY, maxZ);
-                    anchor_br = new Vec3f(maxX, minY, minZ);
-                    anchor_tr = new Vec3f(maxX, maxY, minZ);
-                }
-                case DOWN -> {
-                    anchor_tl = new Vec3f(minX, minY, maxZ);
-                    anchor_bl = new Vec3f(minX, minY, minZ);
-                    anchor_br = new Vec3f(maxX, minY, minZ);
-                    anchor_tr = new Vec3f(maxX, minY, maxZ);
-                }
-            }
-
-            buffer.vertex(positionMatrix, anchor_tl.getX(), anchor_tl.getY(), anchor_tl.getZ()).color(0.2F, 0.2F, 0.2F, 1.0F).texture(minU, minV).light(light).normal(0, 0, 0).next();
-            buffer.vertex(positionMatrix, anchor_bl.getX(), anchor_bl.getY(), anchor_bl.getZ()).color(1.0F, 1.0F, 1.0F, 1.0F).texture(minU, maxV).light(light).normal(0, 0, 0).next();
-            buffer.vertex(positionMatrix, anchor_br.getX(), anchor_br.getY(), anchor_br.getZ()).color(0.2F, 0.2F, 0.2F, 1.0F).texture(maxU, maxV).light(light).normal(0, 0, 0).next();
-            buffer.vertex(positionMatrix, anchor_tr.getX(), anchor_tr.getY(), anchor_tr.getZ()).color(1.0F, 1.0F, 1.0F, 1.0F).texture(maxU, minV).light(light).normal(0, 0, 0).next();
+            buffer.vertex(positionMatrix, anchors.tl.getX(), anchors.tl.getY(), anchors.tl.getZ()).color(0.2F, 0.2F, 0.2F, 1.0F).texture(minU, minV).light(light).normal(0, 0, 0).next();
+            buffer.vertex(positionMatrix, anchors.bl.getX(), anchors.bl.getY(), anchors.bl.getZ()).color(1.0F, 1.0F, 1.0F, 1.0F).texture(minU, maxV).light(light).normal(0, 0, 0).next();
+            buffer.vertex(positionMatrix, anchors.br.getX(), anchors.br.getY(), anchors.br.getZ()).color(0.2F, 0.2F, 0.2F, 1.0F).texture(maxU, maxV).light(light).normal(0, 0, 0).next();
+            buffer.vertex(positionMatrix, anchors.tr.getX(), anchors.tr.getY(), anchors.tr.getZ()).color(1.0F, 1.0F, 1.0F, 1.0F).texture(maxU, minV).light(light).normal(0, 0, 0).next();
         }
 
         tessellator.draw();
@@ -163,7 +133,9 @@ public class BlueprintPreviewRenderer {
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
 
-        context.lightmapTextureManager().disable();
+        lightmapTextureManager.disable();
+
+        matrices.pop();
     }
 
     public static void register() {

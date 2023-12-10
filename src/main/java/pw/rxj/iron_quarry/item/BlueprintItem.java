@@ -138,8 +138,8 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
             tooltip.add(Text.empty());
             tooltip.add(LORE_UNBOUND);
         } else if(this.isSealed(stack)) {
-            int mined = this.getMinedChunks(stack);
-            int mineable = this.getMineableChunks(stack);
+            long mined = this.getMinedChunks(stack);
+            long mineable = this.getMineableChunks(stack);
             float percentage = mineable > 0 ? (float) mined / mineable : 0;
 
             MutableText LORE_MINED = ReadableString.translatable("item.iron_quarry.blueprint.lore.mined", mined, mineable, ZUtil.expandableFixedFloat(percentage * 100));
@@ -288,13 +288,13 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         return new BlockPos(secondPosNbt.getInt("x"), secondPosNbt.getInt("y"), secondPosNbt.getInt("z"));
     }
 
-    public int getMinedChunks(ItemStack stack) {
+    public long getMinedChunks(ItemStack stack) {
         NbtCompound itemNbt = stack.getNbt();
         if(itemNbt == null) return 0;
 
         return itemNbt.getInt("MinedChunks");
     }
-    public int getMineableChunks(ItemStack stack) {
+    public long getMineableChunks(ItemStack stack) {
         BlockPos firstPos = this.getFirstPos(stack);
         if(firstPos == null) return 0;
         BlockPos secondPos = this.getSecondPos(stack);
@@ -307,22 +307,22 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
         int chunksOnX = Math.abs(firstChunkX - secondChunkX) + 1;
         int chunksOnZ = Math.abs(firstChunkZ - secondChunkZ) + 1;
-        return chunksOnX * chunksOnZ;
+        return (long) chunksOnX * chunksOnZ;
     }
     public boolean allChunksMined(ItemStack stack) {
-        int mineable = this.getMineableChunks(stack);
+        long mineable = this.getMineableChunks(stack);
         if(mineable == 0) return false;
-        int mined = this.getMinedChunks(stack);
+        long mined = this.getMinedChunks(stack);
 
         return mined == mineable;
     }
     public void increaseMinedChunks(ItemStack stack) {
         this.increaseMinedChunks(stack, 1);
     }
-    public void increaseMinedChunks(ItemStack stack, int amount) {
-        int minedChunks = this.getMinedChunks(stack);
+    public void increaseMinedChunks(ItemStack stack, long amount) {
+        long minedChunks = this.getMinedChunks(stack);
 
-        stack.getOrCreateNbt().putInt("MinedChunks", minedChunks + amount);
+        stack.getOrCreateNbt().putLong("MinedChunks", minedChunks + amount);
     }
 
     public List<@NotNull ChunkPos> getNextChunkPos(ItemStack stack, int maxPositions){
@@ -339,7 +339,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
     public @Nullable ChunkPos getNextChunkPos(ItemStack stack) {
         return this.getNextChunkPosWithOffset(stack, 0);
     }
-    public @Nullable ChunkPos getNextChunkPosWithOffset(ItemStack stack, int offset){
+    public @Nullable ChunkPos getNextChunkPosWithOffset(ItemStack stack, long offset){
         BlockPos firstPos = this.getFirstPos(stack);
         if(firstPos == null) return null;
         BlockPos secondPos = this.getSecondPos(stack);
@@ -352,16 +352,16 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
         int chunksOnX = Math.abs(firstChunkX - secondChunkX) + 1;
         int chunksOnZ = Math.abs(firstChunkZ - secondChunkZ) + 1;
-        int chunksToMine = chunksOnX * chunksOnZ;
+        long chunksToMine = (long) chunksOnX * chunksOnZ;
 
-        int currentChunkIndex = this.getMinedChunks(stack) + offset;
+        long currentChunkIndex = this.getMinedChunks(stack) + offset;
         if(currentChunkIndex >= chunksToMine) return null;
 
         int minChunkX = Math.min(firstChunkX, secondChunkX);
         int minChunkZ = Math.min(firstChunkZ, secondChunkZ);
 
-        int offsetChunkX = currentChunkIndex % chunksOnX;
-        int offsetChunkZ = currentChunkIndex / chunksOnX;
+        int offsetChunkX = (int) (currentChunkIndex % chunksOnX);
+        int offsetChunkZ = (int) (currentChunkIndex / chunksOnX);
         int currentChunkX = minChunkX + offsetChunkX;
         int currentChunkZ = minChunkZ + offsetChunkZ;
 
