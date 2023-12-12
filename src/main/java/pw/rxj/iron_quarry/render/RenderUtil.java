@@ -4,9 +4,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.Window;
-import net.minecraft.util.math.*;
-
-import java.util.HashSet;
+import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.Vector4f;
 
 public class RenderUtil {
     public static void enableScaledScissor(int x, int y, int width, int height) {
@@ -50,72 +51,8 @@ public class RenderUtil {
     public static Vec3d minMaxVec3d(Vec3d vec3d, double max, double min) {
         return minVec3d(maxVec3d(vec3d, min), max);
     }
-    public static HashSet<Direction> limitedDirections(Vec3d lowest, Vec3d limitedLowest, Vec3d highest, Vec3d limitedHighest) {
-        HashSet<Direction> directions = new HashSet<>();
-
-        if(lowest.x != limitedLowest.x) directions.add(Direction.WEST);
-        if(lowest.y != limitedLowest.y) directions.add(Direction.DOWN);
-        if(lowest.z != limitedLowest.z) directions.add(Direction.NORTH);
-        if(highest.x != limitedHighest.x) directions.add(Direction.EAST);
-        if(highest.y != limitedHighest.y) directions.add(Direction.UP);
-        if(highest.z != limitedHighest.z) directions.add(Direction.SOUTH);
-
-        return directions;
-    }
-
-    public static SpriteVec anchorsFrom(Direction direction, Vec3f lowest, Vec3f highest) {
-        Vec3f anchor_tl = null;
-        Vec3f anchor_bl = null;
-        Vec3f anchor_br = null;
-        Vec3f anchor_tr = null;
-
-        float minX = lowest.getX();
-        float minY = lowest.getY();
-        float minZ = lowest.getZ();
-
-        float maxX = highest.getX();
-        float maxY = highest.getY();
-        float maxZ = highest.getZ();
-
-        switch (direction) {
-            case UP -> {
-                anchor_tl = new Vec3f(maxX, maxY, maxZ); //top left
-                anchor_bl = new Vec3f(maxX, maxY, minZ); //bottom left
-                anchor_br = new Vec3f(minX, maxY, minZ); //bottom right
-                anchor_tr = new Vec3f(minX, maxY, maxZ); //top right
-            }
-            case NORTH -> {
-                anchor_tl = new Vec3f(maxX, maxY, minZ);
-                anchor_bl = new Vec3f(maxX, minY, minZ);
-                anchor_br = new Vec3f(minX, minY, minZ);
-                anchor_tr = new Vec3f(minX, maxY, minZ);
-            }
-            case WEST -> {
-                anchor_tl = new Vec3f(minX, maxY, minZ);
-                anchor_bl = new Vec3f(minX, minY, minZ);
-                anchor_br = new Vec3f(minX, minY, maxZ);
-                anchor_tr = new Vec3f(minX, maxY, maxZ);
-            }
-            case SOUTH -> {
-                anchor_tl = new Vec3f(minX, maxY, maxZ);
-                anchor_bl = new Vec3f(minX, minY, maxZ);
-                anchor_br = new Vec3f(maxX, minY, maxZ);
-                anchor_tr = new Vec3f(maxX, maxY, maxZ);
-            }
-            case EAST -> {
-                anchor_tl = new Vec3f(maxX, maxY, maxZ);
-                anchor_bl = new Vec3f(maxX, minY, maxZ);
-                anchor_br = new Vec3f(maxX, minY, minZ);
-                anchor_tr = new Vec3f(maxX, maxY, minZ);
-            }
-            case DOWN -> {
-                anchor_tl = new Vec3f(minX, minY, maxZ);
-                anchor_bl = new Vec3f(minX, minY, minZ);
-                anchor_br = new Vec3f(maxX, minY, minZ);
-                anchor_tr = new Vec3f(maxX, minY, maxZ);
-            }
-        }
-
-        return SpriteVec.from(anchor_tl, anchor_bl, anchor_br, anchor_tr);
+    public static boolean isOutsideRange(Vec3d pos, double range) {
+        return pos.x < -range || pos.y < -range || pos.z < -range ||
+               pos.x >  range || pos.y >  range || pos.z >  range;
     }
 }

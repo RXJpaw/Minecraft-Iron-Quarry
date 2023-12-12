@@ -36,4 +36,9 @@ public class ScreenPos {
     public boolean isBehind() {
         return this.getDepth() < 0;
     }
+
+    @Override
+    public String toString() {
+        return String.format("ScreenPos[x: %s, y: %s, W: %s]", this.getX(), this.getY(), this.getDepth());
+    }
 }

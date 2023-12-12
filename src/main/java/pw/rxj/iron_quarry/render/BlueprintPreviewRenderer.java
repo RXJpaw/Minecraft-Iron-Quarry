@@ -9,23 +9,21 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.lwjgl.opengl.GL11;
-import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.item.BlueprintItem;
-import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.util.ZUtil;
 
-import java.util.HashSet;
+import java.util.List;
 
 
 public class BlueprintPreviewRenderer {
-    public static final Identifier BLUEPRINT_PREVIEW_TEXTURE = Identifier.of(Main.MOD_ID, "textures/world/blueprint_preview.png");
-
     private static void render(WorldRenderContext context) {
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
         if(minecraftClient.world == null) return;
@@ -60,32 +58,19 @@ public class BlueprintPreviewRenderer {
         BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack);
         if(secondPos == null) return;
 
-        int light = 14680272;
         float tickDelta = context.tickDelta();
-        double viewDistance = Math.min(minecraftClient.options.getClampedViewDistance() * 16 * 4, 2048.0);
-
+        double viewDistance = Math.min(minecraftClient.options.getClampedViewDistance() * 16 * 3, 1536.0);
         Camera camera = context.camera();
         MatrixStack matrices = context.matrixStack();
-        LightmapTextureManager lightmapTextureManager = context.lightmapTextureManager();
 
         matrices.push();
 
         Vec3d lerpedPlayerPos = player.getLerpedPos(tickDelta);
 
-        Vec3d lowest = new Vec3d(
-                Math.min(firstPos.getX(), secondPos.getX()),
-                Math.min(firstPos.getY(), secondPos.getY()),
-                Math.min(firstPos.getZ(), secondPos.getZ())
-        ).subtract(lerpedPlayerPos);
-        Vec3d highest = new Vec3d(
-                Math.max(firstPos.getX(), secondPos.getX()),
-                Math.max(firstPos.getY(), secondPos.getY()),
-                Math.max(firstPos.getZ(), secondPos.getZ())
-        ).subtract(lerpedPlayerPos).add(1, 1, 1);
-
-        Vec3d limitedLowest = RenderUtil.minMaxVec3d(lowest, viewDistance, -viewDistance);
-        Vec3d limitedHighest = RenderUtil.minMaxVec3d(highest, viewDistance, -viewDistance);
-        HashSet<Direction> limitedDirections = RenderUtil.limitedDirections(lowest, limitedLowest, highest, limitedHighest);
+        Cuboid originalCuboid = Cuboid.from(firstPos, secondPos).subtract(lerpedPlayerPos).fullblock();
+        Cuboid viewDistanceCuboid = Cuboid.from(viewDistance, -viewDistance);
+        Cuboid limitedCuboid = originalCuboid.limitInside(viewDistanceCuboid);
+        if(limitedCuboid.isFlat()) return;
 
         Vec3d playerToCameraPos = lerpedPlayerPos.subtract(camera.getPos());
         matrices.translate(playerToCameraPos.x, playerToCameraPos.y, playerToCameraPos.z);
@@ -94,52 +79,58 @@ public class BlueprintPreviewRenderer {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
 
-        lightmapTextureManager.enable();
-
-        RenderSystem.setShader(GameRenderer::getRenderTypeTranslucentShader);
-        RenderSystem.setShaderTexture(0, BLUEPRINT_PREVIEW_TEXTURE);
+        // WorldRenderEvents.END doesn't call this when the world border is rendered.
+        // Resulting in color, transparency and brightness being way off.
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.depthFunc(GL11.GL_ALWAYS);
-        RenderSystem.disableCull();
-        RenderSystem.enableBlend();
-
-        /*
-         * WorldRenderEvents.END doesn't call this when the world border is rendered.
-         * Resulting in transparency and brightness being way off.
-         */
         RenderSystem.defaultBlendFunc();
 
-        buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
+        //Outlines
+        RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
+        RenderSystem.lineWidth(3.0F);
+        RenderSystem.enableBlend();
+        RenderSystem.disableCull();
 
-        float minU = 0.0F;
-        float maxU = 1.0F;
-        float minV = 0.0F;
-        float maxV = 1.0F;
+        double outlineOffset = 0.02;
 
-        for (Direction direction : Direction.values()) {
-            if(limitedDirections.contains(direction)) continue;
+        List<SpriteVec2f> boxLines = limitedCuboid.inflate(outlineOffset).getLines();
+        List<SpriteVec2f> splitBoxLines = boxLines.stream().map(vec -> vec.autoSplit(8.0F)).flatMap(List::stream).toList();
+        List<SpriteVec2f> filteredSplitBoxLines = splitBoxLines.stream().filter(vec -> vec.distanceTo(Vec3f.ZERO) <= viewDistance).toList();
 
-            SpriteVec anchors = RenderUtil.anchorsFrom(direction, new Vec3f(limitedLowest), new Vec3f(limitedHighest));
+        //Visible Outlines
+        RenderSystem.depthFunc(GL11.GL_LESS);
+        buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
 
-            buffer.vertex(positionMatrix, anchors.tl.getX(), anchors.tl.getY(), anchors.tl.getZ()).color(0.2F, 0.2F, 0.2F, 1.0F).texture(minU, minV).light(light).normal(0, 0, 0).next();
-            buffer.vertex(positionMatrix, anchors.bl.getX(), anchors.bl.getY(), anchors.bl.getZ()).color(1.0F, 1.0F, 1.0F, 1.0F).texture(minU, maxV).light(light).normal(0, 0, 0).next();
-            buffer.vertex(positionMatrix, anchors.br.getX(), anchors.br.getY(), anchors.br.getZ()).color(0.2F, 0.2F, 0.2F, 1.0F).texture(maxU, maxV).light(light).normal(0, 0, 0).next();
-            buffer.vertex(positionMatrix, anchors.tr.getX(), anchors.tr.getY(), anchors.tr.getZ()).color(1.0F, 1.0F, 1.0F, 1.0F).texture(maxU, minV).light(light).normal(0, 0, 0).next();
+        for (SpriteVec2f line : filteredSplitBoxLines) {
+            Vec3f n = line.normalize();
+
+            buffer.vertex(positionMatrix, line.from.getX(), line.from.getY(), line.from.getZ()).color(1.0F, 1.0F, 1.0F, 1.0F).normal(matrices.peek().getNormalMatrix(), n.getX(), n.getY(), n.getZ()).next();
+            buffer.vertex(positionMatrix, line.to.getX(), line.to.getY(), line.to.getZ()).color(1.0F, 1.0F, 1.0F, 1.0F).normal(matrices.peek().getNormalMatrix(), n.getX(), n.getY(), n.getZ()).next();
+        }
+
+        tessellator.draw();
+
+        //Hidden Outlines
+        RenderSystem.depthFunc(GL11.GL_GREATER);
+        buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+
+        for (SpriteVec2f line : filteredSplitBoxLines) {
+            Vec3f n = line.normalize();
+
+            buffer.vertex(positionMatrix, line.from.getX(), line.from.getY(), line.from.getZ()).color(1.0F, 1.0F, 1.0F, 0.2F).normal(matrices.peek().getNormalMatrix(), n.getX(), n.getY(), n.getZ()).next();
+            buffer.vertex(positionMatrix, line.to.getX(), line.to.getY(), line.to.getZ()).color(1.0F, 1.0F, 1.0F, 0.2F).normal(matrices.peek().getNormalMatrix(), n.getX(), n.getY(), n.getZ()).next();
         }
 
         tessellator.draw();
 
         RenderSystem.depthFunc(GL11.GL_LEQUAL);
-        RenderSystem.enableCull();
+        RenderSystem.lineWidth(1.0F);
         RenderSystem.disableBlend();
-
-        lightmapTextureManager.disable();
+        RenderSystem.enableCull();
 
         matrices.pop();
     }
 
     public static void register() {
-        ResourceReloadListener.include(BLUEPRINT_PREVIEW_TEXTURE);
         WorldRenderEvents.END.register(BlueprintPreviewRenderer::render);
     }
 }
