@@ -17,6 +17,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.*;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import oshi.util.tuples.Triplet;
 import pw.rxj.iron_quarry.Main;
@@ -39,6 +40,7 @@ public class BlueprintPreviewRenderer {
         screenPositions.clear();
 
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        if(minecraftClient.options.hudHidden) return;
         if(minecraftClient.world == null) return;
         ClientPlayerEntity player = minecraftClient.player;
         if(player == null) return;
@@ -66,19 +68,19 @@ public class BlueprintPreviewRenderer {
 
         RegistryKey<World> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack);
         if(!minecraftClient.world.getRegistryKey().equals(worldRegistryKey)) return;
-        BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack);
-        if(firstPos == null) return;
-        BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack);
-        if(secondPos == null) return;
 
-        float tickDelta = context.tickDelta();
-        double viewDistance = Math.min(minecraftClient.options.getClampedViewDistance() * 16 * 3, 1536.0);
-        double squaredViewDistance = Math.pow(viewDistance, 2);
         Camera camera = context.camera();
         MatrixStack matrices = context.matrixStack();
         Matrix4f projectionMatrix = context.projectionMatrix();
 
+        BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack);
+        BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack);
         prepareRenderOnScreen(matrices, firstPos, secondPos, camera, projectionMatrix);
+        if(firstPos == null || secondPos == null) return;
+
+        float tickDelta = context.tickDelta();
+        double viewDistance = Math.min(minecraftClient.options.getClampedViewDistance() * 16 * 3, 1536.0);
+        double squaredViewDistance = Math.pow(viewDistance, 2);
 
         Vec3d lerpedPlayerPos = player.getLerpedPos(tickDelta);
 
@@ -147,22 +149,30 @@ public class BlueprintPreviewRenderer {
         matrices.pop();
     }
 
-    private static void prepareRenderOnScreen(MatrixStack matrices, BlockPos firstPos, BlockPos secondPos, Camera camera, Matrix4f projectionMatrix) {
-        //ScreenPos
-        Vec3d pos1 = RenderUtil.vec3dFrom(firstPos);
-        Vec3d pos2 = RenderUtil.vec3dFrom(secondPos);
+    private static void prepareRenderOnScreen(MatrixStack matrices, @Nullable BlockPos firstPos, @Nullable BlockPos secondPos, Camera camera, Matrix4f projectionMatrix) {
+        if(firstPos != null) {
+            Vec3d pos1 = RenderUtil.vec3dFrom(firstPos);
 
-        screenPositions.add(new Triplet<>(
-                RenderUtil.worldToScreen(pos1, matrices.peek().getPositionMatrix(), projectionMatrix),
-                pos1.distanceTo(camera.getPos()),
-                new Vec2f(0, 0)
-        ));
-        screenPositions.add(new Triplet<>(
-                RenderUtil.worldToScreen(pos2, matrices.peek().getPositionMatrix(), projectionMatrix),
-                pos2.distanceTo(camera.getPos()),
-                new Vec2f(13, 0)
-        ));
-        screenPositions.sort((a, b) -> Double.compare(b.getB(), a.getB()));
+            screenPositions.add(new Triplet<>(
+                    RenderUtil.worldToScreen(pos1, matrices.peek().getPositionMatrix(), projectionMatrix),
+                    pos1.distanceTo(camera.getPos()),
+                    new Vec2f(0, 0)
+            ));
+        }
+
+        if(secondPos != null) {
+            Vec3d pos2 = RenderUtil.vec3dFrom(secondPos);
+
+            screenPositions.add(new Triplet<>(
+                    RenderUtil.worldToScreen(pos2, matrices.peek().getPositionMatrix(), projectionMatrix),
+                    pos2.distanceTo(camera.getPos()),
+                    new Vec2f(13, 0)
+            ));
+        }
+
+        if(firstPos != null && secondPos != null) {
+            screenPositions.sort((a, b) -> Double.compare(b.getB(), a.getB()));
+        }
     }
 
     private static void renderOnScreen(MatrixStack matrices, double tickDelta) {
@@ -181,10 +191,13 @@ public class BlueprintPreviewRenderer {
 
             RenderSystem.enableBlend();
             RenderSystem.setShaderTexture(0, BLUEPRINT_POSITIONS_TEXTURE);
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+
+
 
             //Icon
             matrices.push();
-            matrices.translate(screenPos.x, screenPos.y, 0.0);
+            matrices.translate(screenPos.x, screenPos.y, 90.0);
             matrices.scale(scale, scale, scale);
             //Align on full pixel to prevent AA artifacts.
             matrices.translate(-6, -6, 0.0);
