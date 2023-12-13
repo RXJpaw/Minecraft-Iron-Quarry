@@ -4,27 +4,40 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.*;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.lwjgl.opengl.GL11;
+import oshi.util.tuples.Triplet;
+import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
+import pw.rxj.iron_quarry.event.InGameHudRenderCallback;
 import pw.rxj.iron_quarry.item.BlueprintItem;
+import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.util.ZUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
 public class BlueprintPreviewRenderer {
-    private static void render(WorldRenderContext context) {
+    public static final Identifier BLUEPRINT_POSITIONS_TEXTURE = Identifier.of(Main.MOD_ID, "textures/gui/blueprint_positions.png");
+
+    private static final List<Triplet<ScreenPos, Double, Vec2f>> screenPositions = new ArrayList<>();
+
+    private static void renderInWorld(WorldRenderContext context) {
+        screenPositions.clear();
+
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
         if(minecraftClient.world == null) return;
         ClientPlayerEntity player = minecraftClient.player;
@@ -63,8 +76,9 @@ public class BlueprintPreviewRenderer {
         double squaredViewDistance = Math.pow(viewDistance, 2);
         Camera camera = context.camera();
         MatrixStack matrices = context.matrixStack();
+        Matrix4f projectionMatrix = context.projectionMatrix();
 
-        matrices.push();
+        prepareRenderOnScreen(matrices, firstPos, secondPos, camera, projectionMatrix);
 
         Vec3d lerpedPlayerPos = player.getLerpedPos(tickDelta);
 
@@ -72,6 +86,8 @@ public class BlueprintPreviewRenderer {
         Cuboid viewDistanceCuboid = Cuboid.from(viewDistance, -viewDistance);
         Cuboid limitedCuboid = originalCuboid.limitInside(viewDistanceCuboid);
         if(limitedCuboid.isFlat()) return;
+
+        matrices.push();
 
         Vec3d playerToCameraPos = lerpedPlayerPos.subtract(camera.getPos());
         matrices.translate(playerToCameraPos.x, playerToCameraPos.y, playerToCameraPos.z);
@@ -131,7 +147,80 @@ public class BlueprintPreviewRenderer {
         matrices.pop();
     }
 
+    private static void prepareRenderOnScreen(MatrixStack matrices, BlockPos firstPos, BlockPos secondPos, Camera camera, Matrix4f projectionMatrix) {
+        //ScreenPos
+        Vec3d pos1 = RenderUtil.vec3dFrom(firstPos);
+        Vec3d pos2 = RenderUtil.vec3dFrom(secondPos);
+
+        screenPositions.add(new Triplet<>(
+                RenderUtil.worldToScreen(pos1, matrices.peek().getPositionMatrix(), projectionMatrix),
+                pos1.distanceTo(camera.getPos()),
+                new Vec2f(0, 0)
+        ));
+        screenPositions.add(new Triplet<>(
+                RenderUtil.worldToScreen(pos2, matrices.peek().getPositionMatrix(), projectionMatrix),
+                pos2.distanceTo(camera.getPos()),
+                new Vec2f(13, 0)
+        ));
+        screenPositions.sort((a, b) -> Double.compare(b.getB(), a.getB()));
+    }
+
+    private static void renderOnScreen(MatrixStack matrices, double tickDelta) {
+        MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        TextRenderer textRenderer = minecraftClient.textRenderer;
+
+        for (Triplet<ScreenPos, Double, Vec2f> pair : screenPositions) {
+            ScreenPos screenPos = pair.getA();
+            if(screenPos.isBehind()) continue;
+            double distance = pair.getB();
+            Vec2f uv = pair.getC();
+
+            float scale = (float) Math.max(1.0, (3.0 / Math.pow(distance, 0.6)));
+            //Adjust scale for low resolution displays that default to GUI scale 1.
+            if(minecraftClient.getWindow().getScaleFactor() <= 1) scale *= 1.5F;
+
+            RenderSystem.enableBlend();
+            RenderSystem.setShaderTexture(0, BLUEPRINT_POSITIONS_TEXTURE);
+
+            //Icon
+            matrices.push();
+            matrices.translate(screenPos.x, screenPos.y, 0.0);
+            matrices.scale(scale, scale, scale);
+            //Align on full pixel to prevent AA artifacts.
+            matrices.translate(-6, -6, 0.0);
+
+            DrawableHelper.drawTexture(matrices, 0, 0, 0, uv.x, uv.y, 13, 13, 36, 36);
+
+            matrices.pop();
+
+            //Distance
+            if(screenPos.distanceToCenter() <= 12 * scale) {
+                matrices.push();
+                matrices.translate(screenPos.x, screenPos.y + 9 * scale, 0.0);
+
+                MutableText text = Text.literal(String.format("%,.1fm", distance));
+                int width = textRenderer.getWidth(text);
+                int height = 8;
+                scale /= 1.5F;
+
+                matrices.scale(scale, scale, scale);
+                matrices.translate(1 + width / -2.0F, 0.0, 0.0);
+
+                DrawableHelper.fill(matrices, -2, -2, width + 1, height + 1, 1409286144);
+                textRenderer.draw(matrices, text, 0, 0, -1);
+
+                matrices.pop();
+            }
+
+
+            RenderSystem.disableBlend();
+        }
+    }
+
     public static void register() {
-        WorldRenderEvents.END.register(BlueprintPreviewRenderer::render);
+        ResourceReloadListener.include(BLUEPRINT_POSITIONS_TEXTURE);
+
+        WorldRenderEvents.END.register(BlueprintPreviewRenderer::renderInWorld);
+        InGameHudRenderCallback.START.register(BlueprintPreviewRenderer::renderOnScreen);
     }
 }

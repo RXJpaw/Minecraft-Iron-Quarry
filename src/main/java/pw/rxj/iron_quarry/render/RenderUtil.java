@@ -4,10 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.Window;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.math.Vector4f;
+import net.minecraft.util.math.*;
 
 public class RenderUtil {
     public static void enableScaledScissor(int x, int y, int width, int height) {
@@ -22,6 +19,10 @@ public class RenderUtil {
         enableScaledScissor(x, y, width, height);
         runnable.run();
         disableScaledScissor();
+    }
+
+    public static Vec3d vec3dFrom(BlockPos blockPos) {
+        return new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ()).add(0.5, 0.5, 0.5);
     }
 
     public static ScreenPos worldToScreen(Vec3d worldPos, Matrix4f positionMatrix, Matrix4f projectionMatrix) {
