@@ -39,6 +39,6 @@ public class ScreenPos {
 
     @Override
     public String toString() {
-        return String.format("ScreenPos[x: %s, y: %s, W: %s]", this.getX(), this.getY(), this.getDepth());
+        return String.format("ScreenPos{x: %s, y: %s, W: %s}", this.getX(), this.getY(), this.getDepth());
     }
 }

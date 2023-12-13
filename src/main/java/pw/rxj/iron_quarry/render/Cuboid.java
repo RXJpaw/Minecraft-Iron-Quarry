@@ -9,8 +9,8 @@ import java.util.List;
 public class Cuboid {
     private boolean fullblockAdjusted = false;
 
-    public Vec3d lowPos;
-    public Vec3d highPos;
+    public final Vec3d lowPos;
+    public final Vec3d highPos;
 
     private Cuboid(Vec3d pos1, Vec3d pos2, boolean process) {
         if(process) {
@@ -114,6 +114,9 @@ public class Cuboid {
                this.lowPos.y == this.highPos.y ||
                this.lowPos.z == this.highPos.z;
     }
+    public boolean isInside(Vec3d pos) {
+        return !this.isOutside(pos);
+    }
     public boolean isOutside(Vec3d pos) {
         return pos.x <  this.lowPos.x || pos.y <  this.lowPos.y || pos.z <  this.lowPos.z ||
                pos.x > this.highPos.x || pos.y > this.highPos.y || pos.z > this.highPos.z;
@@ -210,5 +213,10 @@ public class Cuboid {
         directions.put(Direction.SOUTH, this.highPos.z == suspect.highPos.z);
 
         return directions;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Cuboid{low: %s, high: %s}", this.lowPos, this.highPos);
     }
 }

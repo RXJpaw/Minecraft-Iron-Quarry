@@ -41,13 +41,14 @@ public class SpriteVec2f {
     public SpriteVec2f swap() {
         return from(to, from);
     }
+
     public double innerDistance() {
         return Math.sqrt(this.innerSquaredDistance());
     }
     public double innerSquaredDistance() {
-        float x = this.from.getX() - this.to.getX();
-        float y = this.from.getY() - this.to.getY();
-        float z = this.from.getZ() - this.to.getZ();
+        double x = this.from.getX() - this.to.getX();
+        double y = this.from.getY() - this.to.getY();
+        double z = this.from.getZ() - this.to.getZ();
 
         return x * x + y * y + z * z;
     }
@@ -55,9 +56,11 @@ public class SpriteVec2f {
         return Math.sqrt(this.squaredDistanceTo(pos));
     }
     public double squaredDistanceTo(Vec3f pos) {
-        float x = pos.getX() - (this.from.getX() + this.to.getX()) / 2;
-        float y = pos.getY() - (this.from.getY() + this.to.getY()) / 2;
-        float z = pos.getZ() - (this.from.getZ() + this.to.getZ()) / 2;
+        Vec3f center = this.center();
+
+        double x = pos.getX() - center.getX();
+        double y = pos.getY() - center.getY();
+        double z = pos.getZ() - center.getZ();
 
         return x * x + y * y + z * z;
     }
@@ -80,6 +83,13 @@ public class SpriteVec2f {
 
         return list;
     }
+    public Vec3f center() {
+        return new Vec3f(
+                (this.from.getX() + this.to.getX()) / 2,
+                (this.from.getY() + this.to.getY()) / 2,
+                (this.from.getZ() + this.to.getZ()) / 2
+        );
+    }
 
     public boolean isOutsideRange(double range) {
         return RenderUtil.isOutsideRange(new Vec3d(this.from), range) &&
@@ -92,6 +102,6 @@ public class SpriteVec2f {
 
     @Override
     public String toString() {
-        return String.format("SpriteVec[from: %s, to: %s]", this.from, this.to);
+        return String.format("SpriteVec{from: %s, to: %s}", this.from, this.to);
     }
 }

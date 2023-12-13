@@ -60,6 +60,7 @@ public class BlueprintPreviewRenderer {
 
         float tickDelta = context.tickDelta();
         double viewDistance = Math.min(minecraftClient.options.getClampedViewDistance() * 16 * 3, 1536.0);
+        double squaredViewDistance = Math.pow(viewDistance, 2);
         Camera camera = context.camera();
         MatrixStack matrices = context.matrixStack();
 
@@ -94,7 +95,7 @@ public class BlueprintPreviewRenderer {
 
         List<SpriteVec2f> boxLines = limitedCuboid.inflate(outlineOffset).getLines();
         List<SpriteVec2f> splitBoxLines = boxLines.stream().map(vec -> vec.autoSplit(8.0F)).flatMap(List::stream).toList();
-        List<SpriteVec2f> filteredSplitBoxLines = splitBoxLines.stream().filter(vec -> vec.distanceTo(Vec3f.ZERO) <= viewDistance).toList();
+        List<SpriteVec2f> filteredSplitBoxLines = splitBoxLines.stream().filter(vec -> vec.squaredDistanceTo(Vec3f.ZERO) <= squaredViewDistance).toList();
 
         //Visible Outlines
         RenderSystem.depthFunc(GL11.GL_LESS);

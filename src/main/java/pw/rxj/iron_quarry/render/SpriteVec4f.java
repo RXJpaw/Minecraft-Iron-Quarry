@@ -21,6 +21,6 @@ public class SpriteVec4f {
 
     @Override
     public String toString() {
-        return String.format("SpriteVec[tl: %s, bl: %s, br: %s, tr: %s]", this.tl, this.bl, this.br, this.tr);
+        return String.format("SpriteVec{tl: %s, bl: %s, br: %s, tr: %s}", this.tl, this.bl, this.br, this.tr);
     }
 }
