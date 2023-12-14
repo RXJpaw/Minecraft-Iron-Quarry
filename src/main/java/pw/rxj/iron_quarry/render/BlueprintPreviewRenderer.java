@@ -191,25 +191,22 @@ public class BlueprintPreviewRenderer {
 
             RenderSystem.enableBlend();
             RenderSystem.setShaderTexture(0, BLUEPRINT_POSITIONS_TEXTURE);
-            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-
-
-            //Icon
             matrices.push();
             matrices.translate(screenPos.x, screenPos.y, 90.0);
             matrices.scale(scale, scale, scale);
-            //Align on full pixel to prevent AA artifacts.
+            //Align on full pixel to prevent AA artifacts. ^1
             matrices.translate(-6, -6, 0.0);
 
             DrawableHelper.drawTexture(matrices, 0, 0, 0, uv.x, uv.y, 13, 13, 36, 36);
 
             matrices.pop();
 
-            //Distance
-            if(screenPos.distanceToCenter() <= 12 * scale) {
+            //Add 1 to shift the center, because the texture had to be offset.
+            if(screenPos.add(1, 1).distanceToCenter() <= 14 * scale) {
                 matrices.push();
-                matrices.translate(screenPos.x, screenPos.y + 9 * scale, 0.0);
+                matrices.translate(screenPos.x, screenPos.y + 9 * scale, 90.0);
 
                 MutableText text = Text.literal(String.format("%,.1fm", distance));
                 int width = textRenderer.getWidth(text);
@@ -224,7 +221,6 @@ public class BlueprintPreviewRenderer {
 
                 matrices.pop();
             }
-
 
             RenderSystem.disableBlend();
         }

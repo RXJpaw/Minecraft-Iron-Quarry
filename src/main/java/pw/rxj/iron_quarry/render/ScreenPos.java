@@ -29,6 +29,13 @@ public class ScreenPos {
         return this.depth <= 0;
     }
 
+    public ScreenPos add(float x, float y) {
+        return ScreenPos.from(this.x + x, this.y + y, depth);
+    }
+    public ScreenPos subtract(float x, float y) {
+        return ScreenPos.from(this.x - x, this.y - y, depth);
+    }
+
     public double distanceToCenter() {
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
         Window window = minecraftClient.getWindow();
