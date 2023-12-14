@@ -291,12 +291,12 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         if(!(blueprintStack.getItem() instanceof BlueprintItem blueprintItem)) return;
         if(!blueprintItem.isSealed(blueprintStack) || blueprintItem.allChunksMined(blueprintStack)) return;
 
-        BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack);
+        BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack).orElse(null);
         if(firstPos == null) return;
-        BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack);
+        BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack).orElse(null);
         if(secondPos == null) return;
 
-        RegistryKey<World> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack);
+        RegistryKey<World> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack).orElse(null);
         ServerWorld serverWorldToBreak = minecraftServer.getWorld(worldRegistryKey);
         if(serverWorldToBreak == null) return;
 

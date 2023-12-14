@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
@@ -108,5 +109,15 @@ public class ZUtil {
 
     public static Vec3d toVec3d(BlockPos blockPos) {
         return new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+    }
+
+    public static Direction getFacingDirection(float yaw, float pitch) {
+        if(pitch < -45.0F) {
+            return Direction.UP;
+        } else if(pitch > 45.0F) {
+            return Direction.DOWN;
+        } else {
+            return Direction.fromRotation(yaw);
+        }
     }
 }

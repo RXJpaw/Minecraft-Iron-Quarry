@@ -4,7 +4,9 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -18,6 +20,7 @@ import java.util.function.Function;
 
 public class ZNetwork {
     private static final List<ComplexPacketHandler<?>> packetList = List.of(
+            PacketBlueprintPositionSet.INSTANCE,
             PacketQuarryBlockBreak.INSTANCE
     );
 
@@ -49,5 +52,17 @@ public class ZNetwork {
 
             player.networkHandler.sendPacket(packet);
         }
+    }
+
+    public static void sendToServer(@Nullable PacketByteBuf buf) {
+        if(buf == null) return;
+
+        MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        if(minecraftClient.player == null) return;
+
+        PacketByteBuf bufCopy = new PacketByteBuf(buf.copy());
+        CustomPayloadC2SPacket packet = new CustomPayloadC2SPacket(bufCopy);
+
+        minecraftClient.player.networkHandler.sendPacket(packet);
     }
 }

@@ -15,6 +15,7 @@
         "DynamicItemNameRendererMixin",
         "EnergyBarMixin",
         "InGameHudMixin",
+        "MouseScrollMixin",
         "TooltipComponentMixin",
         "TooltipDataMixin",
         "TooltipRenderMixin"

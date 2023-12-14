@@ -1,7 +1,10 @@
 package pw.rxj.iron_quarry.item;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,23 +25,25 @@ import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import pw.rxj.iron_quarry.interfaces.BlockAttackable;
-import pw.rxj.iron_quarry.interfaces.IHandledGrinding;
-import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
-import pw.rxj.iron_quarry.interfaces.IHandledSmithing;
+import pw.rxj.iron_quarry.interfaces.*;
+import pw.rxj.iron_quarry.network.PacketBlueprintPositionSet;
+import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
+import pw.rxj.iron_quarry.types.ScrollDirection;
 import pw.rxj.iron_quarry.util.ReadableString;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-public class BlueprintItem extends Item implements BlockAttackable, IHandledSmithing, IHandledGrinding, IHandledItemEntity {
+public class BlueprintItem extends Item implements BlockAttackable, IHandledSmithing, IHandledGrinding, IHandledItemEntity, IHandledMainHandScrolling {
     public BlueprintItem(Settings settings) {
         super(settings);
     }
@@ -57,8 +62,8 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         ItemStack base = inventory.getStack(0).copy();
 
         if(this.isSealed(base)) return ItemStack.EMPTY;
-        if(this.getFirstPos(base) == null) return ItemStack.EMPTY;
-        if(this.getSecondPos(base) == null) return ItemStack.EMPTY;
+        if(this.getFirstPos(base).isEmpty()) return ItemStack.EMPTY;
+        if(this.getSecondPos(base).isEmpty()) return ItemStack.EMPTY;
 
         this.setSealed(base, true);
         output.setNbt(base.getNbt());
@@ -101,6 +106,83 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         if(this.isSealed(itemEntity.getStack())) itemEntity.setInvulnerable(true);
     }
 
+    @Override
+    @Environment(EnvType.CLIENT)
+    public boolean handleMainHandScrolling(ClientPlayerEntity player, ItemStack stack, ScrollDirection scrollDirection) {
+        if(!MinecraftClient.getInstance().options.sneakKey.isPressed() || this.isSealed(stack)) return false;
+
+        Direction direction = ZUtil.getFacingDirection(player.getYaw(), player.getPitch());
+        int multiplier = MinecraftClient.getInstance().options.sprintKey.isPressed() ? 16 : 1;
+
+        int amount = switch(scrollDirection) {
+            case FORWARDS -> multiplier;
+            case BACKWARDS -> -multiplier;
+            default -> 0;
+        };
+
+        if(this.expandInDirection(stack, player, direction, amount)) {
+            BlockPos firstPos = this.getFirstPos(stack).orElse(null);
+            BlockPos secondPos = this.getSecondPos(stack).orElse(null);
+            ZNetwork.sendToServer(PacketBlueprintPositionSet.bake(firstPos, secondPos));
+
+            return true;
+        }
+
+        return false;
+    }
+    public boolean expandInDirection(ItemStack stack, PlayerEntity player, Direction direction, int amount) {
+        RegistryKey<World> world = this.getWorldRegistryKey(stack).orElseGet(() -> player.getWorld().getRegistryKey());
+        if(!world.equals(player.getWorld().getRegistryKey())) return false;
+
+        BlockPos firstPos = this.getFirstPos(stack).orElseGet(player::getBlockPos);
+        BlockPos secondPos = this.getSecondPos(stack).orElseGet(player::getBlockPos);
+
+        final boolean first;
+        final Vec3i vector;
+
+        switch (direction) {
+            case UP -> {
+                first = firstPos.getY() > secondPos.getY();
+                vector = new Vec3i(0, amount, 0);
+            }
+            case DOWN -> {
+                first = firstPos.getY() < secondPos.getY();
+                vector = new Vec3i(0, -amount, 0);
+            }
+            case SOUTH -> {
+                first = firstPos.getZ() > secondPos.getZ();
+                vector = new Vec3i(0, 0, amount);
+            }
+            case NORTH -> {
+                first = firstPos.getZ() < secondPos.getZ();
+                vector = new Vec3i(0, 0, -amount);
+            }
+            case EAST -> {
+                first = firstPos.getX() > secondPos.getX();
+                vector = new Vec3i(amount, 0, 0);
+            }
+            case WEST -> {
+                first = firstPos.getX() < secondPos.getX();
+                vector = new Vec3i(-amount, 0, 0);
+            }
+            default -> {
+                return false;
+            }
+        }
+
+        if(first) {
+            firstPos = firstPos.add(vector);
+        } else {
+            secondPos = secondPos.add(vector);
+        }
+
+        this.setWorld(stack, world);
+        this.setFirstPos(stack, firstPos);
+        this.setSecondPos(stack, secondPos);
+
+        return true;
+    }
+
     private NbtCompound getBlockPosNbt(BlockPos blockPos) {
         int x = blockPos.getX();
         int y = blockPos.getY();
@@ -116,11 +198,11 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        RegistryKey<World> worldKey = this.getWorldRegistryKey(stack);
+        RegistryKey<World> worldKey = this.getWorldRegistryKey(stack).orElse(null);
         Identifier worldId = worldKey != null ? worldKey.getValue() : null;
 
-        BlockPos firstPos = this.getFirstPos(stack);
-        BlockPos secondPos = this.getSecondPos(stack);
+        BlockPos firstPos = this.getFirstPos(stack).orElse(null);
+        BlockPos secondPos = this.getSecondPos(stack).orElse(null);
 
         MutableText LORE_POS_EMPTY = ReadableString.translatable("item.iron_quarry.blueprint.lore.empty");
 
@@ -174,7 +256,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
         MutableText itemName = Text.translatable(translationKey);
 
-        if(this.getFirstPos(stack) == null || this.getSecondPos(stack) == null) {
+        if(this.getFirstPos(stack).isEmpty() || this.getSecondPos(stack).isEmpty()) {
             itemName.append(" ").append(Text.translatable("item.iron_quarry.blueprint.unbound"));
         } else if(this.allChunksMined(stack)) {
             itemName.append(" ").append(Text.translatable("item.iron_quarry.blueprint.completed"));
@@ -241,7 +323,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         this.setWorld(stack, world.getRegistryKey());
     }
     public void setWorld(ItemStack stack, RegistryKey<World> newWorldKey) {
-        RegistryKey<World> oldWorldKey = this.getWorldRegistryKey(stack);
+        RegistryKey<World> oldWorldKey = this.getWorldRegistryKey(stack).orElse(null);
 
         if(!ZUtil.equals(oldWorldKey, newWorldKey)) {
             this.resetPositions(stack);
@@ -250,12 +332,12 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         String stringifiedKey = ZUtil.toString(newWorldKey);
         stack.getOrCreateNbt().putString("World", stringifiedKey);
     }
-    public @Nullable RegistryKey<World> getWorldRegistryKey(ItemStack stack) {
+    public Optional<RegistryKey<World>> getWorldRegistryKey(ItemStack stack) {
         NbtCompound itemNbt = stack.getNbt();
-        if(itemNbt == null) return null;
+        if(itemNbt == null) return Optional.empty();
 
         String worldKey = itemNbt.getString("World");
-        return ZUtil.toRegistryKey(worldKey);
+        return Optional.ofNullable(ZUtil.toRegistryKey(worldKey));
     }
 
     public void resetPositions(ItemStack stack) {
@@ -271,21 +353,21 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
     public void setSecondPos(ItemStack stack, BlockPos blockPos) {
         stack.getOrCreateNbt().put("SecondPosition", this.getBlockPosNbt(blockPos));
     }
-    public @Nullable BlockPos getFirstPos(ItemStack stack) {
+    public Optional<BlockPos> getFirstPos(ItemStack stack) {
         NbtCompound itemNbt = stack.getNbt();
-        if(itemNbt == null) return null;
+        if(itemNbt == null) return Optional.empty();
         NbtCompound firstPosNbt = itemNbt.getCompound("FirstPosition");
-        if(firstPosNbt.isEmpty()) return null;
+        if(firstPosNbt.isEmpty()) return Optional.empty();
 
-        return new BlockPos(firstPosNbt.getInt("x"), firstPosNbt.getInt("y"), firstPosNbt.getInt("z"));
+        return Optional.of(new BlockPos(firstPosNbt.getInt("x"), firstPosNbt.getInt("y"), firstPosNbt.getInt("z")));
     }
-    public @Nullable BlockPos getSecondPos(ItemStack stack) {
+    public Optional<BlockPos> getSecondPos(ItemStack stack) {
         NbtCompound itemNbt = stack.getNbt();
-        if(itemNbt == null) return null;
+        if(itemNbt == null) return Optional.empty();
         NbtCompound secondPosNbt = itemNbt.getCompound("SecondPosition");
-        if(secondPosNbt.isEmpty()) return null;
+        if(secondPosNbt.isEmpty()) return Optional.empty();
 
-        return new BlockPos(secondPosNbt.getInt("x"), secondPosNbt.getInt("y"), secondPosNbt.getInt("z"));
+        return Optional.of(new BlockPos(secondPosNbt.getInt("x"), secondPosNbt.getInt("y"), secondPosNbt.getInt("z")));
     }
 
     public long getMinedChunks(ItemStack stack) {
@@ -295,9 +377,9 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         return itemNbt.getInt("MinedChunks");
     }
     public long getMineableChunks(ItemStack stack) {
-        BlockPos firstPos = this.getFirstPos(stack);
+        BlockPos firstPos = this.getFirstPos(stack).orElse(null);
         if(firstPos == null) return 0;
-        BlockPos secondPos = this.getSecondPos(stack);
+        BlockPos secondPos = this.getSecondPos(stack).orElse(null);
         if(secondPos == null) return 0;
 
         int firstChunkX = firstPos.getX() >> 4;
@@ -340,9 +422,9 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         return this.getNextChunkPosWithOffset(stack, 0);
     }
     public @Nullable ChunkPos getNextChunkPosWithOffset(ItemStack stack, long offset){
-        BlockPos firstPos = this.getFirstPos(stack);
+        BlockPos firstPos = this.getFirstPos(stack).orElse(null);
         if(firstPos == null) return null;
-        BlockPos secondPos = this.getSecondPos(stack);
+        BlockPos secondPos = this.getSecondPos(stack).orElse(null);
         if(secondPos == null) return null;
 
         int firstChunkX = firstPos.getX() >> 4;

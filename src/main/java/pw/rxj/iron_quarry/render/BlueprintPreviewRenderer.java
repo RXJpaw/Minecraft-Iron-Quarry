@@ -66,15 +66,15 @@ public class BlueprintPreviewRenderer {
 
         final BlueprintItem blueprintItem = (BlueprintItem) blueprintStack.getItem();
 
-        RegistryKey<World> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack);
+        RegistryKey<World> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack).orElse(null);
         if(!minecraftClient.world.getRegistryKey().equals(worldRegistryKey)) return;
 
         Camera camera = context.camera();
         MatrixStack matrices = context.matrixStack();
         Matrix4f projectionMatrix = context.projectionMatrix();
 
-        BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack);
-        BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack);
+        BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack).orElse(null);
+        BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack).orElse(null);
         prepareRenderOnScreen(matrices, firstPos, secondPos, camera, projectionMatrix);
         if(firstPos == null || secondPos == null) return;
 
