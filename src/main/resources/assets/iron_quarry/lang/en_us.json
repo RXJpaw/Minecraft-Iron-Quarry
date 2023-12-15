@@ -64,5 +64,7 @@
     "screen.iron_quarry.quarry_block.tooltip.blueprint_info": "§{RGB_TAB_TITLE Insert §lSealed Blueprint§r to start the quarry.}",
     "screen.iron_quarry.quarry_block.tooltip.battery_info": "§{RGB_TAB_TITLE Insert §la battery§r to charge the quarry externally.}",
     "screen.iron_quarry.quarry_block.title.configuration": "§{RGB_TAB_TITLE Configuration}",
-    "screen.iron_quarry.quarry_block.title.augmentation": "§{RGB_TAB_TITLE Augmentation}"
+    "screen.iron_quarry.quarry_block.title.augmentation": "§{RGB_TAB_TITLE Augmentation}",
+
+    "kick_reason.iron_quarry.packet_blueprint_position_set.disallowed_distance": "Tried to expand blueprint position by an illegal amount. (Must be between %s and %s)"
 }

@@ -31,7 +31,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.interfaces.*;
-import pw.rxj.iron_quarry.network.PacketBlueprintPositionSet;
+import pw.rxj.iron_quarry.network.PacketBlueprintExpand;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
@@ -121,9 +121,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         };
 
         if(this.expandInDirection(stack, player, direction, amount)) {
-            BlockPos firstPos = this.getFirstPos(stack).orElse(null);
-            BlockPos secondPos = this.getSecondPos(stack).orElse(null);
-            ZNetwork.sendToServer(PacketBlueprintPositionSet.bake(firstPos, secondPos));
+            ZNetwork.sendToServer(PacketBlueprintExpand.bake(direction, (byte) amount));
 
             return true;
         }

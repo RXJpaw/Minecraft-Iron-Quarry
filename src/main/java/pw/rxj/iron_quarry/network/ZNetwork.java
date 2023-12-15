@@ -20,8 +20,8 @@ import java.util.function.Function;
 
 public class ZNetwork {
     private static final List<ComplexPacketHandler<?>> packetList = List.of(
-            PacketBlueprintPositionSet.INSTANCE,
-            PacketQuarryBlockBreak.INSTANCE
+            PacketQuarryBlockBreak.INSTANCE,
+            PacketBlueprintExpand.INSTANCE
     );
 
     @Environment(EnvType.CLIENT)
