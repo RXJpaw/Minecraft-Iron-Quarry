@@ -130,7 +130,9 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         return false;
     }
     public boolean expandInDirection(ItemStack stack, PlayerEntity player, Direction direction, int amount) {
-        RegistryKey<World> world = this.getWorldRegistryKey(stack).orElseGet(() -> player.getWorld().getRegistryKey());
+        World playerWorld = player.getWorld();
+
+        RegistryKey<World> world = this.getWorldRegistryKey(stack).orElseGet(playerWorld::getRegistryKey);
         if(!world.equals(player.getWorld().getRegistryKey())) return false;
 
         BlockPos firstPos = this.getFirstPos(stack).orElseGet(player::getBlockPos);
@@ -175,9 +177,8 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
             secondPos = secondPos.add(vector);
         }
 
-        this.setWorld(stack, world);
-        this.setFirstPos(stack, firstPos);
-        this.setSecondPos(stack, secondPos);
+        this.setFirstPos(stack, playerWorld, firstPos);
+        this.setSecondPos(stack, playerWorld, secondPos);
 
         return true;
     }
@@ -295,8 +296,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
         BlockPos targetedPos = context.getBlockPos();
 
-        this.setWorld(stack, context.getWorld());
-        this.setSecondPos(stack, targetedPos);
+        this.setSecondPos(stack, context.getWorld(), targetedPos);
 
         Text secondPosText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
 
@@ -311,8 +311,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         ItemStack stack = player.getStackInHand(hand);
         if(this.isSealed(stack)) return ActionResult.FAIL;
 
-        this.setWorld(stack, world);
-        this.setFirstPos(stack, targetedPos);
+        this.setFirstPos(stack, world, targetedPos);
 
         Text firstPosText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
 
@@ -326,13 +325,13 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
     }
     public void setWorld(ItemStack stack, RegistryKey<World> newWorldKey) {
         RegistryKey<World> oldWorldKey = this.getWorldRegistryKey(stack).orElse(null);
+        if(ZUtil.equals(oldWorldKey, newWorldKey)) return;
 
-        if(!ZUtil.equals(oldWorldKey, newWorldKey)) {
-            this.resetPositions(stack);
-        }
+        this.resetPositions(stack);
 
-        String stringifiedKey = ZUtil.toString(newWorldKey);
-        stack.getOrCreateNbt().putString("World", stringifiedKey);
+        String worldKey = ZUtil.toString(newWorldKey);
+        stack.getOrCreateNbt().putString("World", worldKey);
+
     }
     public Optional<RegistryKey<World>> getWorldRegistryKey(ItemStack stack) {
         NbtCompound itemNbt = stack.getNbt();
@@ -346,30 +345,39 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         NbtCompound nbt = stack.getNbt();
         if(nbt == null) return;
 
-        nbt.remove("FirstPosition");
-        nbt.remove("SecondPosition");
+        nbt.remove(Position.FIRST.getNbtLiteral());
+        nbt.remove(Position.SECOND.getNbtLiteral());
     }
-    public void setFirstPos(ItemStack stack, BlockPos blockPos) {
-        stack.getOrCreateNbt().put("FirstPosition", this.getBlockPosNbt(blockPos));
+    public void setFirstPos(ItemStack stack, @Nullable World world, BlockPos blockPos) {
+        this.setPosition(Position.FIRST, stack, world, blockPos);
     }
-    public void setSecondPos(ItemStack stack, BlockPos blockPos) {
-        stack.getOrCreateNbt().put("SecondPosition", this.getBlockPosNbt(blockPos));
+    public void setSecondPos(ItemStack stack, @Nullable World world, BlockPos blockPos) {
+        this.setPosition(Position.SECOND, stack, world, blockPos);
+    }
+    private void setPosition(Position position, ItemStack stack, @Nullable World world, BlockPos blockPos) {
+        if(world != null) {
+            this.setWorld(stack, world);
+            blockPos = ZUtil.limitInsideWorldBounds(blockPos, world);
+        } else if(this.getWorldRegistryKey(stack).isEmpty()) {
+            throw new IllegalStateException("BlueprintItem#setWorld has to be called first if no world is supplied.");
+        }
+
+        stack.getOrCreateNbt().put(position.getNbtLiteral(), this.getBlockPosNbt(blockPos));
     }
     public Optional<BlockPos> getFirstPos(ItemStack stack) {
-        NbtCompound itemNbt = stack.getNbt();
-        if(itemNbt == null) return Optional.empty();
-        NbtCompound firstPosNbt = itemNbt.getCompound("FirstPosition");
-        if(firstPosNbt.isEmpty()) return Optional.empty();
-
-        return Optional.of(new BlockPos(firstPosNbt.getInt("x"), firstPosNbt.getInt("y"), firstPosNbt.getInt("z")));
+        return Optional.ofNullable(this.getPosition(Position.FIRST, stack));
     }
     public Optional<BlockPos> getSecondPos(ItemStack stack) {
+        return Optional.ofNullable(this.getPosition(Position.SECOND, stack));
+    }
+    private @Nullable BlockPos getPosition(Position position, ItemStack stack) {
         NbtCompound itemNbt = stack.getNbt();
-        if(itemNbt == null) return Optional.empty();
-        NbtCompound secondPosNbt = itemNbt.getCompound("SecondPosition");
-        if(secondPosNbt.isEmpty()) return Optional.empty();
+        if(itemNbt == null) return null;
 
-        return Optional.of(new BlockPos(secondPosNbt.getInt("x"), secondPosNbt.getInt("y"), secondPosNbt.getInt("z")));
+        NbtCompound positionNbt = itemNbt.getCompound(position.getNbtLiteral());
+        if(positionNbt.isEmpty()) return null;
+
+        return new BlockPos(positionNbt.getInt("x"), positionNbt.getInt("y"), positionNbt.getInt("z"));
     }
 
     public long getMinedChunks(ItemStack stack) {
@@ -463,11 +471,31 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
             ClientWorld clientWorld = minecraftClient.world;
 
             this.setWorld(stack, clientWorld == null ? World.OVERWORLD : clientWorld.getRegistryKey());
-            this.setFirstPos(stack, new BlockPos(10000, 64, 10000));
-            this.setSecondPos(stack, new BlockPos(-10000, -64, -10000));
+            this.setFirstPos(stack, null, new BlockPos(10000, 64, 10000));
+            this.setSecondPos(stack, null, new BlockPos(-10000, -64, -10000));
             this.setSealed(stack, true);
 
             stacks.add(stack);
+        }
+    }
+
+    private enum Position {
+        FIRST(0, "FirstPosition"),
+        SECOND(1, "SecondPosition");
+
+        private final int id;
+        private final String nbtLiteral;
+
+        private Position(int id, String nbtLiteral) {
+            this.id = id;
+            this.nbtLiteral = nbtLiteral;
+        }
+
+        public int getId() {
+            return id;
+        }
+        public String getNbtLiteral() {
+            return nbtLiteral;
         }
     }
 }

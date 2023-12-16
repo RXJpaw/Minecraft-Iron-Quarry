@@ -11,6 +11,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
+import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.Nullable;
 
@@ -119,5 +120,21 @@ public class ZUtil {
         } else {
             return Direction.fromRotation(yaw);
         }
+    }
+
+    public static BlockPos limitInsideWorldBounds(BlockPos blockPos, World world) {
+        WorldBorder worldBorder = world.getWorldBorder();
+
+        double x = Math.min(Math.max(blockPos.getX(), worldBorder.getBoundWest()), worldBorder.getBoundEast() - 1);
+        double y = Math.min(Math.max(blockPos.getY(), world.getBottomY()), world.getTopY());
+        double z = Math.min(Math.max(blockPos.getZ(), worldBorder.getBoundNorth()), worldBorder.getBoundSouth() - 1);
+
+        return new BlockPos(x, y, z);
+    }
+    public static boolean isInsideWorldBounds(BlockPos blockPos, World world) {
+        if(blockPos.getY() > world.getTopY()) return false;
+        if(blockPos.getY() < world.getBottomY()) return false;
+
+        return world.getWorldBorder().contains(blockPos);
     }
 }

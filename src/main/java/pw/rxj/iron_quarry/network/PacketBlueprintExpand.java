@@ -53,7 +53,6 @@ public class PacketBlueprintExpand extends ComplexPacketHandler<DirectionBytePac
         if(ZUtil.getBlockOrItem(holdingStack) instanceof BlueprintItem blueprintItem) {
             if(blueprintItem.isSealed(holdingStack)) return;
 
-            blueprintItem.setWorld(holdingStack, player.getWorld());
             blueprintItem.expandInDirection(holdingStack, player, packet.direction, packet.data);
         }
     }
