@@ -38,7 +38,7 @@
     "item.iron_quarry.blueprint.unbound": "(Unbound)",
     "item.iron_quarry.blueprint.completed": "(Completed)",
     "item.iron_quarry.blueprint.lore.unbound": "§{RGB_DARK_GRAY §nTip:} §{RGB_LIGHT_GRAY Set positions by left/right-clicking blocks!}",
-    "item.iron_quarry.blueprint.lore.selected": "§{RGB_DARK_GRAY §nTip:} §{RGB_LIGHT_GRAY You selected %s Chunk(s)!}",
+    "item.iron_quarry.blueprint.lore.selected": "§{RGB_DARK_GRAY §nSelection:} §{RGB_LIGHT_GRAY %s}",
     "item.iron_quarry.blueprint.lore.seal_first": "§{RGB_DARK_GRAY §nTip:} §{RGB_LIGHT_GRAY Must be sealed before being used in quarry!}",
     "item.iron_quarry.blueprint.lore.mined": "§{RGB_DARK_GRAY §nProgress:} §{RGB_LIGHT_GRAY %s/%s Chunk(s) (%s%%)}",
     "item.iron_quarry.blueprint.lore.completed": "§{RGB_DARK_GRAY §nTip:} §{RGB_LIGHT_GRAY Use on grindstone to unseal & reset!}",
@@ -46,7 +46,8 @@
     "item.iron_quarry.blueprint.lore.first_pos": "§{RGB_LIGHT_GRAY First Position:} %s",
     "item.iron_quarry.blueprint.lore.second_pos": "§{RGB_LIGHT_GRAY Second Position:} %s",
     "item.iron_quarry.blueprint.lore.empty": "<unset>",
-
+    "item.iron_quarry.blueprint.overlay.first_pos_set": "First position set to: %s",
+    "item.iron_quarry.blueprint.overlay.second_pos_set": "Second position set to: %s",
 
     "item.iron_quarry.lore.energy.unit": "%s RF",
     "item.iron_quarry.lore.energy.capacity": "%s / %s RF",

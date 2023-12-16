@@ -34,6 +34,7 @@ import pw.rxj.iron_quarry.interfaces.*;
 import pw.rxj.iron_quarry.network.PacketBlueprintExpand;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
+import pw.rxj.iron_quarry.render.Cuboid;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
 import pw.rxj.iron_quarry.types.ScrollDirection;
 import pw.rxj.iron_quarry.util.ReadableString;
@@ -202,11 +203,11 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         BlockPos firstPos = this.getFirstPos(stack).orElse(null);
         BlockPos secondPos = this.getSecondPos(stack).orElse(null);
 
-        MutableText LORE_POS_EMPTY = ReadableString.translatable("item.iron_quarry.blueprint.lore.empty");
+        MutableText LORE_EMPTY = ReadableString.translatable("item.iron_quarry.blueprint.lore.empty");
 
-        MutableText LORE_WORLD = ReadableString.translatable("item.iron_quarry.blueprint.lore.world", ReadableString.textFrom(worldId).orElse(LORE_POS_EMPTY));
-        MutableText LORE_FIRST_POS = ReadableString.translatable("item.iron_quarry.blueprint.lore.first_pos", ReadableString.textFrom(firstPos).orElse(LORE_POS_EMPTY));
-        MutableText LORE_SECOND_POS = ReadableString.translatable("item.iron_quarry.blueprint.lore.second_pos", ReadableString.textFrom(secondPos).orElse(LORE_POS_EMPTY));
+        MutableText LORE_WORLD = ReadableString.translatable("item.iron_quarry.blueprint.lore.world", ReadableString.textFrom(worldId).orElse(LORE_EMPTY));
+        MutableText LORE_FIRST_POS = ReadableString.translatable("item.iron_quarry.blueprint.lore.first_pos", ReadableString.textFrom(firstPos).orElse(LORE_EMPTY));
+        MutableText LORE_SECOND_POS = ReadableString.translatable("item.iron_quarry.blueprint.lore.second_pos", ReadableString.textFrom(secondPos).orElse(LORE_EMPTY));
 
         tooltip.add(LORE_WORLD);
         tooltip.add(LORE_FIRST_POS);
@@ -236,13 +237,12 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
             if(MinecraftClient.getInstance().currentScreen instanceof QuarryBlockScreen) {
                 MutableText LORE_SEAL_FIRST = ReadableString.translatable("item.iron_quarry.blueprint.lore.seal_first");
-
                 tooltip.add(LORE_SEAL_FIRST);
             } else {
-                MutableText LORE_SELECTED = ReadableString.translatable("item.iron_quarry.blueprint.lore.selected", this.getMineableChunks(stack));
+                Text cuboidSize = ReadableString.textFrom(Cuboid.from(firstPos, secondPos)).orElse(ReadableString.ERROR);
 
+                MutableText LORE_SELECTED = ReadableString.translatable("item.iron_quarry.blueprint.lore.selected", cuboidSize);
                 tooltip.add(LORE_SELECTED);
-
             }
         }
     }
@@ -298,7 +298,9 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         this.setWorld(stack, context.getWorld());
         this.setSecondPos(stack, targetedPos);
 
-        player.sendMessage(Text.of(String.format("Second position set to: §n%s", ReadableString.from(targetedPos).orElse("<error>"))), true);
+        Text secondPosText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
+
+        player.sendMessage(ReadableString.translatable("item.iron_quarry.blueprint.overlay.second_pos_set", secondPosText), true);
 
         return ActionResult.SUCCESS;
     }
@@ -312,7 +314,9 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         this.setWorld(stack, world);
         this.setFirstPos(stack, targetedPos);
 
-        player.sendMessage(Text.of(String.format("First position set to: §n%s", ReadableString.from(targetedPos).orElse("<error>"))), true);
+        Text firstPosText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
+
+        player.sendMessage(ReadableString.translatable("item.iron_quarry.blueprint.overlay.first_pos_set", firstPosText), true);
 
         return ActionResult.SUCCESS;
     }

@@ -5,7 +5,9 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import pw.rxj.iron_quarry.Global;
+import pw.rxj.iron_quarry.render.Cuboid;
 import pw.rxj.iron_quarry.types.DynamicText;
 
 import java.text.DecimalFormat;
@@ -30,6 +32,8 @@ public class ReadableString {
         return getIntegerFormatter().format(number);
     }
 
+    public static Text ERROR = Text.of("<error>");
+
     public static Optional<String> from(BlockPos blockPos) {
         if(blockPos == null) return Optional.empty();
 
@@ -53,6 +57,17 @@ public class ReadableString {
     }
     public static Optional<Text> textFrom(Identifier identifier) {
         return from(identifier).map(Text::of);
+    }
+
+    public static Optional<String> from(Cuboid cuboid) {
+        if(cuboid == null) return Optional.empty();
+
+        Vec3d abs = cuboid.fullblock().abs();
+
+        return String.format("%s × %s × %s", (int) abs.x, (int) abs.y, (int) abs.z).describeConstable();
+    }
+    public static Optional<Text> textFrom(Cuboid cuboid) {
+        return from(cuboid).map(Text::of);
     }
 
     public static MutableText translatable(String key, Object... args) {
