@@ -36,17 +36,18 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.Nullable;
+import oshi.util.tuples.Pair;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.network.PacketQuarryBlockBreak;
 import pw.rxj.iron_quarry.network.ZNetwork;
+import pw.rxj.iron_quarry.render.RenderUtil;
 import pw.rxj.iron_quarry.screenhandler.QuarryBlockScreenHandler;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.types.IoState;
@@ -55,6 +56,7 @@ import team.reborn.energy.api.EnergyStorage;
 import team.reborn.energy.api.EnergyStorageUtil;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory {
@@ -386,21 +388,43 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             return;
         }
 
+        List<Pair<BlockPos, BlockState>> minedBlocks = thisBlockEntity.drillQueue(threads, thisBlock, thisBlockState, thisPos, thisBlockEntity, serverWorldToBreak, upgradesUtil);
+        HashSet<Integer> shouldPlaySound = ZUtil.getNSpacedIndexes(minedBlocks.size(), 10);
+
+        for (int i = 0; i < minedBlocks.size(); i++) {
+            BlockPos blockPos = minedBlocks.get(i).getA();
+            BlockState blockState = minedBlocks.get(i).getB();
+            boolean sound = shouldPlaySound.contains(i);
+
+            ZNetwork.sendToAround(serverWorldToBreak, blockPos, 64.0, player -> {
+                return PacketQuarryBlockBreak.bake(blockPos, blockState, sound);
+            });
+        }
+    }
+
+    private List<Pair<BlockPos, BlockState>> drillQueue(int threads, QuarryBlock quarryBlock, BlockState quarryBlockState, BlockPos quarryPos, QuarryBlockEntity quarryBlockEntity, ServerWorld serverWorldToBreak, MachineUpgradesUtil upgradesUtil) {
+        List<Pair<BlockPos, BlockState>> minedBlocks = new ArrayList<>();
+        ArrayList<BlockPos> MiningQueue = quarryBlockEntity.MiningQueue;
+
         for (int i = 0; i < threads; i++) {
-            if(MiningQueue.isEmpty()) return;
+            if(MiningQueue.isEmpty()) {
+                return minedBlocks;
+            }
 
             BlockPos blockPosToBreak = MiningQueue.remove(MiningQueue.size() - 1);
             WorldChunk worldChunkToBreak = serverWorldToBreak.getChunkManager().getWorldChunk(blockPosToBreak.getX() >> 4, blockPosToBreak.getZ() >> 4);
 
             if(worldChunkToBreak == null) {
-                MiningQueue.add(blockPosToBreak); return;
+                MiningQueue.add(blockPosToBreak);
+                return minedBlocks;
             }
 
             BlockState blockStateToBreak = worldChunkToBreak.getBlockState(blockPosToBreak);
             Block blockToBreak = blockStateToBreak.getBlock();
 
             if(!blockStateToBreak.getFluidState().isEmpty()) {
-                serverWorldToBreak.setBlockState(blockPosToBreak, Blocks.AIR.getDefaultState(), 2, 0); continue;
+                serverWorldToBreak.setBlockState(blockPosToBreak, Blocks.AIR.getDefaultState(), 2, 0);
+                continue;
             }
 
             if(blockStateToBreak.isAir()) continue;
@@ -408,14 +432,16 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             if(ZUtil.isActualBlockEntity(serverWorldToBreak, blockStateToBreak, blockPosToBreak)) continue;
 
             //Energy
-            long actualEnergyConsumption = thisBlock.getActualEnergyConsumption(upgradesUtil, blockToBreak);
+            long actualEnergyConsumption = quarryBlock.getActualEnergyConsumption(upgradesUtil, blockToBreak);
 
-            if(thisBlockEntity.EnergyContainer.getStored() < actualEnergyConsumption) {
-                MiningQueue.add(blockPosToBreak); return;
+            if(quarryBlockEntity.EnergyContainer.getStored() < actualEnergyConsumption) {
+                MiningQueue.add(blockPosToBreak);
+                return minedBlocks;
             }
 
             //Loot
             ItemStack breakingItem = Items.NETHERITE_PICKAXE.getDefaultStack();
+
             if(upgradesUtil.hasSilkTouch()) {
                 breakingItem.addEnchantment(Enchantments.SILK_TOUCH, 1);
             } else {
@@ -425,32 +451,34 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
 
             List<ItemStack> droppingItems = blockStateToBreak.getDroppedStacks(
                     new LootContext.Builder(serverWorldToBreak)
-                            .parameter(LootContextParameters.BLOCK_STATE, thisBlockState)
-                            .parameter(LootContextParameters.ORIGIN, new Vec3d(thisPos.getX(), thisPos.getY(), thisPos.getZ()))
+                            .parameter(LootContextParameters.BLOCK_STATE, quarryBlockState)
+                            .parameter(LootContextParameters.ORIGIN, RenderUtil.vec3dFrom(quarryPos))
                             .parameter(LootContextParameters.TOOL, breakingItem)
             );
 
             List<ItemStack> stacksToAward = new ArrayList<>();
 
-            for (ItemStack droppingItem : droppingItems) {
-                if(!thisBlockEntity.OutputInventory.canInsert(droppingItem)) {
-                    MiningQueue.add(blockPosToBreak); return;
+            //TODO: can result in loss of drops
+            for (ItemStack drop : droppingItems) {
+                if(!quarryBlockEntity.OutputInventory.canInsert(drop)) {
+                    MiningQueue.add(blockPosToBreak);
+                    return minedBlocks;
                 } else {
-                    stacksToAward.add(droppingItem);
+                    stacksToAward.add(drop);
                 }
             }
 
-            stacksToAward.forEach(thisBlockEntity.OutputInventory::addStack);
+            stacksToAward.forEach(quarryBlockEntity.OutputInventory::addStack);
 
             //Mining
             serverWorldToBreak.setBlockState(blockPosToBreak, Blocks.AIR.getDefaultState(), 2, 0);
-            thisBlockEntity.EnergyContainer.useEnergy(actualEnergyConsumption);
-
-            ZNetwork.sendToAround(serverWorldToBreak, blockPosToBreak, 32.0, player -> {
-                return PacketQuarryBlockBreak.bake(blockPosToBreak, blockStateToBreak);
-            });
+            quarryBlockEntity.EnergyContainer.useEnergy(actualEnergyConsumption);
+            minedBlocks.add(new Pair<>(blockPosToBreak, blockStateToBreak));
         }
+
+        return minedBlocks;
     }
+
 
     //NBT Handling
     @Override

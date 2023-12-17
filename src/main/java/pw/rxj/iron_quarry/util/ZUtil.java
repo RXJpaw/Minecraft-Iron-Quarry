@@ -16,6 +16,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
+import java.util.HashSet;
 
 public class ZUtil {
     public static Object getBlockOrItem(ItemStack stack) {
@@ -136,5 +137,19 @@ public class ZUtil {
         if(blockPos.getY() < world.getBottomY()) return false;
 
         return world.getWorldBorder().contains(blockPos);
+    }
+
+    public static HashSet<Integer> getNSpacedIndexes(int listSize, int n) {
+        if(listSize <= 0 || n <= 0) return new HashSet<>();
+
+        HashSet<Integer> indexSet = new HashSet<>();
+        float step = (listSize - 1.0F) / (n - 1.0F);
+
+        for (int i = 0; i < n; i++) {
+            int index = Math.round(step * i);
+            indexSet.add(index);
+        }
+
+        return indexSet;
     }
 }

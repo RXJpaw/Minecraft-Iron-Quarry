@@ -12,9 +12,9 @@ import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
-import pw.rxj.iron_quarry.network.packet.BlockPosStatePacket;
+import pw.rxj.iron_quarry.network.packet.BooleanBlockPosStatePacket;
 
-public class PacketQuarryBlockBreak extends ComplexPacketHandler<BlockPosStatePacket> {
+public class PacketQuarryBlockBreak extends ComplexPacketHandler<BooleanBlockPosStatePacket> {
     protected static PacketQuarryBlockBreak INSTANCE = new PacketQuarryBlockBreak();
 
     private PacketQuarryBlockBreak() { }
@@ -24,12 +24,12 @@ public class PacketQuarryBlockBreak extends ComplexPacketHandler<BlockPosStatePa
         return Identifier.of(Main.MOD_ID, "quarry_block_break");
     }
     @Override
-    public @Nullable BlockPosStatePacket read(PacketByteBuf buf) {
-        return BlockPosStatePacket.read(buf);
+    public @Nullable BooleanBlockPosStatePacket read(PacketByteBuf buf) {
+        return BooleanBlockPosStatePacket.read(buf);
     }
 
     @Override
-    protected void receiveFromServer(MinecraftClient client, ClientPlayNetworkHandler handler, @NotNull BlockPosStatePacket packet, PacketSender response) {
+    protected void receiveFromServer(MinecraftClient client, ClientPlayNetworkHandler handler, @NotNull BooleanBlockPosStatePacket packet, PacketSender response) {
         if(client.world == null) return;
 
         BlockPos blockPos = packet.blockPos;
@@ -37,12 +37,18 @@ public class PacketQuarryBlockBreak extends ComplexPacketHandler<BlockPosStatePa
         
         if (!blockState.isAir() && blockState.getFluidState().isEmpty()) {
             BlockSoundGroup blockSoundGroup = blockState.getSoundGroup();
-            client.world.playSound(blockPos, blockSoundGroup.getBreakSound(), SoundCategory.BLOCKS, (blockSoundGroup.getVolume() + 1.0F) / 2.0F, blockSoundGroup.getPitch() * 0.8F, false);
             client.world.addBlockBreakParticles(blockPos, blockState);
+
+            if(packet.bool) {
+                float volume = (blockSoundGroup.getVolume() + 1.0F) / 2.0F;
+                float pitch = blockSoundGroup.getPitch() * 0.8F;
+
+                client.world.playSound(blockPos, blockSoundGroup.getBreakSound(), SoundCategory.BLOCKS, volume, pitch, false);
+            }
         }
     }
 
-    public static PacketByteBuf bake(BlockPos blockPos, BlockState blockState) {
-        return BlockPosStatePacket.write(INSTANCE.getChannelId(), blockPos, blockState);
+    public static PacketByteBuf bake(BlockPos blockPos, BlockState blockState, boolean sound) {
+        return BooleanBlockPosStatePacket.write(INSTANCE.getChannelId(), sound, blockPos, blockState);
     }
 }
