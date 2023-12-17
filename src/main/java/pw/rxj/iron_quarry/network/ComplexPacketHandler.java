@@ -12,13 +12,13 @@ import org.jetbrains.annotations.NotNull;
 public abstract class ComplexPacketHandler<T> implements ComplexPacketProvider<T> {
     protected final void receiveFromServer(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender response) {
         T packet = this.read(buf);
-        if(packet != null) this.receiveFromServer(client, handler, packet, response);
+        if(packet != null) client.execute(() -> this.receiveFromServer(client, handler, packet, response));
     }
     protected void receiveFromServer(MinecraftClient client, ClientPlayNetworkHandler handler, @NotNull T packet, PacketSender response) { }
 
     protected final void receiveFromClient(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender response) {
         T packet = this.read(buf);
-        if(packet != null) this.receiveFromClient(server, player, handler, packet, response);
+        if(packet != null) server.execute(() -> this.receiveFromClient(server, player, handler, packet, response));
     }
     protected void receiveFromClient(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, @NotNull T packet, PacketSender response) { }
 }
