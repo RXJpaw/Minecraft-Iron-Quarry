@@ -1,11 +1,14 @@
 package pw.rxj.iron_quarry.util;
 
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
 import pw.rxj.iron_quarry.Global;
 import pw.rxj.iron_quarry.render.Cuboid;
 import pw.rxj.iron_quarry.types.DynamicText;
@@ -68,6 +71,23 @@ public class ReadableString {
     }
     public static Optional<Text> textFrom(Cuboid cuboid) {
         return from(cuboid).map(Text::of);
+    }
+
+    public static Text textFrom(@NotNull KeyBinding keyBinding) {
+        InputUtil.Type type = keyBinding.boundKey.getCategory();
+        int code = keyBinding.boundKey.getCode();
+
+        if(type.equals(InputUtil.Type.MOUSE)) {
+            return switch (code) {
+                case 0 -> Text.translatable("short_key.mouse.c.0");
+                case 1 -> Text.translatable("short_key.mouse.c.1");
+                case 2 -> Text.translatable("short_key.mouse.c.2");
+
+                default -> keyBinding.getBoundKeyLocalizedText();
+            };
+        } else {
+            return keyBinding.getBoundKeyLocalizedText();
+        }
     }
 
     public static MutableText translatable(String key, Object... args) {

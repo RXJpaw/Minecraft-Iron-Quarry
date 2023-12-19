@@ -3,8 +3,10 @@ package pw.rxj.iron_quarry.item;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -44,7 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class BlueprintItem extends Item implements BlockAttackable, IHandledSmithing, IHandledGrinding, IHandledItemEntity, IHandledMainHandScrolling {
+public class BlueprintItem extends Item implements BlockAttackable, IHandledSmithing, IHandledGrinding, IHandledItemEntity, IHandledMainHandScrolling, IAlwaysRenderItemName {
     public BlueprintItem(Settings settings) {
         super(settings);
     }
@@ -203,6 +205,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
         BlockPos firstPos = this.getFirstPos(stack).orElse(null);
         BlockPos secondPos = this.getSecondPos(stack).orElse(null);
+        boolean isSealed = this.isSealed(stack);
 
         MutableText LORE_EMPTY = ReadableString.translatable("item.iron_quarry.blueprint.lore.empty");
 
@@ -214,12 +217,7 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
         tooltip.add(LORE_FIRST_POS);
         tooltip.add(LORE_SECOND_POS);
 
-        if(firstPos == null || secondPos == null) {
-            MutableText LORE_UNBOUND = ReadableString.translatable("item.iron_quarry.blueprint.lore.unbound");
-
-            tooltip.add(Text.empty());
-            tooltip.add(LORE_UNBOUND);
-        } else if(this.isSealed(stack)) {
+        if(isSealed) {
             long mined = this.getMinedChunks(stack);
             long mineable = this.getMineableChunks(stack);
             float percentage = mineable > 0 ? (float) mined / mineable : 0;
@@ -234,16 +232,41 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
                 tooltip.add(LORE_COMPLETED);
             }
         } else {
-            tooltip.add(Text.empty());
+            MinecraftClient minecraftClient = MinecraftClient.getInstance();
 
-            if(MinecraftClient.getInstance().currentScreen instanceof QuarryBlockScreen) {
+            if(minecraftClient.currentScreen instanceof QuarryBlockScreen) {
                 MutableText LORE_SEAL_FIRST = ReadableString.translatable("item.iron_quarry.blueprint.lore.seal_first");
+
+                tooltip.add(Text.empty());
                 tooltip.add(LORE_SEAL_FIRST);
             } else {
-                Text cuboidSize = ReadableString.textFrom(Cuboid.from(firstPos, secondPos)).orElse(ReadableString.ERROR);
+                tooltip.add(Text.empty());
 
-                MutableText LORE_SELECTED = ReadableString.translatable("item.iron_quarry.blueprint.lore.selected", cuboidSize);
-                tooltip.add(LORE_SELECTED);
+                if(Screen.hasShiftDown()) {
+                    GameOptions gameOptions = minecraftClient.options;
+
+                    Text KEY_INTERACT = ReadableString.textFrom(gameOptions.useKey);
+                    Text KEY_ATTACK = ReadableString.textFrom(gameOptions.attackKey);
+                    Text KEY_SPRINT = ReadableString.textFrom(gameOptions.sprintKey);
+                    Text KEY_SNEAK = ReadableString.textFrom(gameOptions.sneakKey);
+
+                    MutableText LORE_MANUAL_0 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.0", KEY_ATTACK, KEY_INTERACT);
+                    MutableText LORE_MANUAL_1 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.1", KEY_SNEAK);
+                    MutableText LORE_MANUAL_2 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.2");
+                    MutableText LORE_MANUAL_3 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.3", KEY_SPRINT);
+                    MutableText LORE_MANUAL_4 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.4");
+
+                    tooltip.add(LORE_MANUAL_0);
+                    tooltip.add(Text.empty());
+                    tooltip.add(LORE_MANUAL_1);
+                    tooltip.add(LORE_MANUAL_2);
+                    tooltip.add(LORE_MANUAL_3);
+                    tooltip.add(LORE_MANUAL_4);
+                } else {
+                    MutableText LORE_INSTRUCTIONS = ReadableString.translatable("item.iron_quarry.lore.instructions");
+
+                    tooltip.add(LORE_INSTRUCTIONS);
+                }
             }
         }
     }
@@ -255,13 +278,24 @@ public class BlueprintItem extends Item implements BlockAttackable, IHandledSmit
 
         MutableText itemName = Text.translatable(translationKey);
 
-        if(this.getFirstPos(stack).isEmpty() || this.getSecondPos(stack).isEmpty()) {
+        Optional<BlockPos> firstPos = this.getFirstPos(stack);
+        Optional<BlockPos> secondPos = this.getSecondPos(stack);
+
+        if(firstPos.isEmpty() || secondPos.isEmpty()) {
             itemName.append(" ").append(Text.translatable("item.iron_quarry.blueprint.unbound"));
         } else if(this.allChunksMined(stack)) {
             itemName.append(" ").append(Text.translatable("item.iron_quarry.blueprint.completed"));
+        } else {
+            Text cuboidSize = ReadableString.textFrom(Cuboid.from(firstPos.get(), secondPos.get())).orElse(ReadableString.ERROR);
+
+            itemName.append(" (").append(cuboidSize).append(")");
         }
 
         return itemName;
+    }
+    @Override
+    public boolean renderItemName(ItemStack stack) {
+        return !this.isSealed(stack) && this.getFirstPos(stack).isPresent() && this.getSecondPos(stack).isPresent() && !this.allChunksMined(stack);
     }
     @Override
     public Rarity getRarity(ItemStack stack) {

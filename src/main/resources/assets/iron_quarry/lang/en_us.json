@@ -37,8 +37,6 @@
     "item.iron_quarry.blueprint.sealed": "Sealed Blueprint",
     "item.iron_quarry.blueprint.unbound": "(Unbound)",
     "item.iron_quarry.blueprint.completed": "(Completed)",
-    "item.iron_quarry.blueprint.lore.unbound": "§{RGB_DARK_GRAY §nTip:} §{RGB_LIGHT_GRAY Set positions by left/right-clicking blocks!}",
-    "item.iron_quarry.blueprint.lore.selected": "§{RGB_DARK_GRAY §nSelection:} §{RGB_LIGHT_GRAY %s}",
     "item.iron_quarry.blueprint.lore.seal_first": "§{RGB_DARK_GRAY §nTip:} §{RGB_LIGHT_GRAY Must be sealed before being used in quarry!}",
     "item.iron_quarry.blueprint.lore.mined": "§{RGB_DARK_GRAY §nProgress:} §{RGB_LIGHT_GRAY %s/%s Chunk(s) (%s%%)}",
     "item.iron_quarry.blueprint.lore.completed": "§{RGB_DARK_GRAY §nTip:} §{RGB_LIGHT_GRAY Use on grindstone to unseal & reset!}",
@@ -46,6 +44,11 @@
     "item.iron_quarry.blueprint.lore.first_pos": "§{RGB_LIGHT_GRAY First Position:} %s",
     "item.iron_quarry.blueprint.lore.second_pos": "§{RGB_LIGHT_GRAY Second Position:} %s",
     "item.iron_quarry.blueprint.lore.empty": "<unset>",
+    "item.iron_quarry.blueprint.lore.manual.0": "§{RGB_STRONG_HIGHLIGHT 1.} §{RGB_LIGHT_GRAY Press §n%s/%s§r on blocks to mark positions.}",
+    "item.iron_quarry.blueprint.lore.manual.1": "§{RGB_STRONG_HIGHLIGHT 2.} §{RGB_LIGHT_GRAY Hold §n%s§r and use your §nMouse Wheel§r to}",
+    "item.iron_quarry.blueprint.lore.manual.2": "   §{RGB_LIGHT_GRAY expand selection in your facing direction.}",
+    "item.iron_quarry.blueprint.lore.manual.3": "   §{RGB_DARK_GRAY Additionally §n%s§r can be held to}",
+    "item.iron_quarry.blueprint.lore.manual.4": "   §{RGB_DARK_GRAY expand selection 16 times faster.}",
     "item.iron_quarry.blueprint.overlay.first_pos_set": "First position set to: %s",
     "item.iron_quarry.blueprint.overlay.second_pos_set": "Second position set to: %s",
 
@@ -58,6 +61,7 @@
 
     "item.iron_quarry.lore.listing.used": "§{RGB_WEAK_HIGHLIGHT > %s}",
     "item.iron_quarry.lore.listing.unused": "§{RGB_DARK_GRAY > %s}",
+    "item.iron_quarry.lore.instructions": "§{RGB_LIGHT_GRAY Hold} §{RGB_WEAK_HIGHLIGHT Left Shift} §{RGB_LIGHT_GRAY for instructions}",
     "item.iron_quarry.lore.details": "§{RGB_LIGHT_GRAY Hold} §{RGB_WEAK_HIGHLIGHT Left Shift} §{RGB_LIGHT_GRAY for more information}",
     "item.iron_quarry.lore.use_rei": "§{RGB_WARNING Press U in EMI/JEI/REI to view recipes.}",
 
@@ -66,6 +70,10 @@
     "screen.iron_quarry.quarry_block.tooltip.battery_info": "§{RGB_TAB_TITLE Insert §la battery§r to charge the quarry externally.}",
     "screen.iron_quarry.quarry_block.title.configuration": "§{RGB_TAB_TITLE Configuration}",
     "screen.iron_quarry.quarry_block.title.augmentation": "§{RGB_TAB_TITLE Augmentation}",
+
+    "short_key.mouse.c.0": "LMB",
+    "short_key.mouse.c.1": "RMB",
+    "short_key.mouse.c.2": "MMB",
 
     "kick_reason.iron_quarry.packet_blueprint_position_set.disallowed_distance": "Tried to expand blueprint position by an illegal amount. (Must be between %s and %s)"
 }
