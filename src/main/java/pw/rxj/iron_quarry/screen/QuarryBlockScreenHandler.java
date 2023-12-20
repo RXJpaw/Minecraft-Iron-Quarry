@@ -1,4 +1,4 @@
-package pw.rxj.iron_quarry.screenhandler;
+package pw.rxj.iron_quarry.screen;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;

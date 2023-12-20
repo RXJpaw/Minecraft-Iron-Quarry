@@ -48,7 +48,7 @@ import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.network.PacketQuarryBlockBreak;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.render.RenderUtil;
-import pw.rxj.iron_quarry.screenhandler.QuarryBlockScreenHandler;
+import pw.rxj.iron_quarry.screen.QuarryBlockScreenHandler;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.types.IoState;
 import pw.rxj.iron_quarry.util.*;
