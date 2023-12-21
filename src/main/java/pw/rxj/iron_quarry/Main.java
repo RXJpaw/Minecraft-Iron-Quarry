@@ -1,5 +1,6 @@
 package pw.rxj.iron_quarry;
 
+import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -7,6 +8,7 @@ import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.screen.ScreenHandlerType;
@@ -28,6 +30,7 @@ import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.recipe.HandledCraftingRecipe;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
+import pw.rxj.iron_quarry.resource.ConfigHandler;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreenHandler;
 import pw.rxj.iron_quarry.util.ChunkLoadingManager;
 import pw.rxj.iron_quarry.util.ZUtil;
@@ -41,8 +44,17 @@ public class Main implements ModInitializer {
 			public Message newMessage(String message) {
 				return super.newMessage("[Iron Quarry] " + message);
 			}
+			@Override
+			public Message newMessage(String message, Object p0) {
+				return super.newMessage("[Iron Quarry] " + message, p0);
+			}
+			@Override
+			public Message newMessage(String message, Object p0, Object p1) {
+				return super.newMessage("[Iron Quarry] " + message, p0, p1);
+			}
 		}
 	);
+	public static final ConfigHandler CONFIG = ConfigHandler.bake(FabricLoader.getInstance().getConfigDir().resolve(MOD_ID));
 
 
 	public static final ScreenHandlerType<QuarryBlockScreenHandler> QUARRY_BLOCK_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(QuarryBlockScreenHandler::new);
@@ -52,8 +64,10 @@ public class Main implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		ChunkLoadingManager.register();
+		CONFIG.read(EnvType.SERVER);
+		CONFIG.registerServer();
 
+		ChunkLoadingManager.register();
 		ZBlockEntities.register();
 		ZBlocks.register();
 		ZItems.register();

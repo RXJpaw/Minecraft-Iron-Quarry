@@ -1,5 +1,7 @@
 package pw.rxj.iron_quarry.types;
 
+import pw.rxj.iron_quarry.resource.Config;
+
 import java.util.List;
 
 public enum AugmentType {
@@ -10,9 +12,9 @@ public enum AugmentType {
 
     private final int id;
     private final String name;
-    private final int baseAmount;
-    private final float multiplier;
-    private final float inefficiency;
+    private int baseAmount;
+    private float multiplier;
+    private float inefficiency;
 
     private static final List<AugmentType> ALL = List.of(EMPTY, SPEED, FORTUNE, SILK_TOUCH);
 
@@ -22,6 +24,11 @@ public enum AugmentType {
         this.baseAmount = baseAmount;
         this.multiplier = multiplier;
         this.inefficiency = inefficiency;
+    }
+    public void override(Config.Server.AugmentStatsConfig.Entry augmentStats) {
+        this.baseAmount = augmentStats.baseAmount;
+        this.multiplier = augmentStats.multiplier;
+        this.inefficiency = augmentStats.inefficiency;
     }
 
     public String getName(){
@@ -41,7 +48,7 @@ public enum AugmentType {
      *  C(U) = B * (1 + 0.25 * U * (U + 1))
      */
     public int getCapacity(int capacityUpgrades) {
-        return (int) (this.baseAmount * (1 + 0.25F * capacityUpgrades * (capacityUpgrades + 1)));
+        return (int) (this.getBaseAmount() * (1 + 0.25F * capacityUpgrades * (capacityUpgrades + 1)));
     }
 
     public static AugmentType from(String name){

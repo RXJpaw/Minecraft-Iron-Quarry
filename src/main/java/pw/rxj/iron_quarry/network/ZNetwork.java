@@ -20,6 +20,7 @@ import java.util.function.Function;
 
 public class ZNetwork {
     private static final List<ComplexPacketHandler<?>> packetList = List.of(
+            PacketServerConfigApply.INSTANCE,
             PacketQuarryBlockBreak.INSTANCE,
             PacketBlueprintExpand.INSTANCE
     );
@@ -52,6 +53,13 @@ public class ZNetwork {
 
             player.networkHandler.sendPacket(packet);
         }
+    }
+
+    public static void sendToPlayer(ServerPlayerEntity player, PacketByteBuf buf) {
+        PacketByteBuf bufCopy = new PacketByteBuf(buf.copy());
+        CustomPayloadS2CPacket packet = new CustomPayloadS2CPacket(bufCopy);
+
+        player.networkHandler.sendPacket(packet);
     }
 
     public static void sendToServer(@Nullable PacketByteBuf buf) {

@@ -9,12 +9,16 @@ import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.network.packet.BooleanBlockPosStatePacket;
+import pw.rxj.iron_quarry.render.RenderUtil;
+import pw.rxj.iron_quarry.resource.ConfigHandler;
 
 public class PacketQuarryBlockBreak extends ComplexPacketHandler<BooleanBlockPosStatePacket> {
+    private static final ConfigHandler.BlockBreakingConfigHandler BlockBreakingConfig = Main.CONFIG.getBlockBreakingConfig();
     protected static PacketQuarryBlockBreak INSTANCE = new PacketQuarryBlockBreak();
 
     private PacketQuarryBlockBreak() { }
@@ -30,20 +34,27 @@ public class PacketQuarryBlockBreak extends ComplexPacketHandler<BooleanBlockPos
 
     @Override
     protected void receiveFromServer(MinecraftClient client, ClientPlayNetworkHandler handler, @NotNull BooleanBlockPosStatePacket packet, PacketSender response) {
-        if(client.world == null) return;
+        if(client.player == null || client.world == null) return;
 
         BlockPos blockPos = packet.blockPos;
         BlockState blockState = packet.blockState;
+
+        Vec3d blockPosVec = RenderUtil.vec3dFrom(blockPos);
+        if(client.player.getPos().distanceTo(blockPosVec) > BlockBreakingConfig.getDistance()) return;
         
         if (!blockState.isAir() && blockState.getFluidState().isEmpty()) {
             BlockSoundGroup blockSoundGroup = blockState.getSoundGroup();
             client.world.addBlockBreakParticles(blockPos, blockState);
 
             if(packet.bool) {
-                float volume = (blockSoundGroup.getVolume() + 1.0F) / 2.0F;
+                float volume = ((blockSoundGroup.getVolume() + 1.0F) / 2.0F) * BlockBreakingConfig.getVolume();
                 float pitch = blockSoundGroup.getPitch() * 0.8F;
 
-                client.world.playSound(blockPos, blockSoundGroup.getBreakSound(), SoundCategory.BLOCKS, volume, pitch, false);
+                Main.LOGGER.info(BlockBreakingConfig.getVolume());
+
+                if(volume > 0) {
+                    client.world.playSound(blockPos, blockSoundGroup.getBreakSound(), SoundCategory.BLOCKS, volume, pitch, false);
+                }
             }
         }
     }

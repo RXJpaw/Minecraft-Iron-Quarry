@@ -27,6 +27,9 @@
         ],
         "rei_client": [
             "pw.rxj.iron_quarry.compat.rei.ReiClient"
+        ],
+        "modmenu": [
+            "pw.rxj.iron_quarry.compat.modmenu.ModMenuClient"
         ]
     },
     "mixins": [

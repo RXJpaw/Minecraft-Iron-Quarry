@@ -20,6 +20,9 @@ import pw.rxj.iron_quarry.types.IoState;
 public class Client implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        Main.CONFIG.read(EnvType.CLIENT);
+        Main.CONFIG.registerClient();
+
         ZBlocks.quarryBlockList.forEach(QuarryBlock::initClient);
         ResourceReloadListener.include(IoState.getTextureId());
 

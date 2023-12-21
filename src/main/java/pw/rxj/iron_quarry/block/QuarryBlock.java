@@ -49,6 +49,7 @@ import pw.rxj.iron_quarry.interfaces.IEnergyContainer;
 import pw.rxj.iron_quarry.interfaces.IHandledCrafting;
 import pw.rxj.iron_quarry.recipe.HandledCraftingRecipe;
 import pw.rxj.iron_quarry.records.TexturePosition;
+import pw.rxj.iron_quarry.resource.Config;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.util.*;
@@ -58,12 +59,12 @@ import java.util.Optional;
 
 public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IEnergyContainer, ITooltipDataProvider {
     private final String textureReference;
-    private final int ticksPerOperation;
-    private final int baseConsumption;
-    private final int energyCapacity;
-    private final int augmentLimit;
+    private int ticksPerOperation;
+    private int baseConsumption;
+    private int energyCapacity;
+    private int augmentLimit;
 
-    protected QuarryBlock(Block reference, String texRef, int augmentLimit,  int ticksPerOperation, int energyCapacity, int baseConsumption) {
+    protected QuarryBlock(Block reference, String texRef, Config.Server.QuarryStatsConfig.Entry entry) {
         super(FabricBlockSettings.copyOf(reference));
         this.textureReference = texRef;
 
@@ -71,10 +72,16 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
                 .with(FACING, Direction.NORTH)
         );
 
-        this.ticksPerOperation = ticksPerOperation;
-        this.baseConsumption = baseConsumption;
-        this.energyCapacity = energyCapacity;
-        this.augmentLimit = augmentLimit;
+        this.ticksPerOperation = entry.ticksPerOperation;
+        this.baseConsumption = entry.baseConsumption;
+        this.energyCapacity = entry.energyCapacity;
+        this.augmentLimit = entry.augmentLimit;
+    }
+    public void override(Config.Server.QuarryStatsConfig.Entry quarryStats) {
+        this.ticksPerOperation = quarryStats.ticksPerOperation;
+        this.baseConsumption = quarryStats.baseConsumption;
+        this.energyCapacity = quarryStats.energyCapacity;
+        this.augmentLimit = quarryStats.augmentLimit;
     }
 
     public static final DirectionProperty FACING = DirectionProperty.of("facing");

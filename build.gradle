@@ -8,6 +8,7 @@ group = project.maven_group
 
 repositories {
 	maven { url 'https://maven.shedaniel.me/' }
+	maven { url 'https://maven.terraformersmc.com/releases' }
 }
 
 loom {
@@ -30,6 +31,7 @@ dependencies {
 
 	include modApi("teamreborn:energy:${project.energy_api_version}") { transitive = false }
 
+	modApi("com.terraformersmc:modmenu:${project.modmenu_version}")
 	modApi("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
 	modApi("dev.architectury:architectury-fabric:${project.architectury_version}")
 }

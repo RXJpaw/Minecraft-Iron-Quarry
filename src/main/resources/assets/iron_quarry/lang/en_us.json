@@ -71,6 +71,12 @@
     "screen.iron_quarry.quarry_block.title.configuration": "§{RGB_TAB_TITLE Configuration}",
     "screen.iron_quarry.quarry_block.title.augmentation": "§{RGB_TAB_TITLE Augmentation}",
 
+    "screen.iron_quarry.client_config.title": "Iron Quarry: Client Config",
+    "screen.iron_quarry.client_config.block_break_volume": "Block Break Volume: %s%%",
+    "screen.iron_quarry.client_config.block_break_volume.tooltip": "Loudness of a quarry's block breaking sounds.",
+    "screen.iron_quarry.client_config.block_break_distance": "Block Break Distance: %sm",
+    "screen.iron_quarry.client_config.block_break_distance.tooltip": "Distance from which you can see particles and hear the sounds of a quarry breaking blocks.",
+
     "short_key.mouse.c.0": "LMB",
     "short_key.mouse.c.1": "RMB",
     "short_key.mouse.c.2": "MMB",
