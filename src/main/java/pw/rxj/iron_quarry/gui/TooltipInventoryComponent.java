@@ -42,7 +42,7 @@ public class TooltipInventoryComponent implements CustomTooltipComponent {
 
     @Override
     public int getWidth(TextRenderer textRenderer) {
-        return 126;
+        return this.disableableInventory.size() * 18;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class TooltipInventoryComponent implements CustomTooltipComponent {
 
     @Override
     public void drawItems(TextRenderer textRenderer, int x, int y, MatrixStack matrices, ItemRenderer itemRenderer, int z) {
-        for(int index = 0; index < disableableInventory.size(); ++index) {
+        for(int index = 0; index < this.disableableInventory.size(); ++index) {
             int slotX = x + index * 18;
             int slotY = y + 2;
 
@@ -66,7 +66,7 @@ public class TooltipInventoryComponent implements CustomTooltipComponent {
     }
 
     private void drawSlot(int x, int y, int index, TextRenderer textRenderer, MatrixStack matrices, ItemRenderer itemRenderer, int z) {
-        Pair<ItemStack, Boolean> slot = disableableInventory.get(index);
+        Pair<ItemStack, Boolean> slot = this.disableableInventory.get(index);
         ItemStack itemStack = slot.getA();
         Boolean disabled = slot.getB();
 
