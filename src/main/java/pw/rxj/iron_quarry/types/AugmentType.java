@@ -5,22 +5,25 @@ import pw.rxj.iron_quarry.resource.Config;
 import java.util.List;
 
 public enum AugmentType {
-    EMPTY(0, "empty", 1, 0.0F, 0.0F),
-    SPEED(1, "speed", 1000, 0.10F, 0.05F),
-    FORTUNE(2, "fortune", 1500, 2.0F/225.0F, 1.0F/75.0F),
-    SILK_TOUCH(3, "silk_touch", 0, 0.0F, 180.0F);
+    EMPTY(0, "empty", "energy", 1, 0.0F, 0.0F),
+    SPEED(1, "speed", "energy", 1000, 0.10F, 0.05F),
+    FORTUNE(2, "fortune", "energy", 1500, 2.0F/225.0F, 1.0F/75.0F),
+    SILK_TOUCH(3, "silk_touch", "energy", 0, 0.0F, 180.0F),
+    CHEST_LOOTING(4, "chest_looting", "time", 0, 0.0F, 0.0F);
 
     private final int id;
     private final String name;
+    private final String drawbackKey;
     private int baseAmount;
     private float multiplier;
     private float inefficiency;
 
     private static final List<AugmentType> ALL = List.of(EMPTY, SPEED, FORTUNE, SILK_TOUCH);
 
-    private AugmentType(int id, String name, int baseAmount, float multiplier, float inefficiency) {
+    private AugmentType(int id, String name, String drawbackKey, int baseAmount, float multiplier, float inefficiency) {
         this.id = id;
         this.name = name;
+        this.drawbackKey = drawbackKey;
         this.baseAmount = baseAmount;
         this.multiplier = multiplier;
         this.inefficiency = inefficiency;
@@ -33,6 +36,9 @@ public enum AugmentType {
 
     public String getName(){
         return this.name;
+    }
+    public String getDrawbackKey() {
+        return drawbackKey;
     }
     public int getId(){
         return this.id;

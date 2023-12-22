@@ -21,17 +21,21 @@
 
     "item.iron_quarry.augment": "Empty Augment",
     "item.iron_quarry.silk_touch_augment": "Silk Touch Augment",
+    "item.iron_quarry.chest_looting_augment": "Chest Looting Augment",
 
     "item.iron_quarry.augment.empty": "Empty Augment",
     "item.iron_quarry.augment.speed": "Speed Augment",
     "item.iron_quarry.augment.fortune": "Fortune Augment",
     "item.iron_quarry.augment.silk_touch": "Silk Touch Augment",
+    "item.iron_quarry.augment.chest_looting": "Chest Looting Augment",
     "item.iron_quarry.augment.lore.used": "§{RGB_LIGHT_GRAY Used %s/%s enhancements.}",
     "item.iron_quarry.augment.lore.capacity_upgrades": "§{RGB_STRONG_HIGHLIGHT §nCapacity Upgrades (%s/%s):}",
     "item.iron_quarry.augment.lore.benefit.speed": "§{RGB_BENEFIT +%s%% faster operation}",
     "item.iron_quarry.augment.lore.benefit.fortune": "§{RGB_BENEFIT +%s%% yield from ores}",
     "item.iron_quarry.augment.lore.benefit.silk_touch": "§{RGB_BENEFIT Mines blocks with Silk Touch}",
+    "item.iron_quarry.augment.lore.benefit.chest_looting": "§{RGB_BENEFIT Pulls items from lootable containers}",
     "item.iron_quarry.augment.lore.drawback.energy": "§{RGB_DRAWBACK +%s%% energy usage}",
+    "item.iron_quarry.augment.lore.drawback.time": "§{RGB_DRAWBACK Consumes 1 operation per 1 pulled item}",
 
     "item.iron_quarry.blueprint": "Blueprint",
     "item.iron_quarry.blueprint.sealed": "Sealed Blueprint",

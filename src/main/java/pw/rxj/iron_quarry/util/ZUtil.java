@@ -1,9 +1,13 @@
 package pw.rxj.iron_quarry.util;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.inventory.ContainerLock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.OrderedText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -36,20 +40,24 @@ public class ZUtil {
         return new DecimalFormat("#,##0").format(input);
     }
 
-    /** Shoutout to "Powah! (Rearchitected)"-developer Technici4n for including a {@link net.minecraft.block.BlockEntityProvider} with every of their non-Block Entity blocks. */
-    public static boolean isActualBlockEntity(World world, BlockPos blockPos) {
-        return isActualBlockEntity(world, world.getBlockState(blockPos), blockPos);
+    public static @Nullable BlockEntity getBlockEntity(WorldChunk worldChunk, BlockState blockState, BlockPos blockPos) {
+        if(!blockState.hasBlockEntity()) return null;
+        return worldChunk.getBlockEntity(blockPos);
     }
-    public static boolean isActualBlockEntity(World world, BlockState blockState, BlockPos blockPos) {
-        if(!blockState.hasBlockEntity()) return false;
-        return world.getBlockEntity(blockPos) != null;
-    }
-    public static boolean isActualBlockEntity(WorldChunk worldChunk, BlockPos blockPos) {
-        return isActualBlockEntity(worldChunk, worldChunk.getBlockState(blockPos), blockPos);
-    }
-    public static boolean isActualBlockEntity(WorldChunk worldChunk, BlockState blockState, BlockPos blockPos) {
-        if(!blockState.hasBlockEntity()) return false;
-        return worldChunk.getBlockEntity(blockPos) != null;
+
+    public static @Nullable LootableContainerBlockEntity getUnlockedLootableContainer(@Nullable BlockEntity blockEntity) {
+        if(blockEntity instanceof LootableContainerBlockEntity lootableBlockEntity) {
+            NbtCompound nbtCompound = new NbtCompound();
+            lootableBlockEntity.writeNbt(nbtCompound);
+            if(nbtCompound.isEmpty()) return null;
+
+            ContainerLock lock = ContainerLock.fromNbt(nbtCompound);
+            if(!lock.equals(ContainerLock.EMPTY)) return null;
+
+            return lootableBlockEntity;
+        }
+
+        return null;
     }
 
     public static double bounceBack(double input, double range) {

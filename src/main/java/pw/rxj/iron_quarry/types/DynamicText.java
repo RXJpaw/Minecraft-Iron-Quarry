@@ -11,7 +11,8 @@ public enum DynamicText {
     EMPTY(0, "empty"),
     RAINBOW(1, "rainbow"),
     ELOCIN(2, "elocin"),
-    EMERALD(3, "emerald");
+    EMERALD(3, "emerald"),
+    GOLD(4, "gold");
 
     private final int id;
     private final String name;
@@ -81,6 +82,9 @@ public enum DynamicText {
             }
             case EMERALD -> {
                 return gradient(text, offset, new Color(173, 250, 203), new Color(64, 240, 130));
+            }
+            case GOLD -> {
+                return gradient(text, offset, new Color(230, 175, 21), new Color(250, 242, 94));
             }
         }
 

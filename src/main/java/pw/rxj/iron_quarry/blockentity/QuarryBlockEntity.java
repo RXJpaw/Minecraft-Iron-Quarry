@@ -14,14 +14,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.Packet;
@@ -42,12 +41,10 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.Nullable;
-import oshi.util.tuples.Pair;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.network.PacketQuarryBlockBreak;
 import pw.rxj.iron_quarry.network.ZNetwork;
-import pw.rxj.iron_quarry.render.RenderUtil;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreenHandler;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.types.IoState;
@@ -58,6 +55,8 @@ import team.reborn.energy.api.EnergyStorageUtil;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory {
     public QuarryBlockEntity(BlockPos pos, BlockState state) {
@@ -303,7 +302,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         if(serverWorldToBreak == null) return;
 
         MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(thisBlockEntity.MachineUpgradesInventory);
-        long minimumEnergyConsumption = thisBlock.getActualEnergyConsumption(upgradesUtil, Blocks.STONE);
+        long minimumEnergyConsumption = thisBlock.getEnergyConsumption(upgradesUtil, Blocks.STONE);
         if(thisBlockEntity.EnergyContainer.getStored() < minimumEnergyConsumption) return;
 
         int threads = 1;
@@ -376,11 +375,9 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
                         BlockPos blockPos = new BlockPos(x, y, z);
                         BlockState blockState = worldChunk.getBlockState(blockPos);
 
-                        if(blockState.isAir()) continue;
-                        if(blockState.getBlock().getHardness() < 0) continue;
-                        if(ZUtil.isActualBlockEntity(worldChunk, blockState, blockPos)) continue;
-
-                        MiningQueue.add(blockPos);
+                        if(thisBlockEntity.canDrill(worldChunk, blockState, blockPos, upgradesUtil)) {
+                            MiningQueue.add(blockPos);
+                        }
                     }
                 }
             }
@@ -388,95 +385,134 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             return;
         }
 
-        List<Pair<BlockPos, BlockState>> minedBlocks = thisBlockEntity.drillQueue(threads, thisBlock, thisBlockState, thisPos, thisBlockEntity, serverWorldToBreak, upgradesUtil);
-        HashSet<Integer> shouldPlaySound = ZUtil.getNSpacedIndexes(minedBlocks.size(), 10);
+        List<BlockPosState> drillResults = thisBlockEntity.drillQueue(threads, thisBlock, thisBlockState, thisPos, thisBlockEntity, serverWorldToBreak, upgradesUtil);
+        HashSet<Integer> shouldPlaySound = ZUtil.getNSpacedIndexes(drillResults.size(), 10);
 
-        for (int i = 0; i < minedBlocks.size(); i++) {
-            BlockPos blockPos = minedBlocks.get(i).getA();
-            BlockState blockState = minedBlocks.get(i).getB();
-            boolean sound = shouldPlaySound.contains(i);
+        for (int i = 0; i < drillResults.size(); i++) {
+            BlockPosState drillItem = drillResults.get(i);
+            boolean playSound = shouldPlaySound.contains(i);
 
-            ZNetwork.sendToAround(serverWorldToBreak, blockPos, 64.0, player -> {
-                return PacketQuarryBlockBreak.bake(blockPos, blockState, sound);
+            ZNetwork.sendToAround(serverWorldToBreak, drillItem.blockPos, 64.0, player -> {
+                return PacketQuarryBlockBreak.bake(drillItem.blockPos, drillItem.blockState, playSound);
             });
         }
     }
 
-    private List<Pair<BlockPos, BlockState>> drillQueue(int threads, QuarryBlock quarryBlock, BlockState quarryBlockState, BlockPos quarryPos, QuarryBlockEntity quarryBlockEntity, ServerWorld serverWorldToBreak, MachineUpgradesUtil upgradesUtil) {
-        List<Pair<BlockPos, BlockState>> minedBlocks = new ArrayList<>();
+    private boolean canDrill(BlockActress blockActress, MachineUpgradesUtil upgradesUtil) {
+        return this.canDrill(() -> blockActress.blockEntity, blockActress.blockState, upgradesUtil);
+    }
+    private boolean canDrill(WorldChunk worldChunk, BlockState blockState, BlockPos blockPos, MachineUpgradesUtil upgradesUtil) {
+        return this.canDrill(() -> ZUtil.getBlockEntity(worldChunk, blockState, blockPos), blockState, upgradesUtil);
+    }
+    //The block hardness check will render any chest looting augment useless.
+    private boolean canDrill(Supplier<BlockEntity> blockEntitySupplier, BlockState blockState, MachineUpgradesUtil upgradesUtil) {
+        if(blockState.isAir()) return false;
+        Block block = blockState.getBlock();
+        if(block.getHardness() < 0) return false;
+        BlockEntity blockEntity = blockEntitySupplier.get();
+        if(blockEntity == null) return true;
+
+        if(upgradesUtil.hasChestLooting()) {
+            LootableContainerBlockEntity lootableContainer = ZUtil.getUnlockedLootableContainer(blockEntity);
+            return lootableContainer != null && !lootableContainer.isEmpty();
+        }
+
+        return false;
+    }
+
+    private List<BlockPosState> drillQueue(int threads, QuarryBlock quarryBlock, BlockState quarryBlockState, BlockPos quarryPos, QuarryBlockEntity quarryBlockEntity, ServerWorld serverWorldToBreak, MachineUpgradesUtil upgradesUtil) {
+        List<BlockPosState> drillResults = new ArrayList<>();
+
+        ComplexEnergyContainer EnergyContainer = quarryBlockEntity.EnergyContainer;
+        ComplexInventory OutputInventory = quarryBlockEntity.OutputInventory;
         ArrayList<BlockPos> MiningQueue = quarryBlockEntity.MiningQueue;
 
-        for (int i = 0; i < threads; i++) {
-            if(MiningQueue.isEmpty()) {
-                return minedBlocks;
-            }
+        for (int threadIndex = 0; threadIndex < threads; threadIndex++) {
+            if(MiningQueue.isEmpty()) return drillResults;
+            int miningQueueIndex = MiningQueue.size() - 1;
 
-            BlockPos blockPosToBreak = MiningQueue.remove(MiningQueue.size() - 1);
-            WorldChunk worldChunkToBreak = serverWorldToBreak.getChunkManager().getWorldChunk(blockPosToBreak.getX() >> 4, blockPosToBreak.getZ() >> 4);
+            BlockPos blockPosToBreak = MiningQueue.get(miningQueueIndex);
+            Optional<BlockActress> testActress = BlockActress.of(serverWorldToBreak, blockPosToBreak);
+            if(testActress.isEmpty()) return drillResults;
 
-            if(worldChunkToBreak == null) {
-                MiningQueue.add(blockPosToBreak);
-                return minedBlocks;
-            }
+            //enables block entity tracking / disables neighbor- and redstone updates to reduce lag!
+            BlockActress blockActress = testActress.get().with(true, 0, 2);
 
-            BlockState blockStateToBreak = worldChunkToBreak.getBlockState(blockPosToBreak);
-            Block blockToBreak = blockStateToBreak.getBlock();
-
-            if(!blockStateToBreak.getFluidState().isEmpty()) {
-                serverWorldToBreak.setBlockState(blockPosToBreak, Blocks.AIR.getDefaultState(), 2, 0);
+            if(blockActress.isFluidStatePresent()) {
+                blockActress.setBlockState(Blocks.AIR);
+                MiningQueue.remove(miningQueueIndex);
                 continue;
             }
 
-            if(blockStateToBreak.isAir()) continue;
-            if(blockToBreak.getHardness() < 0) continue;
-            if(ZUtil.isActualBlockEntity(serverWorldToBreak, blockStateToBreak, blockPosToBreak)) continue;
+            //handle special block entities
+            if(this.canDrill(blockActress, upgradesUtil)) {
+                //will only work if canDrill conditions are met! like if the container is not empty
+                if(blockActress.blockEntity instanceof LootableContainerBlockEntity lootableContainer) {
+                    for (int slot = 0; slot < lootableContainer.size(); slot++) {
+                        ItemStack stack = lootableContainer.getStack(slot).copy();
+                        if(stack.isEmpty()) continue;
+                        stack.setCount(1);
 
-            //Energy
-            long actualEnergyConsumption = quarryBlock.getActualEnergyConsumption(upgradesUtil, blockToBreak);
+                        if(OutputInventory.canInsert(stack)) {
+                            long energyConsumption = quarryBlock.getEnergyConsumption(upgradesUtil);
+                            if(EnergyContainer.getStored() < energyConsumption) return drillResults;
 
-            if(quarryBlockEntity.EnergyContainer.getStored() < actualEnergyConsumption) {
-                MiningQueue.add(blockPosToBreak);
-                return minedBlocks;
+                            OutputInventory.addStack(lootableContainer.removeStack(slot, 1));
+                            EnergyContainer.useEnergy(energyConsumption);
+
+                            break;
+                        }
+                        //not enough space in quarry inventory
+                        return drillResults;
+                    }
+                    //only one item per operation
+                    continue;
+                }
+                //non-block entities will fall through
+            } else {
+                MiningQueue.remove(miningQueueIndex);
+                continue;
             }
 
-            //Loot
-            ItemStack breakingItem = Items.NETHERITE_PICKAXE.getDefaultStack();
+            //energy consumption
+            long energyConsumption = quarryBlock.getEnergyConsumption(upgradesUtil, blockActress.block);
+            if(EnergyContainer.getStored() < energyConsumption) return drillResults;
+
+            //loot generation
+            ItemStack drillingTool = Items.NETHERITE_PICKAXE.getDefaultStack();
 
             if(upgradesUtil.hasSilkTouch()) {
-                breakingItem.addEnchantment(Enchantments.SILK_TOUCH, 1);
+                drillingTool.addEnchantment(Enchantments.SILK_TOUCH, 0);
             } else {
                 int fortuneLevel = FortuneUtil.fromProbability(upgradesUtil.getFortuneMultiplier());
-                breakingItem.addEnchantment(Enchantments.FORTUNE, fortuneLevel);
+                drillingTool.addEnchantment(Enchantments.FORTUNE, fortuneLevel);
             }
 
-            List<ItemStack> droppingItems = blockStateToBreak.getDroppedStacks(
-                    new LootContext.Builder(serverWorldToBreak)
-                            .parameter(LootContextParameters.BLOCK_STATE, quarryBlockState)
-                            .parameter(LootContextParameters.ORIGIN, RenderUtil.vec3dFrom(quarryPos))
-                            .parameter(LootContextParameters.TOOL, breakingItem)
-            );
-
+            List<ItemStack> droppedStacks = blockActress.getDroppedStacks(quarryBlockState, quarryPos, drillingTool);
             List<ItemStack> stacksToAward = new ArrayList<>();
 
             //TODO: can result in loss of drops
-            for (ItemStack drop : droppingItems) {
-                if(!quarryBlockEntity.OutputInventory.canInsert(drop)) {
-                    MiningQueue.add(blockPosToBreak);
-                    return minedBlocks;
+            for (ItemStack drop : droppedStacks) {
+                if(!OutputInventory.canInsert(drop)) {
+                    return drillResults;
                 } else {
                     stacksToAward.add(drop);
                 }
             }
 
-            stacksToAward.forEach(quarryBlockEntity.OutputInventory::addStack);
+            stacksToAward.forEach(OutputInventory::addStack);
 
-            //Mining
-            serverWorldToBreak.setBlockState(blockPosToBreak, Blocks.AIR.getDefaultState(), 2, 0);
-            quarryBlockEntity.EnergyContainer.useEnergy(actualEnergyConsumption);
-            minedBlocks.add(new Pair<>(blockPosToBreak, blockStateToBreak));
+            //mining
+            BlockPosState blockPosState = blockActress.toBlockPosState();
+
+            EnergyContainer.useEnergy(energyConsumption);
+            blockActress.setBlockState(Blocks.AIR);
+
+            MiningQueue.remove(miningQueueIndex);
+            drillResults.add(blockPosState);
         }
 
-        return minedBlocks;
+        return drillResults;
     }
 
 

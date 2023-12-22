@@ -4,10 +4,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
@@ -196,7 +193,10 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         }
     }
 
-    public long getActualEnergyConsumption(MachineUpgradesUtil upgradesUtil, Block block) {
+    public long getEnergyConsumption(MachineUpgradesUtil upgradesUtil) {
+        return this.getEnergyConsumption(upgradesUtil, Blocks.STONE);
+    }
+    public long getEnergyConsumption(MachineUpgradesUtil upgradesUtil, Block block) {
         float blockHardnessPenalty = Math.max(1.0F, Math.min(5.0F, block.getHardness() / 10));
         float inefficiencyPenalty = upgradesUtil.getInefficiency();
         float operations = (20.0F / this.ticksPerOperation) * upgradesUtil.getSpeedMultiplier();

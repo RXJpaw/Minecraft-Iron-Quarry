@@ -10,6 +10,7 @@ public class MachineUpgradesUtil {
     public static final float SPEED_LIMIT = 91.0F;
 
     private boolean hasSilkTouch = false;
+    private boolean hasChestLooting = false;
 
     private float fortuneMultiplier = 1;
     private float speedMultiplier = 1;
@@ -30,6 +31,7 @@ public class MachineUpgradesUtil {
                 case SPEED -> this.speedMultiplier += multiplier/100;
                 case FORTUNE -> this.fortuneMultiplier += multiplier/100;
                 case SILK_TOUCH -> this.hasSilkTouch = true;
+                case CHEST_LOOTING -> this.hasChestLooting = true;
             }
 
             this.inefficiency += inefficiency/100;
@@ -41,6 +43,7 @@ public class MachineUpgradesUtil {
     }
 
     public boolean hasSilkTouch() { return this.hasSilkTouch; }
+    public boolean hasChestLooting() { return this.hasChestLooting; }
 
     public float getFortuneMultiplier() {
         return Math.min(fortuneMultiplier, FORTUNE_LIMIT);

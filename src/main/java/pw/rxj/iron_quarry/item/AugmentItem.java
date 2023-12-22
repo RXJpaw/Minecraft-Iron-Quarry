@@ -157,7 +157,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             MutableText LORE_BENEFITS = ReadableString.translatable("item.iron_quarry.augment.lore.benefit." + augmentType.getName(), ZUtil.expandableFixedFloat(stored * augmentType.getMultiplier()));
             tooltip.add(LORE_BENEFITS);
 
-            MutableText LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback.energy", ZUtil.expandableFixedFloat(stored * augmentType.getInefficiency()));
+            MutableText LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback." + augmentType.getDrawbackKey(), ZUtil.expandableFixedFloat(stored * augmentType.getInefficiency()));
             tooltip.add(LORE_DRAWBACK);
         } else if(!this.isUnique()) {
             MutableText LORE_EMPTY = ReadableString.translatable("item.iron_quarry.lore.use_rei", stored, capacity);

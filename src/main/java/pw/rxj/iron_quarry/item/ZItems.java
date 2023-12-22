@@ -23,6 +23,13 @@ public class ZItems {
             .setItem(new AugmentItem(new FabricItemSettings().group(Main.ITEM_GROUP).maxCount(1)))
             .setIdentifier(Main.MOD_ID, "augment");
 
+    public static final ItemEntryBuilder CHEST_LOOTING_AUGMENT = new ItemEntryBuilder()
+            .setItem(new AugmentItem(new FabricItemSettings().group(Main.ITEM_GROUP).maxCount(1))
+                    .dynamicName(DynamicText.GOLD)
+                    .unique(AugmentType.CHEST_LOOTING)
+            )
+            .setIdentifier(Main.MOD_ID, "chest_looting_augment");
+
     public static final ItemEntryBuilder SILK_TOUCH_AUGMENT = new ItemEntryBuilder()
             .setItem(new AugmentItem(new FabricItemSettings().group(Main.ITEM_GROUP).maxCount(1))
                     .dynamicName(DynamicText.EMERALD)
@@ -34,6 +41,7 @@ public class ZItems {
             BLUEPRINT,
             CONDUCTIVE_AMETHYST,
             AUGMENT,
+            CHEST_LOOTING_AUGMENT,
             SILK_TOUCH_AUGMENT
     );
 
