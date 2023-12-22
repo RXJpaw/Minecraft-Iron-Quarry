@@ -50,8 +50,6 @@ public class PacketQuarryBlockBreak extends ComplexPacketHandler<BooleanBlockPos
                 float volume = ((blockSoundGroup.getVolume() + 1.0F) / 2.0F) * BlockBreakingConfig.getVolume();
                 float pitch = blockSoundGroup.getPitch() * 0.8F;
 
-                Main.LOGGER.info(BlockBreakingConfig.getVolume());
-
                 if(volume > 0) {
                     client.world.playSound(blockPos, blockSoundGroup.getBreakSound(), SoundCategory.BLOCKS, volume, pitch, false);
                 }
