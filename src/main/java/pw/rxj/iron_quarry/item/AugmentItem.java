@@ -261,7 +261,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         return IHandledSmithing.super.getSmithingOutputPreview(base, addition, output);
     }
     @Override
-    public Boolean handleSmithingTakeOutput(PlayerEntity player, Inventory inputInv, CraftingResultInventory outputInv, ItemStack output, ScreenHandlerContext context) {
+    public Boolean handleSmithingTakeOutput(PlayerEntity player, Inventory inputInv, CraftingResultInventory outputInv, ScreenHandlerContext context) {
         ItemStack base = inputInv.getStack(0).copy();
         if(AugmentItem.isNotOf(base)) return false;
 
@@ -271,13 +271,14 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         if(augmentStack == null) {
             return false;
         } else {
-            output.onCraft(player.world, player, output.getCount());
             outputInv.unlockLastRecipe(player);
 
             Inventory outcome = this.getSmithingOutcome(base, addition);
             inputInv.setStack(0, outcome.getStack(0));
             inputInv.setStack(1, outcome.getStack(1));
-            output.setNbt(outcome.getStack(2).getNbt());
+
+            ItemStack output = outcome.getStack(2);
+            output.onCraft(player.world, player, output.getCount());
 
             context.run((world, pos) -> world.syncWorldEvent(1044, pos, 0));
             return true;

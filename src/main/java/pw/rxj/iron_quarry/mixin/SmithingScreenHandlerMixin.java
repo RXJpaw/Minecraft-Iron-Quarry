@@ -24,8 +24,9 @@ public abstract class SmithingScreenHandlerMixin extends ForgingScreenHandler {
 
     @Inject(method="onTakeOutput", at = @At(value = "HEAD"), cancellable = true)
     private void onTakeOutput(PlayerEntity player, ItemStack stack, CallbackInfo ci) {
-        if(ZUtil.getBlockOrItem(stack) instanceof IHandledSmithing handledSmithing) {
-            boolean result = handledSmithing.handleSmithingTakeOutput(player, this.input, this.output, stack, this.context);
+        //TESTME: stack is "0 air" when taking output with shift (MC-267545)
+        if(ZUtil.getBlockOrItem(this.input.getStack(0)) instanceof IHandledSmithing handledSmithing) {
+            boolean result = handledSmithing.handleSmithingTakeOutput(player, this.input, this.output, this.context);
             if(result) ci.cancel();
         }
     }
