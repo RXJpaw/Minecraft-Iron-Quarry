@@ -6,7 +6,6 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.RecipeCodecs;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SmithingTransformRecipe;
 import net.minecraft.registry.DynamicRegistryManager;
@@ -32,7 +31,7 @@ public class HandledSmithingRecipe extends SmithingTransformRecipe {
                 return recipe.base;
             }), Ingredient.ALLOW_EMPTY_CODEC.fieldOf("addition").forGetter((recipe) -> {
                 return recipe.addition;
-            }), RecipeCodecs.CRAFTING_RESULT.fieldOf("result").forGetter((recipe) -> {
+            }), ItemStack.RECIPE_RESULT_CODEC.fieldOf("result").forGetter((recipe) -> {
                 return recipe.result;
             })).apply(instance, (template, base, addition, result) -> {
                 return new HandledSmithingRecipe(template, base, addition, appendSmithingPreview(base, addition, result));

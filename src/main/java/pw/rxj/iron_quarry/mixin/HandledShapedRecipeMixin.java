@@ -17,7 +17,7 @@ import java.util.List;
 public class HandledShapedRecipeMixin {
     @Inject(method = "craft(Lnet/minecraft/inventory/RecipeInputInventory;Lnet/minecraft/registry/DynamicRegistryManager;)Lnet/minecraft/item/ItemStack;", at = @At(value = "HEAD"), cancellable = true)
     private void getResult(RecipeInputInventory recipeInputInventory, DynamicRegistryManager dynamicRegistryManager, CallbackInfoReturnable<ItemStack> cir) {
-        List<ItemStack> stacks = recipeInputInventory.getInputStacks();
+        List<ItemStack> stacks = recipeInputInventory.getHeldStacks();
 
         if(ZUtil.getBlockOrItem(stacks.get(4)) instanceof IHandledCrafting handledCrafting) {
             ItemStack result = handledCrafting.getCraftingOutput((ShapedRecipe) (Object) this, recipeInputInventory, dynamicRegistryManager);

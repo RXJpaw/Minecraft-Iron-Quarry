@@ -71,11 +71,10 @@ public class ClientConfigScreen extends GameOptionsScreen {
 
     @Override
     protected void init() {
-        this.list = new OptionListWidget(this.client, this.width, this.height, 32, this.height - 32, 25);
+        this.list = new OptionListWidget(this.client, this.width, this.height - 64, 32, 25);
         this.list.addAll(new SimpleOption[]{ QUARRY_MONITOR_ALIGNMENT, BLOCK_BREAK_DISTANCE_OPTION,
                                              QUARRY_MONITOR_X,         BLOCK_BREAK_VOLUME_OPTION,
                                              QUARRY_MONITOR_Y,         null});
-        this.addSelectableChild(this.list);
         this.addSelectableChild(this.list);
 
         this.addDrawableChild(

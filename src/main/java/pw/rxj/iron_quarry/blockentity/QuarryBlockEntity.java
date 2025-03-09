@@ -188,8 +188,8 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
 
     public List<ItemStack> getMachineUpgradeStacks() {
         List<ItemStack> stacks = new ArrayList<>();
-        stacks.addAll(MachineUpgradesInventory.stacks);
-        stacks.addAll(DrillInventory.stacks);
+        stacks.addAll(MachineUpgradesInventory.heldStacks);
+        stacks.addAll(DrillInventory.heldStacks);
 
         return stacks;
 

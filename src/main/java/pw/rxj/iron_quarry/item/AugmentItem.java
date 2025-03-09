@@ -287,7 +287,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             inputInv.setStack(2, outcome.getStack(2));
 
             ItemStack output = outcome.getStack(3);
-            output.onCraft(player.getWorld(), player, output.getCount());
+            output.onCraftByPlayer(player.getWorld(), player, output.getCount());
 
             context.run((world, pos) -> world.syncWorldEvent(1044, pos, 0));
             return true;

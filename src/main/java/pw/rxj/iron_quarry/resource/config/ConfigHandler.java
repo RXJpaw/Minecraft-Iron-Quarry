@@ -218,7 +218,7 @@ public class ConfigHandler {
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ZNetwork.sendToPlayer(handler.player, PacketServerConfigApply.bake(this));
-            Main.LOGGER.info("Sent server config to: {} ({})", handler.player.getEntityName(), handler.player.getUuid());
+            Main.LOGGER.info("Sent server config to: {} ({})", handler.player.getName(), handler.player.getUuid());
         });
     }
     @Environment(EnvType.CLIENT)

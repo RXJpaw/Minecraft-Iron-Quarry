@@ -1,5 +1,6 @@
 package pw.rxj.iron_quarry.block;
 
+import com.mojang.serialization.MapCodec;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
@@ -136,8 +137,8 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         NbtCompound StorageDrillInventory = Storage.getCompound("DrillInventory");
         DrillInventory.readNbtList(StorageDrillInventory.getList("Items", NbtElement.COMPOUND_TYPE));
 
-        stacks.addAll(MachineUpgradesInventory.stacks);
-        stacks.addAll(DrillInventory.stacks);
+        stacks.addAll(MachineUpgradesInventory.heldStacks);
+        stacks.addAll(DrillInventory.heldStacks);
 
         return stacks;
     }
@@ -335,7 +336,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     }
 
     @Override
-    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof QuarryBlockEntity) {
             if (!world.isClient && player.isCreative()) {
@@ -348,7 +349,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
             }
         }
 
-        super.onBreak(world, pos, state, player);
+        return super.onBreak(world, pos, state, player);
     }
 
     @Override
@@ -476,6 +477,11 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     @Override
     public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
         return new QuarryBlockEntity(pos, state);
+    }
+
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        throw new UnsupportedOperationException();
     }
 
     @Override

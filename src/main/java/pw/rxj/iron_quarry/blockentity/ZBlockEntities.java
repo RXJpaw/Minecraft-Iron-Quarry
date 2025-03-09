@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.blockentity;
 
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -12,7 +11,7 @@ public class ZBlockEntities {
     public static final BlockEntityType<QuarryBlockEntity> QUARRY_BLOCK_ENTITY = Registry.register(
             Registries.BLOCK_ENTITY_TYPE,
             new Identifier(Main.MOD_ID, "quarry_block_entity"),
-            FabricBlockEntityTypeBuilder.create(QuarryBlockEntity::new,
+            BlockEntityType.Builder.create(QuarryBlockEntity::new,
                     ZBlocks.COPPER_QUARRY.getBlock(),
                     ZBlocks.IRON_QUARRY.getBlock(),
                     ZBlocks.GOLD_QUARRY.getBlock(),

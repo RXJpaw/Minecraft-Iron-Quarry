@@ -43,7 +43,7 @@ public class ComplexInventory extends SimpleInventory {
     public NbtList write(){
         NbtList items = new NbtList();
 
-        Iterator<ItemStack> stacks = this.stacks.iterator();
+        Iterator<ItemStack> stacks = this.heldStacks.iterator();
 
         for (int i = 0; stacks.hasNext(); i++) {
             ItemStack stack = stacks.next();
@@ -61,14 +61,14 @@ public class ComplexInventory extends SimpleInventory {
     }
 
     public void read(NbtList items){
-        this.stacks.clear();
+        this.heldStacks.clear();
 
         for(int i = 0; i < items.size(); ++i) {
             NbtCompound item = items.getCompound(i);
 
             int slot = item.getByte("Slot") & 255;
-            if (slot >= 0 && slot < this.stacks.size()) {
-                this.stacks.set(slot, ItemStack.fromNbt(item));
+            if (slot >= 0 && slot < this.heldStacks.size()) {
+                this.heldStacks.set(slot, ItemStack.fromNbt(item));
             }
         }
     }

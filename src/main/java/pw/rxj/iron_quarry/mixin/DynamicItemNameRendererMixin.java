@@ -22,7 +22,7 @@ public abstract class DynamicItemNameRendererMixin {
 
             if (nbtCompound != null && nbtCompound.contains("Name", 8)) {
                 try {
-                    Text text = Text.Serializer.fromJson(nbtCompound.getString("Name"));
+                    Text text = Text.Serialization.fromJson(nbtCompound.getString("Name"));
                     if (text != null) {
                         MutableText itemName = dynamicItemName.getDynamicItemName(stack).getText(text);
                         cir.setReturnValue(itemName);
