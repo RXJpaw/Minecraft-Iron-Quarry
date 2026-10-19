@@ -1,14 +1,8 @@
 {
     "type": "iron_quarry:handled_smithing_recipe",
-    "template": {
-        "item": "iron_quarry:augmenting_template"
-    },
-    "base": {
-        "item": "iron_quarry:augment"
-    },
-    "addition": {
-        "tag": "iron_quarry:augment_fortune_tier2_enhancers"
-    },
+    "template": "iron_quarry:augmenting_template",
+    "base": "iron_quarry:augment",
+    "addition": "#iron_quarry:augment_fortune_tier2_enhancers",
     "result": {
         "count": 1,
         "id": "iron_quarry:augment"

@@ -27,6 +27,16 @@ public class MachineConfiguration {
         return new MachineConfiguration();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        return o instanceof MachineConfiguration other && this.SidedIoConfig.equals(other.SidedIoConfig);
+    }
+    @Override
+    public int hashCode() {
+        return this.SidedIoConfig.hashCode();
+    }
+
     public void setIoState(Face face, IoState ioState){
         if(ioState.equals(IoState.BLOCKED)) {
             SidedIoConfig.remove(face);

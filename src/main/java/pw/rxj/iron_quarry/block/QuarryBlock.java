@@ -26,7 +26,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -70,8 +70,8 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     private int energyCapacity;
     private int augmentLimit;
 
-    protected QuarryBlock(Block reference, String texRef, QuarryStatsConfig.Entry entry) {
-        super(Settings.copy(reference));
+    public QuarryBlock(Settings settings, String texRef, QuarryStatsConfig.Entry entry) {
+        super(settings);
         this.textureReference = texRef;
 
         this.setDefaultState(this.stateManager.getDefaultState()
@@ -90,7 +90,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         this.augmentLimit = quarryStats.augmentLimit;
     }
 
-    public static final DirectionProperty FACING = DirectionProperty.of("facing");
+    public static final EnumProperty<Direction> FACING = EnumProperty.of("facing", Direction.class);
 
     public static QuarryBlock getFallback() {
         return ZBlocks.COPPER_QUARRY.getBlock();
@@ -303,8 +303,8 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     }
 
     @Override
-    public ItemStack getCraftingOutput(ShapedRecipe handler, CraftingRecipeInput input, RegistryWrapper.WrapperLookup wrapperLookup) {
-        return IHandledCrafting.COPY_CENTER_SLOT_NBT.apply(handler, input, wrapperLookup);
+    public ItemStack getCraftingOutput(ItemStack output, CraftingRecipeInput input, RegistryWrapper.WrapperLookup wrapperLookup) {
+        return IHandledCrafting.copyCenterSlotComponents(output, input);
     }
 
     public int getTicksPerOperation(){

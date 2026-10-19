@@ -25,6 +25,22 @@ public class ComplexInventory extends SimpleInventory {
         return new ComplexInventory(size);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(!(o instanceof ComplexInventory other) || other.size() != this.size()) return false;
+
+        for (int i = 0; i < this.size(); i++) {
+            if(!ItemStack.areEqual(this.getStack(i), other.getStack(i))) return false;
+        }
+
+        return true;
+    }
+    @Override
+    public int hashCode() {
+        return ItemStack.listHashCode(this.getHeldStacks());
+    }
+
     public boolean canInsertAll(List<ItemStack> stacks) {
         return this.canInsertAll(stacks.toArray(new ItemStack[0]));
     }
@@ -90,7 +106,7 @@ public class ComplexInventory extends SimpleInventory {
 
             if(stack.isEmpty()) continue;
 
-            NbtCompound item = (NbtCompound) stack.encode(registries);
+            NbtCompound item = (NbtCompound) stack.toNbt(registries);
             item.putByte("Slot", (byte) i);
 
             items.add(item);

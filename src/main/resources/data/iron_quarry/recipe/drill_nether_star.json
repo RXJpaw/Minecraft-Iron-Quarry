@@ -6,15 +6,9 @@
         " M "
     ],
     "key": {
-        "S": {
-            "item": "minecraft:blaze_rod"
-        },
-        "A": {
-            "item": "iron_quarry:shulker_drill"
-        },
-        "M": {
-            "item": "minecraft:nether_star"
-        }
+        "S": "minecraft:blaze_rod",
+        "A": "iron_quarry:shulker_drill",
+        "M": "minecraft:nether_star"
     },
     "result": {
         "count": 1,

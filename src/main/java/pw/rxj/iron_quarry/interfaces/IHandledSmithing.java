@@ -17,10 +17,12 @@ import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 
+import java.util.Optional;
+
 public interface IHandledSmithing {
     ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, RegistryWrapper.WrapperLookup registryLookup);
 
-    default ItemStack getSmithingOutputPreview(Ingredient base, Ingredient addition, ItemStack output) {
+    default ItemStack getSmithingOutputPreview(Optional<Ingredient> base, Optional<Ingredient> addition, @Nullable TagKey<Item> additionTag, ItemStack output) {
         return null;
     }
 
@@ -40,12 +42,6 @@ public interface IHandledSmithing {
         if(addition == null) return null;
 
         return TagKey.of(RegistryKeys.ITEM, addition);
-    }
-    default @Nullable Ingredient getSmithingPreviewAdditionIngredient(ItemStack stack) {
-        TagKey<Item> addition = this.getSmithingPreviewAdditionTag(stack);
-        if(addition == null) return null;
-
-        return Ingredient.fromTag(addition);
     }
 
     default String getSmithingPreviewKey(ItemStack stack){

@@ -6,15 +6,9 @@
         "AC "
     ],
     "key": {
-        "M": {
-            "item": "minecraft:amethyst_shard"
-        },
-        "C": {
-            "item": "iron_quarry:circuit_mk2"
-        },
-        "A": {
-            "item": "minecraft:ender_pearl"
-        }
+        "M": "minecraft:amethyst_shard",
+        "C": "iron_quarry:circuit_mk2",
+        "A": "minecraft:ender_pearl"
     },
     "result": {
         "count": 1,

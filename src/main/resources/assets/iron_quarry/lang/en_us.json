@@ -162,5 +162,13 @@
     "time.unit.c.day.singular": "%s day",
     "time.unit.c.day.plural": "%s days",
 
-    "kick_reason.iron_quarry.packet_blueprint_position_set.disallowed_distance": "Tried to expand blueprint position by an illegal amount. (Must be between %s and %s)"
+    "kick_reason.iron_quarry.packet_blueprint_position_set.disallowed_distance": "Tried to expand blueprint position by an illegal amount. (Must be between %s and %s)",
+
+    "tag.item.iron_quarry.augment_capacity_enhancers": "Augment Capacity Enhancers",
+    "tag.item.iron_quarry.augment_fortune_tier1_enhancers": "Fortune Augment Enhancers (Tier 1)",
+    "tag.item.iron_quarry.augment_fortune_tier2_enhancers": "Fortune Augment Enhancers (Tier 2)",
+    "tag.item.iron_quarry.augment_fortune_tier3_enhancers": "Fortune Augment Enhancers (Tier 3)",
+    "tag.item.iron_quarry.augment_speed_tier1_enhancers": "Speed Augment Enhancers (Tier 1)",
+    "tag.item.iron_quarry.augment_speed_tier2_enhancers": "Speed Augment Enhancers (Tier 2)",
+    "tag.item.iron_quarry.augment_speed_tier3_enhancers": "Speed Augment Enhancers (Tier 3)"
 }

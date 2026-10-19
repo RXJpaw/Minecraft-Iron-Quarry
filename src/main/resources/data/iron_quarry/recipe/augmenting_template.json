@@ -6,15 +6,9 @@
         "DCD"
     ],
     "key": {
-        "A": {
-            "item": "minecraft:amethyst_shard"
-        },
-        "C": {
-            "item": "iron_quarry:circuit_mk2e"
-        },
-        "D": {
-            "item": "minecraft:diamond"
-        }
+        "A": "minecraft:amethyst_shard",
+        "C": "iron_quarry:circuit_mk2e",
+        "D": "minecraft:diamond"
     },
     "result": {
         "count": 1,

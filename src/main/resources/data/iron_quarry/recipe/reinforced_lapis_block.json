@@ -6,12 +6,8 @@
         "BBB"
     ],
     "key": {
-        "B": {
-            "item": "minecraft:lapis_block"
-        },
-        "A": {
-            "item": "iron_quarry:circuit_blank"
-        }
+        "B": "minecraft:lapis_block",
+        "A": "iron_quarry:circuit_blank"
     },
     "result": {
         "count": 1,

@@ -18,7 +18,7 @@ import pw.rxj.iron_quarry.util.ZUtil;
 public abstract class MouseScrollMixin {
     @Shadow @Final private MinecraftClient client;
 
-    @Inject(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;scrollInHotbar(D)V", shift = At.Shift.BEFORE), cancellable = true)
+    @Inject(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;setSelectedSlot(I)V", shift = At.Shift.BEFORE), cancellable = true)
     public void onMouseScroll(long window, double horizontal, double vertical, CallbackInfo ci) {
         //this.client.player was already checked in injected method.
         assert this.client.player != null;

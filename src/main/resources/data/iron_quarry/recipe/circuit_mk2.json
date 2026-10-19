@@ -6,15 +6,9 @@
         "SMP"
     ],
     "key": {
-        "M": {
-            "item": "iron_quarry:circuit_mk1"
-        },
-        "P": {
-            "item": "minecraft:iron_ingot"
-        },
-        "S": {
-            "item": "minecraft:prismarine_shard"
-        }
+        "M": "iron_quarry:circuit_mk1",
+        "P": "minecraft:iron_ingot",
+        "S": "minecraft:prismarine_shard"
     },
     "result": {
         "count": 2,

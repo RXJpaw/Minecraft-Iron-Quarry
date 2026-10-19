@@ -4,6 +4,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ForgingScreenHandler;
+import net.minecraft.screen.slot.ForgingSlotsManager;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.SmithingScreenHandler;
@@ -18,8 +19,8 @@ import pw.rxj.iron_quarry.util.ZUtil;
 
 @Mixin(SmithingScreenHandler.class)
 public abstract class SmithingScreenHandlerMixin extends ForgingScreenHandler {
-    public SmithingScreenHandlerMixin(@Nullable ScreenHandlerType<?> type, int syncId, PlayerInventory playerInventory, ScreenHandlerContext context) {
-        super(type, syncId, playerInventory, context);
+    public SmithingScreenHandlerMixin(@Nullable ScreenHandlerType<?> type, int syncId, PlayerInventory playerInventory, ScreenHandlerContext context, ForgingSlotsManager forgingSlotsManager) {
+        super(type, syncId, playerInventory, context, forgingSlotsManager);
     }
 
     @Inject(method="onTakeOutput", at = @At(value = "HEAD"), cancellable = true)

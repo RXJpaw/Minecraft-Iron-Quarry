@@ -6,18 +6,10 @@
         "SLR"
     ],
     "key": {
-        "R": {
-            "item": "minecraft:redstone"
-        },
-        "L": {
-            "item": "minecraft:lapis_lazuli"
-        },
-        "S": {
-            "tag": "minecraft:signs"
-        },
-        "P": {
-            "item": "minecraft:paper"
-        }
+        "R": "minecraft:redstone",
+        "L": "minecraft:lapis_lazuli",
+        "S": "#minecraft:signs",
+        "P": "minecraft:paper"
     },
     "result": {
         "count": 1,

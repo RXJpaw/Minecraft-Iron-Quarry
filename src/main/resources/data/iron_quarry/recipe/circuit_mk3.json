@@ -6,18 +6,10 @@
         "SEP"
     ],
     "key": {
-        "M": {
-            "item": "iron_quarry:circuit_mk2"
-        },
-        "E": {
-            "item": "iron_quarry:circuit_mk2e"
-        },
-        "P": {
-            "item": "minecraft:diamond"
-        },
-        "S": {
-            "item": "minecraft:glowstone_dust"
-        }
+        "M": "iron_quarry:circuit_mk2",
+        "E": "iron_quarry:circuit_mk2e",
+        "P": "minecraft:diamond",
+        "S": "minecraft:glowstone_dust"
     },
     "result": {
         "count": 2,

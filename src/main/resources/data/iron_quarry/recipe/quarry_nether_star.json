@@ -6,15 +6,9 @@
         "BCB"
     ],
     "key": {
-        "M": {
-            "item": "iron_quarry:netherite_quarry"
-        },
-        "C": {
-            "item": "iron_quarry:circuit_mk5"
-        },
-        "B": {
-            "item": "minecraft:nether_star"
-        }
+        "M": "iron_quarry:netherite_quarry",
+        "C": "iron_quarry:circuit_mk5",
+        "B": "minecraft:nether_star"
     },
     "result": {
         "count": 1,

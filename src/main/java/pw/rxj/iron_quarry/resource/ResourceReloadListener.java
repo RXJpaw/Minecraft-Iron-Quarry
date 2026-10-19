@@ -10,7 +10,6 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceReloader;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
 import pw.rxj.iron_quarry.Main;
 
 import java.util.ArrayList;
@@ -24,11 +23,11 @@ public class ResourceReloadListener implements ResourceReloader {
     private static final List<Identifier> resourceIdList = new ArrayList<>();
 
     @Override
-    public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager resourceManager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
-        return reloadResources(synchronizer, resourceManager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor);
+    public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager resourceManager, Executor prepareExecutor, Executor applyExecutor) {
+        return reloadResources(synchronizer, resourceManager, prepareExecutor, applyExecutor);
     }
 
-    public static CompletableFuture<Void> reloadResources(Synchronizer synchronizer, ResourceManager resourceManager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
+    public static CompletableFuture<Void> reloadResources(Synchronizer synchronizer, ResourceManager resourceManager, Executor prepareExecutor, Executor applyExecutor) {
         TextureManager textureManager = MinecraftClient.getInstance().getTextureManager();
 
         return CompletableFuture
@@ -49,7 +48,7 @@ public class ResourceReloadListener implements ResourceReloader {
                 }, prepareExecutor)
                 .thenCompose(synchronizer::whenPrepared)
                 .thenAcceptAsync(loadableResourceIds -> {
-                    loadableResourceIds.forEach(textureManager::bindTexture);
+                    loadableResourceIds.forEach(textureManager::getTexture);
                 }, applyExecutor);
     }
 
@@ -66,8 +65,8 @@ public class ResourceReloadListener implements ResourceReloader {
                 return ResourceReloadListener.ID;
             }
             @Override
-            public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager resourceManager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
-                return ResourceReloadListener.reloadResources(synchronizer, resourceManager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor);
+            public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager resourceManager, Executor prepareExecutor, Executor applyExecutor) {
+                return ResourceReloadListener.reloadResources(synchronizer, resourceManager, prepareExecutor, applyExecutor);
             }
         });
     }

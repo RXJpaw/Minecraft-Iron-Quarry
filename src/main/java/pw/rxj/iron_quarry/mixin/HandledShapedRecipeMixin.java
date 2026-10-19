@@ -15,12 +15,12 @@ import java.util.List;
 
 @Mixin(ShapedRecipe.class)
 public class HandledShapedRecipeMixin {
-    @Inject(method = "craft(Lnet/minecraft/recipe/input/CraftingRecipeInput;Lnet/minecraft/registry/RegistryWrapper$WrapperLookup;)Lnet/minecraft/item/ItemStack;", at = @At(value = "HEAD"), cancellable = true)
+    @Inject(method = "craft(Lnet/minecraft/recipe/input/CraftingRecipeInput;Lnet/minecraft/registry/RegistryWrapper$WrapperLookup;)Lnet/minecraft/item/ItemStack;", at = @At(value = "RETURN"), cancellable = true)
     private void craft(CraftingRecipeInput input, RegistryWrapper.WrapperLookup wrapperLookup, CallbackInfoReturnable<ItemStack> cir) {
         ItemStack centerStack = IHandledCrafting.getCenterStack(input);
 
         if(ZUtil.getBlockOrItem(centerStack) instanceof IHandledCrafting handledCrafting) {
-            ItemStack result = handledCrafting.getCraftingOutput((ShapedRecipe) (Object) this, input, wrapperLookup);
+            ItemStack result = handledCrafting.getCraftingOutput(cir.getReturnValue(), input, wrapperLookup);
             cir.setReturnValue(result);
         }
     }

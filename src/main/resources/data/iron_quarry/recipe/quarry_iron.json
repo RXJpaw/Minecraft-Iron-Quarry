@@ -6,15 +6,9 @@
         "BCB"
     ],
     "key": {
-        "M": {
-            "item": "iron_quarry:copper_quarry"
-        },
-        "C": {
-            "item": "iron_quarry:circuit_mk2"
-        },
-        "B": {
-            "item": "minecraft:iron_block"
-        }
+        "M": "iron_quarry:copper_quarry",
+        "C": "iron_quarry:circuit_mk2",
+        "B": "minecraft:iron_block"
     },
     "result": {
         "count": 1,

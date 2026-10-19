@@ -6,12 +6,8 @@
         " C "
     ],
     "key": {
-        "P": {
-            "item": "minecraft:item_frame"
-        },
-        "C": {
-            "item": "iron_quarry:circuit_mk2"
-        }
+        "P": "minecraft:item_frame",
+        "C": "iron_quarry:circuit_mk2"
     },
     "result": {
         "count": 1,

@@ -6,15 +6,9 @@
         "SMP"
     ],
     "key": {
-        "M": {
-            "item": "iron_quarry:circuit_mk1"
-        },
-        "P": {
-            "item": "minecraft:gold_ingot"
-        },
-        "S": {
-            "item": "minecraft:blaze_powder"
-        }
+        "M": "iron_quarry:circuit_mk1",
+        "P": "minecraft:gold_ingot",
+        "S": "minecraft:blaze_powder"
     },
     "result": {
         "count": 2,

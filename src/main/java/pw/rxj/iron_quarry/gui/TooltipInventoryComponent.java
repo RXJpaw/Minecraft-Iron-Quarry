@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import oshi.util.tuples.Pair;
+import pw.rxj.iron_quarry.render.RenderUtil;
 import pw.rxj.iron_quarry.Main;
 
 import java.util.List;
@@ -33,7 +34,7 @@ public class TooltipInventoryComponent implements CustomTooltipComponent {
     }
 
     @Override
-    public int getHeight() {
+    public int getHeight(TextRenderer textRenderer) {
         return 22;
     }
 
@@ -48,12 +49,12 @@ public class TooltipInventoryComponent implements CustomTooltipComponent {
     }
 
     @Override
-    public void drawItems(TextRenderer textRenderer, int x, int y, DrawContext context) {
+    public void drawItems(TextRenderer textRenderer, int x, int y, int width, int height, DrawContext context) {
         for(int index = 0; index < this.disableableInventory.size(); ++index) {
             int slotX = x + index * 18;
             int slotY = y + 2;
 
-            context.drawTexture(CUSTOM_SLOTS_TEXTURE, slotX, slotY, 0, 0, 18, 18, 36, 36);
+            RenderUtil.drawTexture(context, CUSTOM_SLOTS_TEXTURE, slotX, slotY, 0, 0, 18, 18, 36, 36);
 
             this.drawSlot(slotX, slotY, index, textRenderer, context);
         }
@@ -65,7 +66,7 @@ public class TooltipInventoryComponent implements CustomTooltipComponent {
         Boolean disabled = slot.getB();
 
         context.drawItem(itemStack, x + 1, y + 1, index);
-        context.drawItemInSlot(textRenderer, itemStack, x + 1, y + 1);
+        context.drawStackOverlay(textRenderer, itemStack, x + 1, y + 1);
 
         if(disabled) {
             RenderSystem.disableDepthTest();

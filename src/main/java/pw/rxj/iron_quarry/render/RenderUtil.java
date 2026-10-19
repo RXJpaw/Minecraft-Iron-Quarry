@@ -2,10 +2,14 @@ package pw.rxj.iron_quarry.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -17,18 +21,25 @@ import java.util.List;
 public class RenderUtil {
     public static final int MAX_VIEW_DISTANCE = 32;
 
-    public static void enableScaledScissor(int x, int y, int width, int height) {
-        int scaleFactor = (int) MinecraftClient.getInstance().getWindow().getScaleFactor();
-
-        RenderSystem.enableScissor(x * scaleFactor, MinecraftClient.getInstance().getWindow().getFramebufferHeight() - (y + height) * scaleFactor, width * scaleFactor, height * scaleFactor);
-    }
-    public static void disableScaledScissor() {
-        RenderSystem.disableScissor();
-    }
-    public static void runScissored(int x, int y, int width, int height, Runnable runnable) {
-        enableScaledScissor(x, y, width, height);
+    public static void runScissored(DrawContext context, int x, int y, int width, int height, Runnable runnable) {
+        context.enableScissor(x, y, x + width, y + height);
         runnable.run();
-        disableScaledScissor();
+        context.disableScissor();
+    }
+
+    public static void drawTexture(DrawContext context, Identifier texture, int x, int y, float u, float v, int width, int height) {
+        drawTexture(context, texture, x, y, u, v, width, height, 256, 256);
+    }
+    public static void drawTexture(DrawContext context, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
+        context.drawTexture(RenderLayer::getGuiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight);
+    }
+    public static void drawTexture(DrawContext context, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color) {
+        context.drawTexture(RenderLayer::getGuiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight, color);
+    }
+    public static int whiteWithAlpha(double alpha) {
+        int a = (int) Math.round(MathHelper.clamp(alpha, 0.0, 1.0) * 255.0);
+
+        return (a << 24) | 0xFFFFFF;
     }
 
     public static Vec3d vec3dFrom(BlockPos blockPos) {
@@ -77,7 +88,7 @@ public class RenderUtil {
         RenderSystem.defaultBlendFunc();
 
         //Outlines
-        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
+        RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
         RenderSystem.lineWidth(3.0F);
         RenderSystem.enableBlend();
         RenderSystem.disableCull();

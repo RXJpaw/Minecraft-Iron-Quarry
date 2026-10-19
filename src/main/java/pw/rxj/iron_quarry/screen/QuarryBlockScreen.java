@@ -78,7 +78,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         if(height < 0) Main.LOGGER.warn("Tried to drawLockedSlot with height < 0 ({})", height);
         if(height > 18) Main.LOGGER.warn("Tried to drawLockedSlot with height > 18 ({})", height);
 
-        context.drawTexture(AUGMENTATION_CONFIGURATION_TEXTURE, this.x + slot.x - 1, this.y + slot.y - 1, 100, 0, width, height);
+        RenderUtil.drawTexture(context, AUGMENTATION_CONFIGURATION_TEXTURE, this.x + slot.x - 1, this.y + slot.y - 1, 100, 0, width, height);
     }
 
     public QuarryBlockScreen(QuarryBlockScreenHandler handler, PlayerInventory inventory, Text title) {
@@ -122,23 +122,20 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         MachineConfiguration MachineConfiguration = blockEntity.Configuration;
         MachineUpgradesUtil machineUpgradesUtil = MachineUpgradesUtil.from(block.getMachineUpgradeStacks(stack));
 
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
         int backgroundX = this.x;
         int backgroundY = this.y;
 
-        context.drawTexture(BACKGROUND_TEXTURE, backgroundX, backgroundY, 0, 0, this.realBackgroundWidth, this.realBackgroundHeight);
+        RenderUtil.drawTexture(context, BACKGROUND_TEXTURE, backgroundX, backgroundY, 0, 0, this.realBackgroundWidth, this.realBackgroundHeight);
 
         //Energy-Fill-% rendering
         if(EnergyContainer.getStored() > 0) {
             int chargedPixels = Math.max(0, Math.min(40, (int) (EnergyContainer.getFillPercent() * 40)));
-            context.drawTexture(BACKGROUND_TEXTURE, backgroundX + 10, backgroundY + 58 - chargedPixels, 179, 57 - chargedPixels, 12, chargedPixels);
+            RenderUtil.drawTexture(context, BACKGROUND_TEXTURE, backgroundX + 10, backgroundY + 58 - chargedPixels, 179, 57 - chargedPixels, 12, chargedPixels);
         }
 
         //Battery Slot rendering
         if(!BATTERY_SLOT.hasStack()){
-            context.drawTexture(BACKGROUND_TEXTURE, backgroundX + 11, backgroundY + 64, 180, 60, 10, 14);
+            RenderUtil.drawTexture(context, BACKGROUND_TEXTURE, backgroundX + 11, backgroundY + 64, 180, 60, 10, 14);
         }
 
         //Energy-Fill-% tooltip
@@ -161,17 +158,11 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             return tooltip.subList(0, conflictAmount > 0 ? 5 + conflictAmount : 4);
         });
 
-        context.drawTexture(BACKGROUND_TEXTURE, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, 179, 5, 3, 9);
+        RenderUtil.drawTexture(context, BACKGROUND_TEXTURE, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, 179, 5, 3, 9);
         if(machineUpgradesUtil.getConflictAmount() > 0) {
             double alpha = Math.sin(System.currentTimeMillis() / 100.0) + 0.5;
 
-            RenderSystem.enableBlend();
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, (float) alpha);
-
-            context.drawTexture(BACKGROUND_TEXTURE, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, 182, 5, 3, 9);
-
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.defaultBlendFunc();
+            RenderUtil.drawTexture(context, BACKGROUND_TEXTURE, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, 182, 5, 3, 9, 256, 256, RenderUtil.whiteWithAlpha(alpha));
         }
 
         //Augmentation Configuration
@@ -187,9 +178,9 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             int augmentsMenuWidth = AugmentsConfig.zone.width;
             int augmentsMenuHeight = AugmentsConfig.zone.height;
 
-            context.drawTexture(AUGMENTATION_CONFIGURATION_TEXTURE, augmentsMenuX, augmentsMenuY, 0, 0, augmentsMenuWidth, augmentsMenuHeight);
+            RenderUtil.drawTexture(context, AUGMENTATION_CONFIGURATION_TEXTURE, augmentsMenuX, augmentsMenuY, 0, 0, augmentsMenuWidth, augmentsMenuHeight);
 
-            RenderUtil.runScissored(augmentsMenuX, augmentsMenuY, augmentsMenuWidth, augmentsMenuHeight, () -> {
+            RenderUtil.runScissored(context, augmentsMenuX, augmentsMenuY, augmentsMenuWidth, augmentsMenuHeight, () -> {
                 context.drawTextWithShadow(this.textRenderer, ReadableString.translatable("screen.iron_quarry.quarry_block.title.augmentation"), augmentsMenuX + 20, augmentsMenuY + 7, 0xFFFFFF);
             });
 
@@ -206,7 +197,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             }
 
         } else {
-            context.drawTexture(OPTIONS_TEXTURE, augmentsMenuZone.x, augmentsMenuZone.y, 0, 22, 22, 22);
+            RenderUtil.drawTexture(context, OPTIONS_TEXTURE, augmentsMenuZone.x, augmentsMenuZone.y, 0, 22, 22, 22);
 
             AUGMENT_SLOTS.forEach(slot -> slot.setEnabled(false));
         }
@@ -229,24 +220,19 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             if(IoConfig.getTicks() > cappedMaxTicks) {
                 float cappedTicks = IoConfig.getTicks() - cappedMaxTicks;
 
-                RenderSystem.enableBlend();
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, cappedTicks / cappedMaxTicks);
+                int overlayColor = RenderUtil.whiteWithAlpha(cappedTicks / cappedMaxTicks);
 
-                context.drawTexture(BACKGROUND_IO_OVERLAY, backgroundX, backgroundY, 0, 0, this.realBackgroundWidth, this.realBackgroundHeight);
+                RenderUtil.drawTexture(context, BACKGROUND_IO_OVERLAY, backgroundX, backgroundY, 0, 0, this.realBackgroundWidth, this.realBackgroundHeight, 256, 256, overlayColor);
 
                 //Battery Slot rendering
                 if(!BATTERY_SLOT.hasStack()){
-                    context.drawTexture(BACKGROUND_IO_OVERLAY, backgroundX + 11, backgroundY + 64, 180, 60, 10, 14);
+                    RenderUtil.drawTexture(context, BACKGROUND_IO_OVERLAY, backgroundX + 11, backgroundY + 64, 180, 60, 10, 14, 256, 256, overlayColor);
                 }
-
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                RenderSystem.defaultBlendFunc();
             }
 
-            RenderSystem.setShaderTexture(0, OPTIONS_CONFIGURATION_TEXTURE);
-            context.drawTexture(OPTIONS_CONFIGURATION_TEXTURE, ioConfigX, ioConfigY, 0, 0, ioConfigWidth, ioConfigHeight);
+            RenderUtil.drawTexture(context, OPTIONS_CONFIGURATION_TEXTURE, ioConfigX, ioConfigY, 0, 0, ioConfigWidth, ioConfigHeight);
 
-            RenderUtil.runScissored(ioConfigX, ioConfigY, ioConfigWidth, ioConfigHeight, () -> {
+            RenderUtil.runScissored(context, ioConfigX, ioConfigY, ioConfigWidth, ioConfigHeight, () -> {
                 context.drawTextWithShadow(this.textRenderer, ReadableString.translatable("screen.iron_quarry.quarry_block.title.configuration"), ioConfigX + 20, ioConfigY + 7, 0xFFFFFF);
             });
 
@@ -259,14 +245,14 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                 TexturePosition ioTexture = IoState.getTexturePosition(MachineConfiguration.getIoState(face));
 
                 if(ioConfigWidth >= bgX && ioConfigHeight >= bgY){
-                    context.drawTexture(block.getTextureId(),
+                    RenderUtil.drawTexture(context, block.getTextureId(),
                             ioConfigX + bgX, ioConfigY + bgY,
                             bgTexture.u(), bgTexture.v(),
                             Math.min(bgTexture.width(), ioConfigWidth - bgX), Math.min(bgTexture.height(), ioConfigHeight - bgY));
                 }
 
                 if(ioConfigWidth >= bgX + 4 && ioConfigHeight >= bgY + 4){
-                    context.drawTexture(IoState.getTextureId(),
+                    RenderUtil.drawTexture(context, IoState.getTextureId(),
                             ioConfigX + bgX + 4, ioConfigY + bgY + 4,
                             ioTexture.u(), ioTexture.v(),
                             Math.min(ioTexture.width(), ioConfigWidth - (bgX + 4)), Math.min(ioTexture.height(), ioConfigHeight - (bgY + 4)));
@@ -279,7 +265,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             });
 
         } else {
-            context.drawTexture(OPTIONS_TEXTURE, ioConfigZone.x, ioConfigZone.y, 0, 0, 22, 22);
+            RenderUtil.drawTexture(context, OPTIONS_TEXTURE, ioConfigZone.x, ioConfigZone.y, 0, 0, 22, 22);
         }
     }
 
@@ -287,7 +273,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     protected void drawSlot(DrawContext context, Slot slot) {
         if(AUGMENT_SLOTS.contains((ManagedSlot) slot)) {
             TrackableZone.Zone zone = AugmentsConfig.zone;
-            RenderUtil.runScissored(zone.x, zone.y, zone.width, zone.height, () -> {
+            RenderUtil.runScissored(context, zone.x, zone.y, zone.width, zone.height, () -> {
                 super.drawSlot(context, slot);
             });
         } else {

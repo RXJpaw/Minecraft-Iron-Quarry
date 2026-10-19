@@ -6,15 +6,9 @@
         "AC "
     ],
     "key": {
-        "M": {
-            "item": "iron_quarry:iron_quarry_monitor"
-        },
-        "C": {
-            "item": "iron_quarry:circuit_mk3"
-        },
-        "A": {
-            "item": "minecraft:ender_eye"
-        }
+        "M": "iron_quarry:iron_quarry_monitor",
+        "C": "iron_quarry:circuit_mk3",
+        "A": "minecraft:ender_eye"
     },
     "result": {
         "count": 1,

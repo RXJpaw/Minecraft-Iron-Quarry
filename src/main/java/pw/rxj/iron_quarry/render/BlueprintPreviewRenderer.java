@@ -176,8 +176,6 @@ public class BlueprintPreviewRenderer {
             //Adjust scale for low resolution displays that default to GUI scale 1.
             if(minecraftClient.getWindow().getScaleFactor() <= 1) scale *= 1.5F;
 
-            RenderSystem.enableBlend();
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
 
             matrices.push();
 
@@ -185,7 +183,7 @@ public class BlueprintPreviewRenderer {
             matrices.scale(scale, scale, scale);
             matrices.translate(-6, -6, 0.0);
 
-            context.drawTexture(BLUEPRINT_POSITIONS_TEXTURE, 0, 0, 0, texUV.x, texUV.y, 13, 13, 36, 36);
+            RenderUtil.drawTexture(context, BLUEPRINT_POSITIONS_TEXTURE, 0, 0, texUV.x, texUV.y, 13, 13, 36, 36, RenderUtil.whiteWithAlpha(alpha));
 
             matrices.pop();
 
@@ -209,7 +207,6 @@ public class BlueprintPreviewRenderer {
                 matrices.pop();
             }
 
-            RenderSystem.disableBlend();
         }
     }
 

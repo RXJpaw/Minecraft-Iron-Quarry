@@ -1,7 +1,9 @@
 package pw.rxj.iron_quarry.item;
 
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.EnchantableComponent;
 import net.minecraft.component.type.ToolComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.registry.RegistryKey;
@@ -34,7 +36,7 @@ public class DrillItem extends Item implements ICustomEnchantabilityProvider, IC
     private int maxCDamage;
 
     public DrillItem(Item.Settings settings, QuarryDrillStatsConfig.Entry entry) {
-        super(settings);
+        super(settings.enchantable(entry.enchantability));
 
         this.enchantability = entry.enchantability;
         this.toolEquivalent = entry.toolEquivalent;
@@ -68,10 +70,6 @@ public class DrillItem extends Item implements ICustomEnchantabilityProvider, IC
     }
 
     @Override
-    public boolean isEnchantable(ItemStack stack) {
-        return true;
-    }
-    @Override
     public Set<RegistryKey<Enchantment>> getViableEnchantments(ItemStack stack) {
         return Set.of(Enchantments.UNBREAKING, Enchantments.EFFICIENCY);
     }
@@ -80,15 +78,18 @@ public class DrillItem extends Item implements ICustomEnchantabilityProvider, IC
         return this.maxCDamage;
     }
     @Override
-    public int getEnchantability() {
-        return this.enchantability;
+    public ComponentMap getComponents() {
+        return ComponentMap.builder()
+                .addAll(super.getComponents())
+                .add(DataComponentTypes.ENCHANTABLE, new EnchantableComponent(this.enchantability))
+                .build();
     }
 
     protected void assignCorrectToolComponent() {
         Identifier toolId = Identifier.tryParse(this.toolEquivalent);
         if(toolId == null) throw new IllegalStateException("Config.DrillStats.toolEquivalent (" + this.toolEquivalent + ") has incorrect identifier format!");
 
-        Optional<Item> tool = Registries.ITEM.getOrEmpty(toolId);
+        Optional<Item> tool = Registries.ITEM.getOptionalValue(toolId);
         if(tool.isEmpty()) throw new IllegalStateException("Config.DrillStats.toolEquivalent (" + this.toolEquivalent + ") is not an existing tool!");
 
         this.toolStack = tool.get().getDefaultStack();

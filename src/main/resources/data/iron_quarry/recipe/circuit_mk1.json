@@ -6,15 +6,9 @@
         "SPS"
     ],
     "key": {
-        "M": {
-            "item": "iron_quarry:circuit_blank"
-        },
-        "P": {
-            "item": "minecraft:copper_ingot"
-        },
-        "S": {
-            "item": "minecraft:redstone"
-        }
+        "M": "iron_quarry:circuit_blank",
+        "P": "minecraft:copper_ingot",
+        "S": "minecraft:redstone"
     },
     "result": {
         "count": 4,

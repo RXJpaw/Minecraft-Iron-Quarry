@@ -6,15 +6,9 @@
         "DDD"
     ],
     "key": {
-        "U": {
-            "item": "minecraft:dark_prismarine"
-        },
-        "M": {
-            "item": "minecraft:copper_ingot"
-        },
-        "D": {
-            "item": "minecraft:amethyst_shard"
-        }
+        "U": "minecraft:dark_prismarine",
+        "M": "minecraft:copper_ingot",
+        "D": "minecraft:amethyst_shard"
     },
     "result": {
         "count": 16,

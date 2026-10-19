@@ -63,15 +63,15 @@ public class QuarryMonitorOverlayRenderer {
         matrices.push();
         matrices.translate(x, y, 90.0);
 
-        context.drawTexture(OVERLAY_TEXTURE, 0, 0, 0, 0, 0, 42, 45, 128, 128);
+        RenderUtil.drawTexture(context, OVERLAY_TEXTURE, 0, 0, 0, 0, 42, 45, 128, 128);
 
         if(energyPct > 0.0F) {
             int chargedPixels = Math.max(0, Math.min(39, (int) (energyPct * 39)));
-            context.drawTexture(OVERLAY_TEXTURE, 3, 3 + 39 - chargedPixels, 0, 42, 3 + 39 - chargedPixels, 5, chargedPixels, 128, 128);
+            RenderUtil.drawTexture(context, OVERLAY_TEXTURE, 3, 3 + 39 - chargedPixels, 42, 3 + 39 - chargedPixels, 5, chargedPixels, 128, 128);
         }
         if(outputInvPct > 0.0F) {
             int chargedPixels = Math.max(0, Math.min(39, (int) (outputInvPct * 39)));
-            context.drawTexture(OVERLAY_TEXTURE, 34, 3 + 39 - chargedPixels, 0, 47, 3 + 39 - chargedPixels, 5, chargedPixels, 128, 128);
+            RenderUtil.drawTexture(context, OVERLAY_TEXTURE, 34, 3 + 39 - chargedPixels, 47, 3 + 39 - chargedPixels, 5, chargedPixels, 128, 128);
         }
 
         matrices.pop();
@@ -87,11 +87,11 @@ public class QuarryMonitorOverlayRenderer {
 
         if(blueprintStack.getItem() instanceof BlueprintItem) {
             context.drawItem(blueprintStack, x + 13, y + 4);
-            context.drawItemInSlot(textRenderer, blueprintStack, x + 13, y + 4);
+            context.drawStackOverlay(textRenderer, blueprintStack, x + 13, y + 4);
         }
         if(drillStack.getItem() instanceof DrillItem) {
             context.drawItem(drillStack, x + 13, y + 25);
-            context.drawItemInSlot(textRenderer, drillStack, x + 13, y + 25);
+            context.drawStackOverlay(textRenderer, drillStack, x + 13, y + 25);
         }
     }
 

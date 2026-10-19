@@ -45,7 +45,7 @@ public class SilkTouchAugmentConfig {
             return !this.server.silkTouchAugment.villagerProfession.equals("minecraft:none");
         }
         public VillagerProfession getVillagerProfession() {
-            Optional<VillagerProfession> villagerProfession = Registries.VILLAGER_PROFESSION.getOrEmpty(Identifier.tryParse(this.server.silkTouchAugment.villagerProfession));
+            Optional<VillagerProfession> villagerProfession = Registries.VILLAGER_PROFESSION.getOptionalValue(Identifier.tryParse(this.server.silkTouchAugment.villagerProfession));
             if(villagerProfession.isEmpty()) throw new Error("Invalid villager profession: " + this.server.silkTouchAugment.villagerProfession);
 
             return villagerProfession.get();
@@ -62,13 +62,13 @@ public class SilkTouchAugmentConfig {
         }
 
         public ItemStack getRandomizedBase(Random random) {
-            Optional<Item> baseItem = Registries.ITEM.getOrEmpty(Identifier.tryParse(this.server.silkTouchAugment.price.base));
+            Optional<Item> baseItem = Registries.ITEM.getOptionalValue(Identifier.tryParse(this.server.silkTouchAugment.price.base));
             if(baseItem.isEmpty()) throw new Error("Invalid price base: " + this.server.silkTouchAugment.price.base);
 
             return new ItemStack(baseItem.get(), random.nextBetween(this.server.silkTouchAugment.price.baseLow, this.server.silkTouchAugment.price.baseHigh));
         }
         public ItemStack getRandomizedAddition(Random random) {
-            Optional<Item> additionItem = Registries.ITEM.getOrEmpty(Identifier.tryParse(this.server.silkTouchAugment.price.addition));
+            Optional<Item> additionItem = Registries.ITEM.getOptionalValue(Identifier.tryParse(this.server.silkTouchAugment.price.addition));
             if(additionItem.isEmpty()) throw new Error("Invalid price addition: " + this.server.silkTouchAugment.price.addition);
 
             return new ItemStack(additionItem.get(), random.nextBetween(this.server.silkTouchAugment.price.additionLow, this.server.silkTouchAugment.price.additionHigh));

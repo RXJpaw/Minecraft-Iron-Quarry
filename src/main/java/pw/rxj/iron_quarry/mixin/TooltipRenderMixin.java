@@ -9,6 +9,8 @@ import net.minecraft.client.gui.tooltip.TooltipComponent;
 import net.minecraft.client.gui.tooltip.TooltipPositioner;
 import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,10 +28,10 @@ import java.util.stream.Collectors;
 @Mixin(DrawContext.class)
 public abstract class TooltipRenderMixin {
     @Shadow @Final private MinecraftClient client;
-    @Shadow protected abstract void drawTooltip(TextRenderer textRenderer, List<TooltipComponent> components, int x, int y, TooltipPositioner positioner);
+    @Shadow protected abstract void drawTooltip(TextRenderer textRenderer, List<TooltipComponent> components, int x, int y, TooltipPositioner positioner, @Nullable Identifier texture);
 
-    @Inject(method = "drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;Ljava/util/Optional;II)V", at = @At(value = "HEAD"), cancellable = true)
-    private void renderTooltip(TextRenderer textRenderer, List<Text> lines, Optional<TooltipData> data, int x, int y, CallbackInfo ci) {
+    @Inject(method = "drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/util/Identifier;)V", at = @At(value = "HEAD"), cancellable = true)
+    private void renderTooltip(TextRenderer textRenderer, List<Text> lines, Optional<TooltipData> data, int x, int y, @Nullable Identifier texture, CallbackInfo ci) {
         if(data.isPresent() && data.get() instanceof CustomTooltipData customTooltipData && customTooltipData.renderAtMarker()) {
             List<TooltipComponent> list = lines.stream().map(Text::asOrderedText).map(TooltipComponent::of).collect(Collectors.toList());
 
@@ -39,12 +41,12 @@ public abstract class TooltipRenderMixin {
                 }
             }
 
-            this.drawTooltip(textRenderer, list, x, y, HoveredTooltipPositioner.INSTANCE); ci.cancel();
+            this.drawTooltip(textRenderer, list, x, y, HoveredTooltipPositioner.INSTANCE, texture); ci.cancel();
         }
     }
 
-    @Inject(method = "drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;IILnet/minecraft/client/gui/tooltip/TooltipPositioner;)V", at = @At(value = "INVOKE", target = "Ljava/util/List;isEmpty()Z"))
-    private void renderTooltipCompat(TextRenderer textRenderer, List<TooltipComponent> components, int x, int y, TooltipPositioner positioner, CallbackInfo ci) {
+    @Inject(method = "drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;IILnet/minecraft/client/gui/tooltip/TooltipPositioner;Lnet/minecraft/util/Identifier;)V", at = @At(value = "INVOKE", target = "Ljava/util/List;isEmpty()Z"))
+    private void renderTooltipCompat(TextRenderer textRenderer, List<TooltipComponent> components, int x, int y, TooltipPositioner positioner, @Nullable Identifier texture, CallbackInfo ci) {
         if(client == null) return;
 
         if(components.size() > 1 && components.get(1) instanceof CustomTooltipComponent customTooltipComponent) {

@@ -19,30 +19,12 @@ import java.util.List;
 public class ZBlocks {
     private static final QuarryStatsConfig.Handler QUARRY_STATS_CONFIG = Main.CONFIG.getQuarryStatsConfig();
 
-    public static final BlockEntry<QuarryBlock, BlockItem> COPPER_QUARRY = BlockEntry.buildQuarryBlock()
-            .withBlock(new QuarryBlock(Blocks.COPPER_BLOCK, "block/copper_quarry", QUARRY_STATS_CONFIG.getCopperQuarry()))
-            .withBlockItemSettings(new Item.Settings())
-            .withId(Main.MOD_ID, "copper_quarry");
-    public static final BlockEntry<QuarryBlock, BlockItem> IRON_QUARRY = BlockEntry.buildQuarryBlock()
-            .withBlock(new QuarryBlock(Blocks.IRON_BLOCK, "block/iron_quarry", QUARRY_STATS_CONFIG.getIronQuarry()))
-            .withBlockItemSettings(new Item.Settings())
-            .withId(Main.MOD_ID, "iron_quarry");
-    public static final BlockEntry<QuarryBlock, BlockItem> GOLD_QUARRY = BlockEntry.buildQuarryBlock()
-            .withBlock(new QuarryBlock(Blocks.GOLD_BLOCK, "block/gold_quarry", QUARRY_STATS_CONFIG.getGoldQuarry()))
-            .withBlockItemSettings(new Item.Settings())
-            .withId(Main.MOD_ID, "gold_quarry");
-    public static final BlockEntry<QuarryBlock, BlockItem> DIAMOND_QUARRY = BlockEntry.buildQuarryBlock()
-            .withBlock(new QuarryBlock(Blocks.DIAMOND_BLOCK, "block/diamond_quarry", QUARRY_STATS_CONFIG.getDiamondQuarry()))
-            .withBlockItemSettings(new Item.Settings())
-            .withId(Main.MOD_ID, "diamond_quarry");
-    public static final BlockEntry<QuarryBlock, BlockItem> NETHERITE_QUARRY = BlockEntry.buildQuarryBlock()
-            .withBlock(new QuarryBlock(Blocks.NETHERITE_BLOCK, "block/netherite_quarry", QUARRY_STATS_CONFIG.getNetheriteQuarry()))
-            .withBlockItemSettings(new Item.Settings().rarity(Rarity.UNCOMMON).fireproof())
-            .withId(Main.MOD_ID, "netherite_quarry");
-    public static final BlockEntry<QuarryBlock, BlockItem> NETHER_STAR_QUARRY = BlockEntry.buildQuarryBlock()
-            .withBlock(new QuarryBlock(Blocks.NETHERITE_BLOCK, "block/nether_star_quarry", QUARRY_STATS_CONFIG.getNetherStarQuarry()))
-            .withBlockItemSettings(new Item.Settings().rarity(Rarity.RARE).fireproof())
-            .withId(Main.MOD_ID, "nether_star_quarry");
+    public static final BlockEntry<QuarryBlock> COPPER_QUARRY = BlockEntry.of("copper_quarry", AbstractBlock.Settings.copy(Blocks.COPPER_BLOCK), settings -> new QuarryBlock(settings, "block/copper_quarry", QUARRY_STATS_CONFIG.getCopperQuarry()));
+    public static final BlockEntry<QuarryBlock> IRON_QUARRY = BlockEntry.of("iron_quarry", AbstractBlock.Settings.copy(Blocks.IRON_BLOCK), settings -> new QuarryBlock(settings, "block/iron_quarry", QUARRY_STATS_CONFIG.getIronQuarry()));
+    public static final BlockEntry<QuarryBlock> GOLD_QUARRY = BlockEntry.of("gold_quarry", AbstractBlock.Settings.copy(Blocks.GOLD_BLOCK), settings -> new QuarryBlock(settings, "block/gold_quarry", QUARRY_STATS_CONFIG.getGoldQuarry()));
+    public static final BlockEntry<QuarryBlock> DIAMOND_QUARRY = BlockEntry.of("diamond_quarry", AbstractBlock.Settings.copy(Blocks.DIAMOND_BLOCK), settings -> new QuarryBlock(settings, "block/diamond_quarry", QUARRY_STATS_CONFIG.getDiamondQuarry()));
+    public static final BlockEntry<QuarryBlock> NETHERITE_QUARRY = BlockEntry.of("netherite_quarry", AbstractBlock.Settings.copy(Blocks.NETHERITE_BLOCK), settings -> new QuarryBlock(settings, "block/netherite_quarry", QUARRY_STATS_CONFIG.getNetheriteQuarry()), settings -> settings.rarity(Rarity.UNCOMMON).fireproof());
+    public static final BlockEntry<QuarryBlock> NETHER_STAR_QUARRY = BlockEntry.of("nether_star_quarry", AbstractBlock.Settings.copy(Blocks.NETHERITE_BLOCK), settings -> new QuarryBlock(settings, "block/nether_star_quarry", QUARRY_STATS_CONFIG.getNetherStarQuarry()), settings -> settings.rarity(Rarity.RARE).fireproof());
     public static final List<QuarryBlock> quarryBlockList = List.of(
             COPPER_QUARRY.getBlock(),
             IRON_QUARRY.getBlock(),
@@ -52,16 +34,10 @@ public class ZBlocks {
             NETHER_STAR_QUARRY.getBlock()
     );
 
-    public static final BlockEntry<RedstoneBlock, BlockItem> REINFORCED_REDSTONE_BLOCK = BlockEntry.<RedstoneBlock>buildInherit()
-            .withBlock(new RedstoneBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_BLOCK)))
-            .withBlockItemSettings(new Item.Settings())
-            .withId(Main.MOD_ID, "reinforced_redstone_block");
-    public static final BlockEntry<Block, BlockItem> REINFORCED_LAPIS_BLOCK = BlockEntry.build()
-            .withBlock(new Block(AbstractBlock.Settings.copy(Blocks.LAPIS_BLOCK)))
-            .withBlockItemSettings(new Item.Settings())
-            .withId(Main.MOD_ID, "reinforced_lapis_block");
+    public static final BlockEntry<RedstoneBlock> REINFORCED_REDSTONE_BLOCK = BlockEntry.of("reinforced_redstone_block", AbstractBlock.Settings.copy(Blocks.REDSTONE_BLOCK), RedstoneBlock::new);
+    public static final BlockEntry<Block> REINFORCED_LAPIS_BLOCK = BlockEntry.of("reinforced_lapis_block", AbstractBlock.Settings.copy(Blocks.LAPIS_BLOCK), Block::new);
 
-    private static final List<BlockEntry<? extends Block, BlockItem>> blockEntryList = List.of(
+    private static final List<BlockEntry<? extends Block>> blockEntryList = List.of(
             COPPER_QUARRY,
             IRON_QUARRY,
             GOLD_QUARRY,
@@ -73,7 +49,7 @@ public class ZBlocks {
     );
 
     public static void register(){
-        for (BlockEntry<? extends Block, BlockItem> blockEntry : blockEntryList) {
+        for (BlockEntry<? extends Block> blockEntry : blockEntryList) {
             Registry.register(Registries.BLOCK, blockEntry.getId(), blockEntry.getBlock());
             Registry.register(Registries.ITEM, blockEntry.getId(), blockEntry.getBlockItem());
         }

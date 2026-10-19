@@ -6,15 +6,9 @@
         "AC "
     ],
     "key": {
-        "M": {
-            "item": "iron_quarry:netherite_quarry_monitor"
-        },
-        "C": {
-            "item": "iron_quarry:circuit_mk5"
-        },
-        "A": {
-            "item": "minecraft:sculk_shrieker"
-        }
+        "M": "iron_quarry:netherite_quarry_monitor",
+        "C": "iron_quarry:circuit_mk5",
+        "A": "minecraft:sculk_shrieker"
     },
     "result": {
         "count": 1,

@@ -1,60 +1,51 @@
 package pw.rxj.iron_quarry.util;
 
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
-import pw.rxj.iron_quarry.block.QuarryBlock;
+import pw.rxj.iron_quarry.Main;
 
-public class BlockEntry<T extends Block, S extends BlockItem> implements ItemConvertible {
-    private T block;
-    private S blockItem;
-    private Identifier id;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
-    protected BlockEntry() {}
-    public static <T extends Block, S extends BlockItem> BlockEntry<T, S> build() {
-        return new BlockEntry<>();
-    }
-    public static <T extends Block> BlockEntry<T, BlockItem> buildInherit() {
-        return new BlockEntry<>();
-    }
-    public static BlockEntry<QuarryBlock, BlockItem> buildQuarryBlock() {
-        return new BlockEntry<>();
-    }
+public class BlockEntry<T extends Block> implements ItemConvertible {
+    private final T block;
+    private final BlockItem blockItem;
+    private final Identifier id;
 
-    public BlockEntry<T, S> withId(String namespace, String path) {
-        this.id = Identifier.of(namespace, path);
-
-        return this;
-    }
-    public BlockEntry<T, S> withBlock(T block) {
+    private BlockEntry(Identifier id, T block, BlockItem blockItem) {
+        this.id = id;
         this.block = block;
-
-        return this;
-    }
-    public BlockEntry<T, S> withBlockItem(S blockItem) {
         this.blockItem = blockItem;
-
-        return this;
     }
-    @SuppressWarnings("unchecked")
-    public BlockEntry<T, S> withBlockItemSettings(Item.Settings settings) {
-        if(this.block == null) throw new IllegalStateException();
 
-        this.blockItem = (S) new BlockItem(this.block, settings);
+    public static <T extends Block> BlockEntry<T> of(String path, AbstractBlock.Settings blockSettings, Function<AbstractBlock.Settings, T> blockFactory, UnaryOperator<Item.Settings> itemSettings) {
+        Identifier id = Identifier.of(Main.MOD_ID, path);
 
-        return this;
+        T block = blockFactory.apply(blockSettings.registryKey(RegistryKey.of(RegistryKeys.BLOCK, id)));
+        BlockItem blockItem = new BlockItem(block, itemSettings.apply(new Item.Settings()
+                .registryKey(RegistryKey.of(RegistryKeys.ITEM, id))
+                .useBlockPrefixedTranslationKey()));
+
+        return new BlockEntry<>(id, block, blockItem);
+    }
+    public static <T extends Block> BlockEntry<T> of(String path, AbstractBlock.Settings blockSettings, Function<AbstractBlock.Settings, T> blockFactory) {
+        return of(path, blockSettings, blockFactory, UnaryOperator.identity());
     }
 
     public T getBlock() {
         return block;
     }
     @Override
-    public S asItem() {
+    public BlockItem asItem() {
         return blockItem;
     }
-    public S getBlockItem() {
+    public BlockItem getBlockItem() {
         return blockItem;
     }
     public Identifier getId() {

@@ -2,26 +2,27 @@ package pw.rxj.iron_quarry.util;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
+import pw.rxj.iron_quarry.Main;
+
+import java.util.function.Function;
 
 public class ItemEntry<T extends Item> implements ItemConvertible {
-    private T item;
-    private Identifier id;
+    private final T item;
+    private final Identifier id;
 
-    protected ItemEntry() {}
-    public static <T extends Item> ItemEntry<T> build() {
-        return new ItemEntry<>();
-    }
-
-    public ItemEntry<T> withId(String namespace, String path) {
-        this.id = Identifier.of(namespace, path);
-
-        return this;
-    }
-    public ItemEntry<T> withItem(T item) {
+    private ItemEntry(Identifier id, T item) {
+        this.id = id;
         this.item = item;
+    }
 
-        return this;
+    public static <T extends Item> ItemEntry<T> of(String path, Function<Item.Settings, T> factory) {
+        Identifier id = Identifier.of(Main.MOD_ID, path);
+        RegistryKey<Item> key = RegistryKey.of(RegistryKeys.ITEM, id);
+
+        return new ItemEntry<>(id, factory.apply(new Item.Settings().registryKey(key)));
     }
 
     @Override
@@ -32,5 +33,4 @@ public class ItemEntry<T extends Item> implements ItemConvertible {
     public Identifier getId() {
         return id;
     }
-
 }

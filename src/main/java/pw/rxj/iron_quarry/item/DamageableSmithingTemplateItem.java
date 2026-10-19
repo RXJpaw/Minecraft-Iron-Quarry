@@ -3,6 +3,7 @@ package pw.rxj.iron_quarry.item;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SmithingTemplateItem;
 import net.minecraft.text.MutableText;
@@ -24,8 +25,8 @@ public class DamageableSmithingTemplateItem extends SmithingTemplateItem impleme
     private final Text ingredientsText;
     private final int maxCDamage;
 
-    private DamageableSmithingTemplateItem(Text appliesToText, Text ingredientsText, Text titleText, int maxDamage, Text baseSlotDescriptionText, Text additionsSlotDescriptionText, List<Identifier> emptyBaseSlotTextures, List<Identifier> emptyAdditionsSlotTextures) {
-        super(appliesToText, ingredientsText, titleText, baseSlotDescriptionText, additionsSlotDescriptionText, emptyBaseSlotTextures, emptyAdditionsSlotTextures);
+    private DamageableSmithingTemplateItem(Text appliesToText, Text ingredientsText, int maxDamage, Text baseSlotDescriptionText, Text additionsSlotDescriptionText, List<Identifier> emptyBaseSlotTextures, List<Identifier> emptyAdditionsSlotTextures, Item.Settings settings) {
+        super(appliesToText, ingredientsText, baseSlotDescriptionText, additionsSlotDescriptionText, emptyBaseSlotTextures, emptyAdditionsSlotTextures, settings);
 
         this.appliesToText = appliesToText;
         this.ingredientsText = ingredientsText;
@@ -74,9 +75,9 @@ public class DamageableSmithingTemplateItem extends SmithingTemplateItem impleme
 
     }
 
-    public static DamageableSmithingTemplateItem createAugmentingTemplate() {
-        return new DamageableSmithingTemplateItem(AUGMENTING_APPLIES_TO_TEXT, AUGMENTING_INGREDIENTS_TEXT, Text.empty(), 18_300, AUGMENTING_BASE_SLOT_DESCRIPTION_TEXT, AUGMENTING_ADDITIONS_SLOT_DESCRIPTION_TEXT,
-                List.of(EMPTY_SLOT_AUGMENT_TEXTURE), List.of(EMPTY_SLOT_REDSTONE_DUST_TEXTURE, EMPTY_SLOT_LAPIS_LAZULI_TEXTURE, EMPTY_SLOT_INGOT_TEXTURE));
+    public static DamageableSmithingTemplateItem createAugmentingTemplate(Item.Settings settings) {
+        return new DamageableSmithingTemplateItem(AUGMENTING_APPLIES_TO_TEXT, AUGMENTING_INGREDIENTS_TEXT, 18_300, AUGMENTING_BASE_SLOT_DESCRIPTION_TEXT, AUGMENTING_ADDITIONS_SLOT_DESCRIPTION_TEXT,
+                List.of(EMPTY_SLOT_AUGMENT_TEXTURE), List.of(EMPTY_SLOT_REDSTONE_DUST_TEXTURE, EMPTY_SLOT_LAPIS_LAZULI_TEXTURE, EMPTY_SLOT_INGOT_TEXTURE), settings);
     }
 
     private static final MutableText APPLIES_TO_TEXT = Text.translatable("item.minecraft.smithing_template.applies_to").formatted(Formatting.GRAY);

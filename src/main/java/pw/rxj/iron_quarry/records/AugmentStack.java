@@ -2,7 +2,6 @@ package pw.rxj.iron_quarry.records;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.tag.TagKey;
 import pw.rxj.iron_quarry.item.ZItemTags;
 import pw.rxj.iron_quarry.types.AugmentType;
@@ -12,21 +11,21 @@ public record AugmentStack(AugmentType type, int amount) {
         int amount = stack.getCount();
 
         if(!AugmentType.FORTUNE.isDisabled()) {
-            if(Ingredient.fromTag(ZItemTags.AUGMENT_FORTUNE_T1_ENHANCERS).test(stack)) {
+            if(stack.isIn(ZItemTags.AUGMENT_FORTUNE_T1_ENHANCERS)) {
                 return new AugmentStack(AugmentType.FORTUNE, amount);
-            } else if(Ingredient.fromTag(ZItemTags.AUGMENT_FORTUNE_T2_ENHANCERS).test(stack)){
+            } else if(stack.isIn(ZItemTags.AUGMENT_FORTUNE_T2_ENHANCERS)){
                 return new AugmentStack(AugmentType.FORTUNE, amount * 9);
-            } else if(Ingredient.fromTag(ZItemTags.AUGMENT_FORTUNE_T3_ENHANCERS).test(stack)){
+            } else if(stack.isIn(ZItemTags.AUGMENT_FORTUNE_T3_ENHANCERS)){
                 return new AugmentStack(AugmentType.FORTUNE, amount * 81);
             }
         }
 
         if(!AugmentType.SPEED.isDisabled()) {
-            if(Ingredient.fromTag(ZItemTags.AUGMENT_SPEED_T1_ENHANCERS).test(stack)) {
+            if(stack.isIn(ZItemTags.AUGMENT_SPEED_T1_ENHANCERS)) {
                 return new AugmentStack(AugmentType.SPEED, amount);
-            } else if(Ingredient.fromTag(ZItemTags.AUGMENT_SPEED_T2_ENHANCERS).test(stack)){
+            } else if(stack.isIn(ZItemTags.AUGMENT_SPEED_T2_ENHANCERS)){
                 return new AugmentStack(AugmentType.SPEED, amount * 9);
-            } else if(Ingredient.fromTag(ZItemTags.AUGMENT_SPEED_T3_ENHANCERS).test(stack)){
+            } else if(stack.isIn(ZItemTags.AUGMENT_SPEED_T3_ENHANCERS)){
                 return new AugmentStack(AugmentType.SPEED, amount * 81);
             }
         }

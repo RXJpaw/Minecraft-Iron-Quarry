@@ -1,30 +1,20 @@
 package pw.rxj.iron_quarry.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import pw.rxj.iron_quarry.interfaces.IEnergyContainer;
 
 public class EnergyBarRenderer {
-    public static void renderGuiItemOverlay(DrawContext context, TextRenderer textRenderer, ItemStack stack, int x, int y, @Nullable String countOverride, CallbackInfo ci) {
+    public static void renderGuiItemOverlay(DrawContext context, ItemStack stack, int x, int y) {
         if (getItemBarStep(stack) > 0) {
-            RenderSystem.disableDepthTest();
-            RenderSystem.disableBlend();
-
             int step = (int) Math.ceil(getItemBarStep(stack));
             int color = 0xB76CEA;
             int fillX = x + 2;
             int fillY = y + 13;
 
-            context.fill(RenderLayer.getGuiOverlay(), fillX, fillY, fillX + 13,   fillY + 2, -16777216);
-            context.fill(RenderLayer.getGuiOverlay(), fillX, fillY, fillX + step, fillY + 1, color | -16777216);
-
-            RenderSystem.enableBlend();
-            RenderSystem.enableDepthTest();
+            context.fill(RenderLayer.getGuiOverlay(), fillX, fillY, fillX + 13,   fillY + 2, 200, -16777216);
+            context.fill(RenderLayer.getGuiOverlay(), fillX, fillY, fillX + step, fillY + 1, 200, color | -16777216);
         }
     }
 

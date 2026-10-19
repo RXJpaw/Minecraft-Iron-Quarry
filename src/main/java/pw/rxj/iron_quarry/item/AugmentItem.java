@@ -26,6 +26,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.random.Random;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
+import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.gui.CustomTooltipData;
 import pw.rxj.iron_quarry.gui.TooltipInventoryData;
@@ -247,17 +248,17 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         }
     }
     @Override
-    public ItemStack getSmithingOutputPreview(Ingredient base, Ingredient addition, ItemStack output) {
-        if(output.getItem() instanceof AugmentItem augmentItem) {
+    public ItemStack getSmithingOutputPreview(Optional<Ingredient> base, Optional<Ingredient> addition, @Nullable TagKey<Item> additionTag, ItemStack output) {
+        if(output.getItem() instanceof AugmentItem augmentItem && additionTag != null) {
             ItemStack stack = output.copy();
 
-            if(addition.equals(Ingredient.fromTag(ZItemTags.AUGMENT_CAPACITY_ENHANCERS))) {
+            if(additionTag.equals(ZItemTags.AUGMENT_CAPACITY_ENHANCERS)) {
                 augmentItem.makeSmithingPreview(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
 
                 return stack;
             } else {
                 for (TagKey<Item> itemTagKey : ZItemTags.AUGMENT_ENHANCERS) {
-                    if(!addition.equals(Ingredient.fromTag(itemTagKey))) continue;
+                    if(!additionTag.equals(itemTagKey)) continue;
 
                     AugmentStack augmentStack = AugmentStack.from(itemTagKey);
                     if(augmentStack == null) continue;
@@ -270,7 +271,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             }
         }
 
-        return IHandledSmithing.super.getSmithingOutputPreview(base, addition, output);
+        return IHandledSmithing.super.getSmithingOutputPreview(base, addition, additionTag, output);
     }
     @Override
     public Boolean handleSmithingTakeOutput(PlayerEntity player, Inventory inputInv, CraftingResultInventory outputInv, ScreenHandlerContext context) {
@@ -372,7 +373,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     public boolean putUpgrade(@NotNull ItemStack stack, ItemStack upgrade) {
         List<Identifier> itemIdList = new ArrayList<>(stack.getOrDefault(ZComponents.AUGMENT_UPGRADES, List.of()));
 
-        if(Ingredient.fromTag(ZItemTags.AUGMENT_CAPACITY_ENHANCERS).test(upgrade)) {
+        if(upgrade.isIn(ZItemTags.AUGMENT_CAPACITY_ENHANCERS)) {
             List<Item> capacityUpgrades = this.getUpgrades(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
             if(capacityUpgrades.size() >= CAPACITY_UPGRADE_SLOTS) return false;
         }
@@ -391,23 +392,23 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
     public List<Item> getUpgrades(@NotNull ItemStack stack) {
         if(this.isSmithingPreview(stack)) {
-            Ingredient addition = this.getSmithingPreviewAdditionIngredient(stack);
+            TagKey<Item> addition = this.getSmithingPreviewAdditionTag(stack);
             if(addition == null) return List.of();
 
-            ItemStack[] matchingStacks = addition.getMatchingStacks();
-            if(matchingStacks.length == 0) return List.of();
+            List<Item> matchingItems = ZUtil.getItemsIn(addition);
+            if(matchingItems.isEmpty()) return List.of();
 
             long time = System.currentTimeMillis() / 1000;
-            int stackIndex = (int) (time % matchingStacks.length);
+            int stackIndex = (int) (time % matchingItems.size());
 
-            return List.of(matchingStacks[stackIndex].getItem());
+            return List.of(matchingItems.get(stackIndex));
         }
 
         List<Identifier> itemIdList = stack.getOrDefault(ZComponents.AUGMENT_UPGRADES, new ArrayList<>());
         List<Item> upgradeList = new ArrayList<>();
 
         for (Identifier id : itemIdList) {
-            Optional<Item> item = Registries.ITEM.getOrEmpty(id);
+            Optional<Item> item = Registries.ITEM.getOptionalValue(id);
             item.ifPresent(upgradeList::add);
         }
 
@@ -415,17 +416,15 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
     public List<Item> getUpgrades(@NotNull ItemStack stack, TagKey<Item> itemTag) {
         List<Item> upgradeList = this.getUpgrades(stack);
-        Ingredient ingredient = Ingredient.fromTag(itemTag);
 
-        return upgradeList.stream().filter(item -> ingredient.test(item.getDefaultStack())).toList();
+        return upgradeList.stream().filter(item -> item.getDefaultStack().isIn(itemTag)).toList();
     }
 
     public ItemStack withAllCapacityEnhancers() {
-        Ingredient ingredient = Ingredient.fromTag(ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
         ItemStack stack = new ItemStack(this);
 
-        for (ItemStack enhancer : ingredient.getMatchingStacks()) {
-            this.putUpgrade(stack, enhancer);
+        for (Item enhancer : ZUtil.getItemsIn(ZItemTags.AUGMENT_CAPACITY_ENHANCERS)) {
+            this.putUpgrade(stack, enhancer.getDefaultStack());
         }
 
         return stack;

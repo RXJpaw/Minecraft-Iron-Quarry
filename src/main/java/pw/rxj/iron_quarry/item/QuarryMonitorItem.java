@@ -18,7 +18,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -156,8 +155,8 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     }
 
     @Override
-    public ItemStack getCraftingOutput(ShapedRecipe handler, CraftingRecipeInput input, RegistryWrapper.WrapperLookup wrapperLookup) {
-        return IHandledCrafting.COPY_CENTER_SLOT_NBT.apply(handler, input, wrapperLookup);
+    public ItemStack getCraftingOutput(ItemStack output, CraftingRecipeInput input, RegistryWrapper.WrapperLookup wrapperLookup) {
+        return IHandledCrafting.copyCenterSlotComponents(output, input);
     }
 
     @Override
@@ -183,8 +182,8 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        return TypedActionResult.success(user.getStackInHand(hand), false);
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
+        return ActionResult.CONSUME;
     }
 
     public void setWorld(ItemStack stack, World world) {

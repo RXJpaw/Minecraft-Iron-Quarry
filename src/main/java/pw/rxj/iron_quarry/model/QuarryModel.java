@@ -131,20 +131,12 @@ public class QuarryModel implements ComplexModel {
     }
 
     @Override
-    public Collection<Identifier> getModelDependencies() {
-        return Collections.emptyList();
+    public void resolve(UnbakedModel.Resolver resolver) {
+
     }
 
+    @Nullable
     @Override
-    public void setParents(Function<Identifier, UnbakedModel> modelLoader) {
-
-    }
-
-    @Nullable
-    public BakedModel bake(Baker baker, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
-        return this.bake(baker, textureGetter, rotationContainer);
-    }
-    @Nullable
     public BakedModel bake(Baker baker, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer) {
         PARTICLE_SPRITE = textureGetter.apply(PARTICLE_SPRITE_ID);
         QUARRY_SPRITE = textureGetter.apply(QUARRY_SPRITE_ID);

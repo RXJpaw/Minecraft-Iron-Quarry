@@ -6,15 +6,9 @@
         " M "
     ],
     "key": {
-        "S": {
-            "item": "minecraft:stick"
-        },
-        "A": {
-            "item": "iron_quarry:circuit_mk3"
-        },
-        "M": {
-            "item": "minecraft:diamond"
-        }
+        "S": "minecraft:stick",
+        "A": "iron_quarry:circuit_mk3",
+        "M": "minecraft:diamond"
     },
     "result": {
         "count": 1,

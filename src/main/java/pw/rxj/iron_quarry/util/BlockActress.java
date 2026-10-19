@@ -5,7 +5,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.type.ToolComponent;
 import net.minecraft.item.ItemStack;
-import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootWorldContext;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -101,7 +101,7 @@ public class BlockActress {
         Vec3d originVec3d = RenderUtil.vec3dFrom(originBlockPos);
 
         return this.blockState.getDroppedStacks(
-                new LootContextParameterSet.Builder(this.serverWorld)
+                new LootWorldContext.Builder(this.serverWorld)
                         .add(LootContextParameters.BLOCK_STATE, originBlockState)
                         .add(LootContextParameters.ORIGIN, originVec3d)
                         .add(LootContextParameters.TOOL, miningTool)

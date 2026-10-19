@@ -9,6 +9,11 @@ import net.minecraft.inventory.ContainerLock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
+import java.util.List;
+import java.util.ArrayList;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.registry.Registries;
+import net.minecraft.item.Item;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.registry.RegistryKey;
@@ -77,7 +82,7 @@ public class ZUtil {
             lootableBlockEntity.writeNbt(nbtCompound, world.getRegistryManager());
             if(nbtCompound.isEmpty()) return null;
 
-            ContainerLock lock = ContainerLock.fromNbt(nbtCompound);
+            ContainerLock lock = ContainerLock.fromNbt(nbtCompound, world.getRegistryManager());
             if(!lock.equals(ContainerLock.EMPTY)) return null;
 
             return lootableBlockEntity;
@@ -161,13 +166,13 @@ public class ZUtil {
         WorldBorder worldBorder = world.getWorldBorder();
 
         double x = Math.min(Math.max(blockPos.getX(), worldBorder.getBoundWest()), worldBorder.getBoundEast() - 1);
-        double y = Math.min(Math.max(blockPos.getY(), world.getBottomY()), world.getTopY());
+        double y = Math.min(Math.max(blockPos.getY(), world.getBottomY()), world.getTopYInclusive() + 1);
         double z = Math.min(Math.max(blockPos.getZ(), worldBorder.getBoundNorth()), worldBorder.getBoundSouth() - 1);
 
         return BlockPos.ofFloored(x, y, z);
     }
     public static boolean isInsideWorldBounds(BlockPos blockPos, World world) {
-        if(blockPos.getY() > world.getTopY()) return false;
+        if(blockPos.getY() > world.getTopYInclusive() + 1) return false;
         if(blockPos.getY() < world.getBottomY()) return false;
 
         return world.getWorldBorder().contains(blockPos);
@@ -188,7 +193,7 @@ public class ZUtil {
     }
 
     public static RegistryEntry<Enchantment> getEnchantmentEntry(RegistryWrapper.WrapperLookup registryLookup, RegistryKey<Enchantment> enchantment) {
-        return registryLookup.getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(enchantment);
+        return registryLookup.getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(enchantment);
     }
     public static int getEnchantmentLevel(ItemStack stack, RegistryKey<Enchantment> enchantment) {
         for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : stack.getEnchantments().getEnchantmentEntries()) {
@@ -203,5 +208,12 @@ public class ZUtil {
         }
 
         return 0;
+    }
+
+    public static List<Item> getItemsIn(TagKey<Item> tag) {
+        List<Item> items = new ArrayList<>();
+        Registries.ITEM.iterateEntries(tag).forEach(entry -> items.add(entry.value()));
+
+        return items;
     }
 }

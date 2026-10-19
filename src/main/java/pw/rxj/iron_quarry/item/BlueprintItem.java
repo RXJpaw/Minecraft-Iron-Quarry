@@ -28,6 +28,7 @@ import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.registry.tag.TagKey;
 import pw.rxj.iron_quarry.data.BlueprintPositionComponent;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.interfaces.*;
@@ -61,7 +62,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
 
     @Override
     public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, RegistryWrapper.WrapperLookup registryLookup) {
-        ItemStack output = handler.getResult(registryLookup).copy();
+        ItemStack output = handler.getResultStack();
         if(BlueprintItem.isNotOf(output)) return ItemStack.EMPTY;
         ItemStack base = input.getStackInSlot(1).copy();
 
@@ -74,10 +75,10 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         return base.copyComponentsToNewStack(output.getItem(), output.getCount());
     }
     @Override
-    public ItemStack getSmithingOutputPreview(Ingredient base, Ingredient addition, ItemStack output) {
+    public ItemStack getSmithingOutputPreview(Optional<Ingredient> base, Optional<Ingredient> addition, @Nullable TagKey<Item> additionTag, ItemStack output) {
         ItemStack preview = output.copy();
 
-        if(addition.test(Items.AMETHYST_SHARD.getDefaultStack())) {
+        if(Ingredient.matches(addition, Items.AMETHYST_SHARD.getDefaultStack())) {
             this.setSealed(preview, true);
 
             return preview;
@@ -328,18 +329,18 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         return ActionResult.SUCCESS;
     }
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
 //        Main.LOGGER.info(user.shouldCancelInteraction());
-        if(!world.isClient()) return TypedActionResult.fail(stack);
-        if(!hand.equals(Hand.MAIN_HAND) || !user.isCreative()) return TypedActionResult.fail(stack);
+        if(!world.isClient()) return ActionResult.FAIL;
+        if(!hand.equals(Hand.MAIN_HAND) || !user.isCreative()) return ActionResult.FAIL;
 
         if(MinecraftClient.getInstance().options.sneakKey.isPressed()) {
             ZNetwork.sendToServer(PacketKeyedAction.bake("key.sneak", hand, ActionGoal.USE, BlockHitResult.createMissed(Vec3d.ZERO, Direction.UP, BlockPos.ORIGIN)));
-            return TypedActionResult.success(stack, false);
+            return ActionResult.CONSUME;
         }
 
-        return TypedActionResult.pass(stack);
+        return ActionResult.PASS;
     }
     @Override
     public void keyedUse(String keyName, ItemUsageContext context) {
@@ -404,9 +405,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
 
         BlueprintPositionComponent blueprintPosition = stack.getOrDefault(ZComponents.BLUEPRINT_POSITION, BlueprintPositionComponent.twin(blockPos));
 
-        blueprintPosition.setPosition(position, blockPos);
-
-        stack.set(ZComponents.BLUEPRINT_POSITION, blueprintPosition);
+        stack.set(ZComponents.BLUEPRINT_POSITION, blueprintPosition.withPosition(position, blockPos));
     }
     public Optional<BlockPos> getFirstPos(ItemStack stack) {
         return Optional.ofNullable(this.getPosition(DualPosition.FIRST, stack));
