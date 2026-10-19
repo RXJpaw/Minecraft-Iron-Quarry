@@ -47,7 +47,7 @@ public class PacketBlueprintExpand extends DirectionBytePacket {
         if(!this.checkPacket(player, payload)) return;
 
         PlayerInventory playerInventory = player.getInventory();
-        ItemStack holdingStack = playerInventory.getMainHandStack();
+        ItemStack holdingStack = playerInventory.getSelectedStack();
 
         if(ZUtil.getBlockOrItem(holdingStack) instanceof BlueprintItem blueprintItem) {
             if(blueprintItem.isSealed(holdingStack)) return;

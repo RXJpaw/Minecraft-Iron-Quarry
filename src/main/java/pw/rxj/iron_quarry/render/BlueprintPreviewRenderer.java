@@ -90,7 +90,7 @@ public class BlueprintPreviewRenderer {
         prepareRenderOnScreen(firstPos, secondPos, camera, positionMatrix, projectionMatrix);
         if(firstPos == null || secondPos == null) return;
 
-        float tickDelta = context.tickCounter().getTickDelta(false);
+        float tickDelta = context.tickCounter().getTickProgress(false);
         int viewDistance = Math.min(minecraftClient.options.getClampedViewDistance() * 16 * 3, RenderUtil.MAX_VIEW_DISTANCE * 16 * 3);
 
         Vec3d lerpedPlayerPos = player.getLerpedPos(tickDelta);

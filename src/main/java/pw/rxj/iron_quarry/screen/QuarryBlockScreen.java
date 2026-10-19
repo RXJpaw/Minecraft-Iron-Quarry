@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -151,7 +150,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             List<Text> tooltip = new ArrayList<>();
 
             tooltip.add(ReadableString.translatable("screen.iron_quarry.quarry_block.title.info_display"));
-            block.appendTooltip(stack, Item.TooltipContext.create(minecraftClient.world), tooltip, TooltipType.BASIC);
+            block.appendTooltip(stack, Item.TooltipContext.create(minecraftClient.world), tooltip::add, TooltipType.BASIC);
 
             int conflictAmount = machineUpgradesUtil.getConflictAmount();
 
@@ -388,10 +387,6 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     }
 
     public static void drawIoHighlight(DrawContext context, int x, int y) {
-        RenderSystem.disableDepthTest();
-        RenderSystem.colorMask(true, true, true, false);
         context.fillGradient(x, y, x + 16, y + 16, 0, 1612718112, 1612718112);
-        RenderSystem.colorMask(true, true, true, true);
-        RenderSystem.enableDepthTest();
     }
 }

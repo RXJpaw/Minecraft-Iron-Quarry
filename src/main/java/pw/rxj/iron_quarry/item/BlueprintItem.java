@@ -5,6 +5,7 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
@@ -47,6 +48,7 @@ import pw.rxj.iron_quarry.util.ZUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmithing, IHandledGrinding, IHandledItemEntity, IHandledMainHandScrolling, IAlwaysRenderItemName, IHandledKeyedAction, IModifyItemGroupEntries {
     public BlueprintItem(Settings settings) {
@@ -199,7 +201,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType options) {
         RegistryKey<World> worldKey = this.getWorldRegistryKey(stack).orElse(null);
         Identifier worldId = worldKey != null ? worldKey.getValue() : null;
 
@@ -213,9 +215,9 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         MutableText LORE_FIRST_POS = ReadableString.translatable("item.iron_quarry.blueprint.lore.first_pos", ReadableString.textFrom(firstPos).orElse(LORE_EMPTY));
         MutableText LORE_SECOND_POS = ReadableString.translatable("item.iron_quarry.blueprint.lore.second_pos", ReadableString.textFrom(secondPos).orElse(LORE_EMPTY));
 
-        tooltip.add(LORE_WORLD);
-        tooltip.add(LORE_FIRST_POS);
-        tooltip.add(LORE_SECOND_POS);
+        textConsumer.accept(LORE_WORLD);
+        textConsumer.accept(LORE_FIRST_POS);
+        textConsumer.accept(LORE_SECOND_POS);
 
         if(isSealed) {
             long mined = this.getMinedChunks(stack);
@@ -224,11 +226,11 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
 
             MutableText LORE_MINED = ReadableString.translatable("item.iron_quarry.blueprint.lore.mined", mined, mineable, ZUtil.expandableFixedFloat(percentage * 100));
 
-            tooltip.add(ReadableString.space());
-            tooltip.add(LORE_MINED);
+            textConsumer.accept(ReadableString.space());
+            textConsumer.accept(LORE_MINED);
             if(this.allChunksMined(stack)) {
                 MutableText LORE_COMPLETED = ReadableString.translatable("item.iron_quarry.blueprint.lore.completed");
-                tooltip.add(LORE_COMPLETED);
+                textConsumer.accept(LORE_COMPLETED);
             }
         } else {
             MinecraftClient minecraftClient = MinecraftClient.getInstance();
@@ -236,10 +238,10 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
             if(minecraftClient.currentScreen instanceof QuarryBlockScreen) {
                 MutableText LORE_SEAL_FIRST = ReadableString.translatable("item.iron_quarry.blueprint.lore.seal_first");
 
-                tooltip.add(ReadableString.space());
-                tooltip.add(LORE_SEAL_FIRST);
+                textConsumer.accept(ReadableString.space());
+                textConsumer.accept(LORE_SEAL_FIRST);
             } else {
-                tooltip.add(ReadableString.space());
+                textConsumer.accept(ReadableString.space());
 
                 if(Screen.hasShiftDown()) {
                     GameOptions gameOptions = minecraftClient.options;
@@ -255,16 +257,16 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
                     MutableText LORE_MANUAL_3 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.3", KEY_SPRINT);
                     MutableText LORE_MANUAL_4 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.4");
 
-                    tooltip.add(LORE_MANUAL_0);
-                    tooltip.add(ReadableString.space());
-                    tooltip.add(LORE_MANUAL_1);
-                    tooltip.add(LORE_MANUAL_2);
-                    tooltip.add(LORE_MANUAL_3);
-                    tooltip.add(LORE_MANUAL_4);
+                    textConsumer.accept(LORE_MANUAL_0);
+                    textConsumer.accept(ReadableString.space());
+                    textConsumer.accept(LORE_MANUAL_1);
+                    textConsumer.accept(LORE_MANUAL_2);
+                    textConsumer.accept(LORE_MANUAL_3);
+                    textConsumer.accept(LORE_MANUAL_4);
                 } else {
                     MutableText LORE_INSTRUCTIONS = ReadableString.translatable("item.iron_quarry.lore.instructions");
 
-                    tooltip.add(LORE_INSTRUCTIONS);
+                    textConsumer.accept(LORE_INSTRUCTIONS);
                 }
             }
         }

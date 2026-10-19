@@ -13,7 +13,6 @@ import net.minecraft.registry.RegistryWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 
@@ -84,7 +83,7 @@ public class ComplexInventory extends SimpleInventory {
     }
 
     public int occupiedSlots() {
-        Iterator<ItemStack> stacks = this.heldStacks.iterator();
+        java.util.Iterator<ItemStack> stacks = this.heldStacks.iterator();
         int occupiedSlots = 0;
 
         for (int i = 0; stacks.hasNext(); i++) {
@@ -99,7 +98,7 @@ public class ComplexInventory extends SimpleInventory {
     public NbtList write(RegistryWrapper.WrapperLookup registries){
         NbtList items = new NbtList();
 
-        Iterator<ItemStack> stacks = this.heldStacks.iterator();
+        java.util.Iterator<ItemStack> stacks = this.heldStacks.iterator();
 
         for (int i = 0; stacks.hasNext(); i++) {
             ItemStack stack = stacks.next();
@@ -118,8 +117,8 @@ public class ComplexInventory extends SimpleInventory {
         this.clear();
 
         for(int i = 0; i < nbtList.size(); ++i) {
-            NbtCompound item = nbtList.getCompound(i);
-            int slot = nbtList.getCompound(i).getByte("Slot") & 255;
+            NbtCompound item = nbtList.getCompoundOrEmpty(i);
+            int slot = nbtList.getCompoundOrEmpty(i).getByte("Slot", (byte) 0) & 255;
 
             if (slot < this.heldStacks.size()) {
                 ItemStack.fromNbt(registries, item).ifPresent(stack -> this.heldStacks.set(slot, stack));

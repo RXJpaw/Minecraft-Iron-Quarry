@@ -124,7 +124,7 @@ public class MachineConfiguration {
         return config;
     }
     public void read(NbtCompound config) {
-        NbtCompound sidedIoConfig = config.getCompound("SidedIo");
+        NbtCompound sidedIoConfig = config.getCompoundOrEmpty("SidedIo");
 
         this.SidedIoConfig.clear();
 
@@ -132,7 +132,7 @@ public class MachineConfiguration {
             Face face = Face.from(key);
             if(face == null) continue;
 
-            String ioName = sidedIoConfig.getString(key);
+            String ioName = sidedIoConfig.getString(key, "");
             IoState ioState = IoState.from(ioName);
             if(ioState == null) continue;
 

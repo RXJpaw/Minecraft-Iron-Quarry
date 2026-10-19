@@ -3,9 +3,13 @@ package pw.rxj.iron_quarry.factory;
 import net.fabricmc.fabric.api.object.builder.v1.trade.TradeOfferHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradedItem;
+import net.minecraft.village.VillagerProfession;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.resource.config.server.SilkTouchAugmentConfig;
@@ -31,14 +35,20 @@ public class ZTradeOffers {
         Main.LOGGER.info("Registering trade offers..");
 
         if(SILK_TOUCH_AUGMENT_CONFIG.isVillagerEnabled()) {
-            TradeOfferHelper.registerVillagerOffers(SILK_TOUCH_AUGMENT_CONFIG.getVillagerProfession(), SILK_TOUCH_AUGMENT_CONFIG.getVillagerLevel(), factories -> {
+            RegistryKey<VillagerProfession> villagerProfession = Registries.VILLAGER_PROFESSION.getKey(SILK_TOUCH_AUGMENT_CONFIG.getVillagerProfession()).orElseThrow();
+
+            TradeOfferHelper.registerVillagerOffers(villagerProfession, SILK_TOUCH_AUGMENT_CONFIG.getVillagerLevel(), factories -> {
                 factories.add(ZTradeOffers::SILK_TOUCH_AUGMENT);
             });
         }
 
         if(SILK_TOUCH_AUGMENT_CONFIG.isWanderingVillagerEnabled()) {
-            TradeOfferHelper.registerWanderingTraderOffers(SILK_TOUCH_AUGMENT_CONFIG.getWanderingVillagerLevel(), factories -> {
-                factories.add(ZTradeOffers::SILK_TOUCH_AUGMENT);
+            Identifier pool = SILK_TOUCH_AUGMENT_CONFIG.getWanderingVillagerLevel() == 2
+                    ? TradeOfferHelper.WanderingTraderOffersBuilder.SELL_SPECIAL_ITEMS_POOL
+                    : TradeOfferHelper.WanderingTraderOffersBuilder.SELL_COMMON_ITEMS_POOL;
+
+            TradeOfferHelper.registerWanderingTraderOffers(builder -> {
+                builder.addOffersToPool(pool, ZTradeOffers::SILK_TOUCH_AUGMENT);
             });
         }
     }

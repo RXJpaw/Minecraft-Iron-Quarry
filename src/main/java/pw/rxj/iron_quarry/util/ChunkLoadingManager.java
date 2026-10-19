@@ -2,15 +2,18 @@ package pw.rxj.iron_quarry.util;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
 import java.util.*;
 
 public class ChunkLoadingManager {
-    private static final ChunkTicketType<ChunkPos> QUARRY_EXPRESS = ChunkTicketType.create("iron_quarry:quarry_express", Comparator.comparingLong(ChunkPos::toLong), 20);
+    private static final ChunkTicketType QUARRY_EXPRESS = Registry.register(Registries.TICKET_TYPE, Identifier.of("iron_quarry", "quarry_express"), new ChunkTicketType(20L, false, ChunkTicketType.Use.LOADING));
     private static final List<Ticket> LOADED_CHUNKS = new ArrayList<>();
     private static boolean initialized = false;
 
@@ -25,7 +28,7 @@ public class ChunkLoadingManager {
     private static void addTicket(Ticket ticket) {
         ChunkPos chunkPos = ticket.getLoadedChunkPos();
 
-        ticket.getLoadedWorld().getChunkManager().addTicket(QUARRY_EXPRESS, chunkPos, 0, chunkPos);
+        ticket.getLoadedWorld().getChunkManager().addTicket(QUARRY_EXPRESS, chunkPos, 0);
     }
 
     private static Optional<Ticket> getTicket(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceBlockPos){

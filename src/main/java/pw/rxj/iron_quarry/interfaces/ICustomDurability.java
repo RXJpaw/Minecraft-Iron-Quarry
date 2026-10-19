@@ -3,7 +3,6 @@ package pw.rxj.iron_quarry.interfaces;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -60,7 +59,7 @@ public interface ICustomDurability {
         double y = breakPos.getY();
         double z = breakPos.getZ();
 
-        PlaySoundS2CPacket soundPacket = new PlaySoundS2CPacket(RegistryEntry.of(SoundEvents.ENTITY_ITEM_BREAK), SoundCategory.BLOCKS, x, y, z, 1.0F, 1.0F, breakWorld.getSeed());
+        PlaySoundS2CPacket soundPacket = new PlaySoundS2CPacket(SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.BLOCKS, x, y, z, 1.0F, 1.0F, breakWorld.getSeed());
         breakWorld.getServer().getPlayerManager().sendToAround(null, x, y, z, 64.0, breakWorld.getRegistryKey(), soundPacket);
 
         stack.setCount(0);

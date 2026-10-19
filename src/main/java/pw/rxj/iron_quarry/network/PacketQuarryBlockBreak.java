@@ -53,7 +53,7 @@ public class PacketQuarryBlockBreak extends BooleanBlockPosStatePacket {
                 float pitch = blockSoundGroup.getPitch() * 0.8F;
 
                 if(volume > 0) {
-                    client.world.playSound(blockPos.getX(), blockPos.getY(), blockPos.getZ(), blockSoundGroup.getBreakSound(), SoundCategory.BLOCKS, volume, pitch, false);
+                    client.world.playSoundClient(blockPos.getX(), blockPos.getY(), blockPos.getZ(), blockSoundGroup.getBreakSound(), SoundCategory.BLOCKS, volume, pitch, false);
                 }
             }
         }

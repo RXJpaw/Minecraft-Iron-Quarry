@@ -2,6 +2,7 @@ package pw.rxj.iron_quarry.item;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -36,8 +37,8 @@ import pw.rxj.iron_quarry.util.ComplexInventory;
 import pw.rxj.iron_quarry.util.ReadableString;
 import pw.rxj.iron_quarry.util.ZUtil;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class QuarryMonitorItem extends Item implements ITickingInventoryItem, ITooltipDataProvider, IHandledCrafting {
     private boolean interdimensional;
@@ -104,52 +105,52 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         return Optional.empty();
     }
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType options) {
         ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
         long timestamp = this.getCachedTimestamp(stack);
 
         if(Screen.hasShiftDown() && timestamp > 0) {
             if(ZUtil.getBlockOrItem(quarryBlockStack) instanceof QuarryBlock quarryBlock) {
-                quarryBlock.appendTooltip(quarryBlockStack, context, tooltip, options);
+                quarryBlock.appendTooltip(quarryBlockStack, context, textConsumer, options);
             } else {
-                tooltip.add(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.status.unknown"));
+                textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.status.unknown"));
             }
 
         } else {
-            tooltip.add(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.range", ReadableString.intFrom(range)));
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.range", ReadableString.intFrom(range)));
 
             if(timestamp > 0) {
-                tooltip.add(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.last_updated", ReadableString.toTimeAgo(timestamp)));
+                textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.last_updated", ReadableString.toTimeAgo(timestamp)));
 
                 int warningFlag = this.getWarningFlag(stack);
                 if(QuarryMonitorItem.hasWarnings(warningFlag)) {
-                    tooltip.add(ReadableString.space());
+                    textConsumer.accept(ReadableString.space());
 
                     if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_QUARRY_UNKNOWN)) {
-                        tooltip.add(ReadableString.translatable("item.iron_quarry.warning.quarry_status_unknown"));
+                        textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_status_unknown"));
                     } else {
                         if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_ENERGY_10)) {
-                            tooltip.add(ReadableString.translatable("item.iron_quarry.warning.quarry_energy_10"));
+                            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_energy_10"));
                         } else if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_ENERGY_30)) {
-                            tooltip.add(ReadableString.translatable("item.iron_quarry.warning.quarry_energy_30"));
+                            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_energy_30"));
                         }
 
                         if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_INV_90)) {
-                            tooltip.add(ReadableString.translatable("item.iron_quarry.warning.quarry_inv_90"));
+                            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_inv_90"));
                         } else if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_INV_70)) {
-                            tooltip.add(ReadableString.translatable("item.iron_quarry.warning.quarry_inv_70"));
+                            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_inv_70"));
                         }
 
                         if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_DRILL_EMPTY)) {
-                            tooltip.add(ReadableString.translatable("item.iron_quarry.warning.quarry_drill_empty"));
+                            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_drill_empty"));
                         }
                     }
                 }
 
-                tooltip.add(ReadableString.space());
-                tooltip.add(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.details"));
+                textConsumer.accept(ReadableString.space());
+                textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.details"));
             } else {
-                tooltip.add(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.never_updated"));
+                textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.never_updated"));
             }
         }
     }

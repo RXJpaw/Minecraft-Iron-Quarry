@@ -3,6 +3,7 @@ package pw.rxj.iron_quarry.item;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.client.world.ClientWorld;
@@ -41,6 +42,7 @@ import pw.rxj.iron_quarry.util.ZUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class AugmentItem extends Item implements IHandledSmithing, IHandledItemEntity, IModelPredicateProvider, IDynamicItemName, IModifyItemGroupEntries {
     public static int CAPACITY_UPGRADE_SLOTS = 7;
@@ -138,7 +140,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType options) {
         AugmentType augmentType = this.getType(stack);
         int capacity = this.getCapacity(stack);
         int stored = this.getAmount(stack);
@@ -147,21 +149,21 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         if(augmentType.isPresent()) {
             if(!this.isUnique()) {
                 MutableText LORE_UNUSED = ReadableString.translatable("item.iron_quarry.augment.lore.used", stored, capacity);
-                tooltip.add(LORE_UNUSED);
+                textConsumer.accept(LORE_UNUSED);
             }
 
             MutableText LORE_BENEFITS = ReadableString.translatable("item.iron_quarry.augment.lore.benefit." + augmentType.getName(), ZUtil.expandableFixedFloat(multiplied));
-            tooltip.add(LORE_BENEFITS);
+            textConsumer.accept(LORE_BENEFITS);
 
             float anyIneff = augmentType.anyIneff(multiplied);
             String drawbackKey = augmentType.getDrawbackKey();
             String drawbackFillIn = drawbackKey.equals("energy") ? ZUtil.expandableFixedFloat(anyIneff) : ReadableString.minPrecisionFloat(anyIneff);
 
             MutableText LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback." + augmentType.getDrawbackKey(), drawbackFillIn);
-            tooltip.add(LORE_DRAWBACK);
+            textConsumer.accept(LORE_DRAWBACK);
         } else if(!this.isUnique()) {
             MutableText LORE_EMPTY = ReadableString.translatable("item.iron_quarry.lore.use_rei", stored, capacity);
-            tooltip.add(LORE_EMPTY);
+            textConsumer.accept(LORE_EMPTY);
         }
 
         if(!this.isUnique()) {
@@ -170,22 +172,22 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
                 MutableText LORE_INFO = ReadableString.translatable("item.iron_quarry.augment.lore.capacity_upgrades", used_upgrades.size(), CAPACITY_UPGRADE_SLOTS);
 
-                tooltip.add(ReadableString.space());
-                tooltip.add(LORE_INFO);
-                tooltip.add(CustomTooltipData.MARKER);
+                textConsumer.accept(ReadableString.space());
+                textConsumer.accept(LORE_INFO);
+                textConsumer.accept(CustomTooltipData.MARKER);
             } else {
                 MutableText LORE_DETAILS = ReadableString.translatable("item.iron_quarry.lore.details");
 
-                tooltip.add(ReadableString.space());
-                tooltip.add(LORE_DETAILS);
+                textConsumer.accept(ReadableString.space());
+                textConsumer.accept(LORE_DETAILS);
             }
         }
 
         if(augmentType.isDisabled()) {
             MutableText LORE_DISABLED = ReadableString.translatable("item.iron_quarry.lore.disabled");
 
-            tooltip.add(ReadableString.space());
-            tooltip.add(LORE_DISABLED);
+            textConsumer.accept(ReadableString.space());
+            textConsumer.accept(LORE_DISABLED);
         }
     }
     public boolean isTooltipExtended(ItemStack stack) {
@@ -286,7 +288,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         AugmentStack augmentStack = AugmentStack.from(addition);
 
         ItemStack outputStack = outputInv.getStack(0);
-        outputStack.onCraftByPlayer(player.getWorld(), player, outputStack.getCount());
+        outputStack.onCraftByPlayer(player, outputStack.getCount());
         outputInv.unlockLastRecipe(player, List.of(template, base, addition));
 
         if(augmentStack == null) {

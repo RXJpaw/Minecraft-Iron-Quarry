@@ -39,7 +39,7 @@ public class ResourceReloadListener implements ResourceReloader {
                         Optional<Resource> resource = resourceManager.getResource(resourceId);
 
                         if (resource.isEmpty()) {
-                            textureManager.registerTexture(resourceId, new NativeImageBackedTexture(MissingSprite.createImage()));
+                            textureManager.registerTexture(resourceId, new NativeImageBackedTexture(resourceId::toString, MissingSprite.createImage()));
                         }
 
                         loadableResourceIds.add(resourceId);

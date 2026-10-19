@@ -14,7 +14,7 @@ public enum DualPosition implements StringIdentifiable {
     SECOND(1, "second_position");
 
     public static final Codec<DualPosition> CODEC = StringIdentifiable.createBasicCodec(DualPosition::values);
-    public static final IntFunction<DualPosition> ID_TO_VALUE = ValueLists.<DualPosition>createIdToValueFunction((value) -> value.id, values(), ValueLists.OutOfBoundsHandling.ZERO);
+    public static final IntFunction<DualPosition> ID_TO_VALUE = ValueLists.<DualPosition>createIndexToValueFunction((value) -> value.id, values(), ValueLists.OutOfBoundsHandling.ZERO);
     public static final PacketCodec<ByteBuf, DualPosition> PACKET_CODEC = PacketCodecs.indexed(ID_TO_VALUE, (value) -> value.id);
 
     private final int id;

@@ -1,6 +1,6 @@
 {
     "model": {
         "type": "iron_quarry:quarry",
-        "model": "iron_quarry:block/netherite_quarry"
+        "block": "iron_quarry:netherite_quarry"
     }
 }

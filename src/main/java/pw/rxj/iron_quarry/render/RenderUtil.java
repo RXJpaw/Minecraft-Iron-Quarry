@@ -1,8 +1,9 @@
 package pw.rxj.iron_quarry.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.DepthTestFunction;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.Window;
@@ -14,12 +15,28 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GL11;
 
 import java.util.List;
+import java.util.OptionalDouble;
+import pw.rxj.iron_quarry.Main;
 
 public class RenderUtil {
     public static final int MAX_VIEW_DISTANCE = 32;
+
+    private static class Lines {
+        private static final RenderPipeline VISIBLE_LINES_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.RENDERTYPE_LINES_SNIPPET)
+                .withLocation(Identifier.of(Main.MOD_ID, "pipeline/visible_lines"))
+                .withDepthTestFunction(DepthTestFunction.LESS_DEPTH_TEST)
+                .build());
+        private static final RenderPipeline HIDDEN_LINES_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.RENDERTYPE_LINES_SNIPPET)
+                .withLocation(Identifier.of(Main.MOD_ID, "pipeline/hidden_lines"))
+                .withDepthTestFunction(DepthTestFunction.GREATER_DEPTH_TEST)
+                .build());
+        private static final RenderLayer VISIBLE_LINES = RenderLayer.of("iron_quarry_visible_lines", 1536, VISIBLE_LINES_PIPELINE,
+                RenderLayer.MultiPhaseParameters.builder().lineWidth(new RenderPhase.LineWidth(OptionalDouble.of(3.0))).build(false));
+        private static final RenderLayer HIDDEN_LINES = RenderLayer.of("iron_quarry_hidden_lines", 1536, HIDDEN_LINES_PIPELINE,
+                RenderLayer.MultiPhaseParameters.builder().lineWidth(new RenderPhase.LineWidth(OptionalDouble.of(3.0))).build(false));
+    }
 
     public static void runScissored(DrawContext context, int x, int y, int width, int height, Runnable runnable) {
         context.enableScissor(x, y, x + width, y + height);
@@ -85,36 +102,20 @@ public class RenderUtil {
         Matrix4f positionMatrix = matrices.peek().getPositionMatrix();
         Tessellator tessellator = Tessellator.getInstance();
 
-        RenderSystem.defaultBlendFunc();
-
         //Outlines
-        RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
-        RenderSystem.lineWidth(3.0F);
-        RenderSystem.enableBlend();
-        RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
-
         List<SpriteVec2f> boxLines = cuboid.getLines();
         List<SpriteVec2f> splitBoxLines = boxLines.stream().map(vec -> vec.autoSplit(8.0F)).flatMap(List::stream).toList();
         List<SpriteVec2f> filteredSplitBoxLines = splitBoxLines.stream().filter(vec -> vec.squaredDistanceTo(new Vector3f()) <= squaredViewDistance).toList();
 
         //Visible Outlines
-        RenderSystem.depthFunc(GL11.GL_LESS);
-        drawLines(tessellator, positionMatrix, matrices.peek(), filteredSplitBoxLines, 1.0F);
+        drawLines(tessellator, Lines.VISIBLE_LINES, positionMatrix, matrices.peek(), filteredSplitBoxLines, 1.0F);
 
         //Hidden Outlines
-        RenderSystem.depthFunc(GL11.GL_GREATER);
-        drawLines(tessellator, positionMatrix, matrices.peek(), filteredSplitBoxLines, 0.2F);
-
-        RenderSystem.depthFunc(GL11.GL_LEQUAL);
-        RenderSystem.lineWidth(1.0F);
-        RenderSystem.disableBlend();
-        RenderSystem.enableCull();
-        RenderSystem.disableDepthTest();
+        drawLines(tessellator, Lines.HIDDEN_LINES, positionMatrix, matrices.peek(), filteredSplitBoxLines, 0.2F);
     }
 
-    private static void drawLines(Tessellator tessellator, Matrix4f positionMatrix, MatrixStack.Entry entry, List<SpriteVec2f> lines, float alpha) {
-        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+    private static void drawLines(Tessellator tessellator, RenderLayer renderLayer, Matrix4f positionMatrix, MatrixStack.Entry entry, List<SpriteVec2f> lines, float alpha) {
+        BufferBuilder buffer = tessellator.begin(renderLayer.getDrawMode(), renderLayer.getVertexFormat());
 
         for (SpriteVec2f line : lines) {
             Vector3f n = line.normalize();
@@ -124,6 +125,6 @@ public class RenderUtil {
         }
 
         BuiltBuffer builtBuffer = buffer.endNullable();
-        if(builtBuffer != null) BufferRenderer.drawWithGlobalProgram(builtBuffer);
+        if(builtBuffer != null) renderLayer.draw(builtBuffer);
     }
 }

@@ -24,7 +24,7 @@ public enum AugmentType implements StringIdentifiable {
     CHEST_LOOTING(4, "chest_looting", "time", 0, 0, 0.0F, false);
 
     public static final Codec<AugmentType> CODEC = StringIdentifiable.createBasicCodec(AugmentType::values);
-    public static final IntFunction<AugmentType> ID_TO_VALUE = ValueLists.<AugmentType>createIdToValueFunction((value) -> value.id, values(), ValueLists.OutOfBoundsHandling.ZERO);
+    public static final IntFunction<AugmentType> ID_TO_VALUE = ValueLists.<AugmentType>createIndexToValueFunction((value) -> value.id, values(), ValueLists.OutOfBoundsHandling.ZERO);
     public static final PacketCodec<ByteBuf, AugmentType> PACKET_CODEC = PacketCodecs.indexed(ID_TO_VALUE, (value) -> value.id);
 
     private final int id;

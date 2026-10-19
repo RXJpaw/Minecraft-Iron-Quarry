@@ -1,5 +1,6 @@
 package pw.rxj.iron_quarry.item;
 
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
@@ -19,6 +20,7 @@ import pw.rxj.iron_quarry.util.ReadableString;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class DamageableSmithingTemplateItem extends SmithingTemplateItem implements ICustomDurability {
     private final Text appliesToText;
@@ -59,19 +61,19 @@ public class DamageableSmithingTemplateItem extends SmithingTemplateItem impleme
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+    public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
         int maxDamage = this.getMaxCDamage();
         int durability = this.getCDurability(stack);
         String durabilityPercent = ZUtil.expandableFixedFloat((float) durability / maxDamage * 100);
 
         MutableText LORE_DURABILITY = ReadableString.translatable("item.iron_quarry.lore.custom_durability", ZUtil.expandableFixedInt(durability), ZUtil.expandableFixedInt(maxDamage), durabilityPercent);
 
-        tooltip.add(LORE_DURABILITY);
-        tooltip.add(ReadableString.space());
-        tooltip.add(APPLIES_TO_TEXT);
-        tooltip.add(ReadableString.space().append(this.appliesToText));
-        tooltip.add(INGREDIENTS_TEXT);
-        tooltip.add(ReadableString.space().append(this.ingredientsText));
+        textConsumer.accept(LORE_DURABILITY);
+        textConsumer.accept(ReadableString.space());
+        textConsumer.accept(APPLIES_TO_TEXT);
+        textConsumer.accept(ReadableString.space().append(this.appliesToText));
+        textConsumer.accept(INGREDIENTS_TEXT);
+        textConsumer.accept(ReadableString.space().append(this.ingredientsText));
 
     }
 

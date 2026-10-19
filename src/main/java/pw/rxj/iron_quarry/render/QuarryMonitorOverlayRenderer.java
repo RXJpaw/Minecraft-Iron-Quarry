@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -58,8 +57,6 @@ public class QuarryMonitorOverlayRenderer {
 
         MatrixStack matrices = context.getMatrices();
 
-        RenderSystem.enableBlend();
-
         matrices.push();
         matrices.translate(x, y, 90.0);
 
@@ -75,8 +72,6 @@ public class QuarryMonitorOverlayRenderer {
         }
 
         matrices.pop();
-
-        RenderSystem.disableBlend();
 
         //item render
         //Renders over subtitles. In versions prior to 1.20 this could be fixed by messing with the ModelViewStack,

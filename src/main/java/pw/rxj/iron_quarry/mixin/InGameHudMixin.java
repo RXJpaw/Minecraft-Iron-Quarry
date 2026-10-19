@@ -18,9 +18,9 @@ import pw.rxj.iron_quarry.util.ZUtil;
 
 @Mixin(InGameHud.class)
 public abstract class InGameHudMixin {
-    @Inject(method = "renderMiscOverlays", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/RenderTickCounter;getLastFrameDuration()F"))
+    @Inject(method = "renderMiscOverlays", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/RenderTickCounter;getDynamicDeltaTicks()F"))
     public void renderMiscOverlays(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        float tickDelta = tickCounter.getTickDelta(false);
+        float tickDelta = tickCounter.getTickProgress(false);
         MatrixStack matrices = context.getMatrices();
         matrices.push();
 
@@ -38,7 +38,7 @@ public abstract class InGameHudMixin {
         //this.client.player was already checked in injected method.
         assert this.client.player != null;
 
-        ItemStack stack = this.client.player.getInventory().getMainHandStack();
+        ItemStack stack = this.client.player.getInventory().getSelectedStack();
 
         if(ZUtil.getBlockOrItem(stack) instanceof IAlwaysRenderItemName alwaysRenderItemName) {
             if(alwaysRenderItemName.renderItemName(stack)) this.heldItemTooltipFade = 40;

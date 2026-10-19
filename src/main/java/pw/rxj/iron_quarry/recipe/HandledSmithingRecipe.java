@@ -10,6 +10,7 @@ import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SmithingTransformRecipe;
+import net.minecraft.recipe.TransmuteRecipeResult;
 import net.minecraft.recipe.input.SmithingRecipeInput;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
@@ -38,7 +39,7 @@ public class HandledSmithingRecipe extends SmithingTransformRecipe {
     public static class Serializer implements RecipeSerializer<HandledSmithingRecipe> {
         private static final MapCodec<HandledSmithingRecipe> CODEC = RecordCodecBuilder.mapCodec((instance) ->
                 instance.group(Ingredient.CODEC.optionalFieldOf("template").forGetter((recipe) -> recipe.template),
-                               Ingredient.CODEC.optionalFieldOf("base").forGetter((recipe) -> recipe.base),
+                               Ingredient.CODEC.fieldOf("base").xmap(Optional::of, Optional::orElseThrow).forGetter((recipe) -> recipe.base),
                                Ingredient.CODEC.optionalFieldOf("addition").forGetter((recipe) -> recipe.addition),
                                Codec.STRING.lenientOptionalFieldOf("addition").forGetter((recipe) -> Optional.empty()),
                                ItemStack.VALIDATED_CODEC.fieldOf("result").forGetter((recipe) -> recipe.result))
@@ -93,7 +94,7 @@ public class HandledSmithingRecipe extends SmithingTransformRecipe {
     }
 
     public HandledSmithingRecipe(Optional<Ingredient> template, Optional<Ingredient> base, Optional<Ingredient> addition, ItemStack result) {
-        super(template, base, addition, result);
+        super(template, base.orElseThrow(), addition, new TransmuteRecipeResult(result.getRegistryEntry(), result.getCount(), result.getComponentChanges()));
 
         this.template = template;
         this.base = base;

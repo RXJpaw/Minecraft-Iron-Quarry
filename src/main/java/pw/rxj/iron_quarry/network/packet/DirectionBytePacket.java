@@ -13,11 +13,11 @@ public class DirectionBytePacket extends ComplexPayloadHandler<DirectionBytePack
         this.data = data;
     }
     protected DirectionBytePacket(RegistryByteBuf buf) {
-        this.direction = Direction.byId(buf.readByte());
+        this.direction = Direction.byIndex(buf.readByte());
         this.data = buf.readByte();
     }
     public void write(RegistryByteBuf buf) {
-        buf.writeByte(direction.getId());
+        buf.writeByte(direction.getIndex());
         buf.writeByte(data);
     }
 }

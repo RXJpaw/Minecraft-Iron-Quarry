@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -69,11 +68,7 @@ public class TooltipInventoryComponent implements CustomTooltipComponent {
         context.drawStackOverlay(textRenderer, itemStack, x + 1, y + 1);
 
         if(disabled) {
-            RenderSystem.disableDepthTest();
-            RenderSystem.colorMask(true, true, true, false);
             context.fillGradient(x, y, x + 18, y + 18, 160, -1073741824, -1073741824);
-            RenderSystem.colorMask(true, true, true, true);
-            RenderSystem.enableDepthTest();
         }
     }
 }

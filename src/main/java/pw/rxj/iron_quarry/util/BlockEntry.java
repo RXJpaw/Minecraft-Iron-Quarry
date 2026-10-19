@@ -2,14 +2,20 @@ package pw.rxj.iron_quarry.util;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import pw.rxj.iron_quarry.Main;
+import pw.rxj.iron_quarry.interfaces.IBlockTooltipAppender;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -30,7 +36,16 @@ public class BlockEntry<T extends Block> implements ItemConvertible {
         T block = blockFactory.apply(blockSettings.registryKey(RegistryKey.of(RegistryKeys.BLOCK, id)));
         BlockItem blockItem = new BlockItem(block, itemSettings.apply(new Item.Settings()
                 .registryKey(RegistryKey.of(RegistryKeys.ITEM, id))
-                .useBlockPrefixedTranslationKey()));
+                .useBlockPrefixedTranslationKey())) {
+            @Override
+            public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
+                super.appendTooltip(stack, context, displayComponent, textConsumer, type);
+
+                if(this.getBlock() instanceof IBlockTooltipAppender tooltipAppender) {
+                    tooltipAppender.appendTooltip(stack, context, textConsumer, type);
+                }
+            }
+        };
 
         return new BlockEntry<>(id, block, blockItem);
     }

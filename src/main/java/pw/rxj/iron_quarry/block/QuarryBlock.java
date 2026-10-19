@@ -43,6 +43,7 @@ import pw.rxj.iron_quarry.blockentity.ZBlockEntities;
 import pw.rxj.iron_quarry.gui.CustomTooltipData;
 import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
 import pw.rxj.iron_quarry.gui.TooltipQuarryInventoryData;
+import pw.rxj.iron_quarry.interfaces.IBlockTooltipAppender;
 import pw.rxj.iron_quarry.interfaces.IEnergyContainer;
 import pw.rxj.iron_quarry.interfaces.IHandledCrafting;
 import pw.rxj.iron_quarry.interfaces.IHandledKeyedAction;
@@ -61,8 +62,9 @@ import pw.rxj.iron_quarry.util.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
-public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IEnergyContainer, ITooltipDataProvider, IHandledUseBlock, IHandledKeyedAction {
+public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IEnergyContainer, ITooltipDataProvider, IHandledUseBlock, IHandledKeyedAction, IBlockTooltipAppender {
     private final String textureReference;
     private int ticksPerOperation;
     private int baseConsumption;
@@ -141,7 +143,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
             : Optional.empty();
     }
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, Consumer<Text> textConsumer, TooltipType options) {
         MachineUpgradesUtil machineUpgradesUtil = MachineUpgradesUtil.from(this.getMachineUpgradeStacks(stack));
 
         float yield_bonus = (machineUpgradesUtil.getFortuneMultiplier() - 1) * 100.0F;
@@ -166,22 +168,22 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         MutableText LORE_YIELD_DETAIL = ReadableString.translatable("item.iron_quarry.lore.percentage.positive", ZUtil.expandableFixedFloat(yield_bonus));
         MutableText LORE_YIELD = ReadableString.translatable("item.iron_quarry.quarry_block.lore.yield", LORE_YIELD_DETAIL);
 
-        tooltip.add(LORE_USAGE);
-        tooltip.add(LORE_SPEED);
-        tooltip.add(LORE_YIELD);
+        textConsumer.accept(LORE_USAGE);
+        textConsumer.accept(LORE_SPEED);
+        textConsumer.accept(LORE_YIELD);
 
         int conflictFlag = machineUpgradesUtil.getConflictFlag();
         if(MachineUpgradesUtil.hasConflicts(conflictFlag)) {
-            tooltip.add(ReadableString.space());
+            textConsumer.accept(ReadableString.space());
 
             if(MachineUpgradesUtil.hasConflict(conflictFlag, MachineUpgradesUtil.CONFLICT_SPEED)) {
-                tooltip.add(ReadableString.translatable("item.iron_quarry.conflict.speed_limit", ZUtil.expandableFixedFloat((MachineUpgradesUtil.SPEED_LIMIT-1)*100)));
+                textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.speed_limit", ZUtil.expandableFixedFloat((MachineUpgradesUtil.SPEED_LIMIT-1)*100)));
             }
             if(MachineUpgradesUtil.hasConflict(conflictFlag, MachineUpgradesUtil.CONFLICT_FORTUNE)) {
-                tooltip.add(ReadableString.translatable("item.iron_quarry.conflict.fortune_limit", ZUtil.expandableFixedFloat((MachineUpgradesUtil.FORTUNE_LIMIT-1)*100)));
+                textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.fortune_limit", ZUtil.expandableFixedFloat((MachineUpgradesUtil.FORTUNE_LIMIT-1)*100)));
             }
             if(MachineUpgradesUtil.hasConflict(conflictFlag, MachineUpgradesUtil.CONFLICT_SILK_TOUCH)) {
-                tooltip.add(ReadableString.translatable("item.iron_quarry.conflict.silk_touch_fortune"));
+                textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.silk_touch_fortune"));
             }
         }
 
@@ -195,16 +197,16 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
             MutableText LORE_CAPACITY_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy.unit", ReadableString.intFrom(capacity));
             MutableText LORE_CAPACITY = ReadableString.translatable("item.iron_quarry.quarry_block.lore.capacity", LORE_CAPACITY_DETAIL);
 
-            tooltip.add(ReadableString.space());
-            tooltip.add(LORE_STORED);
-            tooltip.add(LORE_CAPACITY);
+            textConsumer.accept(ReadableString.space());
+            textConsumer.accept(LORE_STORED);
+            textConsumer.accept(LORE_CAPACITY);
 
-            tooltip.add(CustomTooltipData.MARKER);
+            textConsumer.accept(CustomTooltipData.MARKER);
         } else {
             MutableText LORE_DETAILS = ReadableString.translatable("item.iron_quarry.lore.details");
 
-            tooltip.add(ReadableString.space());
-            tooltip.add(LORE_DETAILS);
+            textConsumer.accept(ReadableString.space());
+            textConsumer.accept(LORE_DETAILS);
         }
     }
 

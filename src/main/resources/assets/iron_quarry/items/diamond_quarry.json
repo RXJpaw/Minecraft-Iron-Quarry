@@ -1,6 +1,6 @@
 {
     "model": {
         "type": "iron_quarry:quarry",
-        "model": "iron_quarry:block/diamond_quarry"
+        "block": "iron_quarry:diamond_quarry"
     }
 }

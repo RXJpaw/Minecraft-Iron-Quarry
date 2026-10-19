@@ -13,13 +13,13 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.component.ComponentMap;
+import net.minecraft.component.ComponentsAccess;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
@@ -536,29 +536,29 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     @Override
     public void readNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
         //Energy
-        NbtCompound Energy = tag.getCompound("rxj.pw/Energy");
+        NbtCompound Energy = tag.getCompoundOrEmpty("rxj.pw/Energy");
         EnergyContainer.read(Energy);
 
         //Storage
-        NbtCompound Storage = tag.getCompound("rxj.pw/Storage");
+        NbtCompound Storage = tag.getCompoundOrEmpty("rxj.pw/Storage");
 
-        NbtCompound StorageOutputInventory = Storage.getCompound("OutputInventory");
-        OutputInventory.read(StorageOutputInventory.getList("Items", NbtElement.COMPOUND_TYPE), registryLookup);
+        NbtCompound StorageOutputInventory = Storage.getCompoundOrEmpty("OutputInventory");
+        OutputInventory.read(StorageOutputInventory.getListOrEmpty("Items"), registryLookup);
 
-        NbtCompound StorageBatteryInputInventory = Storage.getCompound("BatteryInputInventory");
-        BatteryInputInventory.read(StorageBatteryInputInventory.getList("Items", NbtElement.COMPOUND_TYPE), registryLookup);
+        NbtCompound StorageBatteryInputInventory = Storage.getCompoundOrEmpty("BatteryInputInventory");
+        BatteryInputInventory.read(StorageBatteryInputInventory.getListOrEmpty("Items"), registryLookup);
 
-        NbtCompound StorageBlueprintInventory = Storage.getCompound("BlueprintInventory");
-        BlueprintInventory.read(StorageBlueprintInventory.getList("Items", NbtElement.COMPOUND_TYPE), registryLookup);
+        NbtCompound StorageBlueprintInventory = Storage.getCompoundOrEmpty("BlueprintInventory");
+        BlueprintInventory.read(StorageBlueprintInventory.getListOrEmpty("Items"), registryLookup);
 
-        NbtCompound StorageDrillInventory = Storage.getCompound("DrillInventory");
-        DrillInventory.read(StorageDrillInventory.getList("Items", NbtElement.COMPOUND_TYPE), registryLookup);
+        NbtCompound StorageDrillInventory = Storage.getCompoundOrEmpty("DrillInventory");
+        DrillInventory.read(StorageDrillInventory.getListOrEmpty("Items"), registryLookup);
 
-        NbtCompound StorageMachineUpgradesInventory = Storage.getCompound("MachineUpgradesInventory");
-        MachineUpgradesInventory.read(StorageMachineUpgradesInventory.getList("Items", NbtElement.COMPOUND_TYPE), registryLookup);
+        NbtCompound StorageMachineUpgradesInventory = Storage.getCompoundOrEmpty("MachineUpgradesInventory");
+        MachineUpgradesInventory.read(StorageMachineUpgradesInventory.getListOrEmpty("Items"), registryLookup);
 
         //Config
-        NbtCompound Config = tag.getCompound("rxj.pw/Config");
+        NbtCompound Config = tag.getCompoundOrEmpty("rxj.pw/Config");
         Configuration.read(Config);
     }
     @Override

@@ -8,41 +8,52 @@ import net.minecraft.client.item.ItemModelManager;
 import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.item.ItemRenderState;
 import net.minecraft.client.render.item.model.ItemModel;
-import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.Baker;
+import net.minecraft.client.render.model.ModelSettings;
 import net.minecraft.client.render.model.ResolvableModel;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ModelTransformationMode;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
+import pw.rxj.iron_quarry.block.QuarryBlock;
 
 @Environment(EnvType.CLIENT)
-public record QuarryItemModel(BakedModel model) implements ItemModel {
+public record QuarryItemModel(QuarryModel model, ModelSettings settings) implements ItemModel {
     public static final Identifier ID = Identifier.of(Main.MOD_ID, "quarry");
+    private static final Identifier BLOCK_PARENT = Identifier.ofVanilla("block/block");
 
     @Override
-    public void update(ItemRenderState state, ItemStack stack, ItemModelManager resolver, ModelTransformationMode transformationMode, @Nullable ClientWorld world, @Nullable LivingEntity user, int seed) {
+    public void update(ItemRenderState state, ItemStack stack, ItemModelManager resolver, ItemDisplayContext displayContext, @Nullable ClientWorld world, @Nullable LivingEntity user, int seed) {
         ItemRenderState.LayerRenderState layer = state.newLayer();
-        BakedModel bakedModel = this.model instanceof QuarryModel quarryModel ? quarryModel.forItem(stack) : this.model;
 
-        layer.setModel(bakedModel, RenderLayers.getItemLayer(stack));
+        layer.setRenderLayer(RenderLayers.getItemLayer(stack));
+        this.settings.addSettings(layer, displayContext);
+        this.model.emitItemQuads(layer.emitter(), stack);
     }
 
-    public record Unbaked(Identifier model) implements ItemModel.Unbaked {
+    public record Unbaked(Identifier block) implements ItemModel.Unbaked {
         public static final MapCodec<Unbaked> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Identifier.CODEC.fieldOf("model").forGetter(Unbaked::model)
+                Identifier.CODEC.fieldOf("block").forGetter(Unbaked::block)
         ).apply(instance, Unbaked::new));
 
         @Override
         public void resolve(ResolvableModel.Resolver resolver) {
-            resolver.resolve(this.model);
+            resolver.markDependency(BLOCK_PARENT);
         }
 
         @Override
         public ItemModel bake(ItemModel.BakeContext context) {
-            return new QuarryItemModel(context.bake(this.model));
+            if(!(Registries.BLOCK.get(this.block) instanceof QuarryBlock quarryBlock)) return context.missingItemModel();
+
+            Baker baker = context.blockModelBaker();
+            QuarryModel model = QuarryModel.bake(quarryBlock, baker);
+            ModelSettings settings = new ModelSettings(true, model.particleSprite(), baker.getModel(BLOCK_PARENT).getTransformations());
+
+            return new QuarryItemModel(model, settings);
         }
 
         @Override

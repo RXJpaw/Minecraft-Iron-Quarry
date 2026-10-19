@@ -1,5 +1,6 @@
 package pw.rxj.iron_quarry.item;
 
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class DrillItem extends Item implements ICustomEnchantabilityProvider, ICustomDurability {
     private ToolComponent toolComponent;
@@ -53,7 +55,7 @@ public class DrillItem extends Item implements ICustomEnchantabilityProvider, IC
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType options) {
         int maxDamage = this.getMaxCDamage();
         int durability = maxDamage - this.getCDamage(stack);
         String durabilityPercent = ZUtil.expandableFixedFloat((float) durability / maxDamage * 100);
@@ -61,11 +63,11 @@ public class DrillItem extends Item implements ICustomEnchantabilityProvider, IC
         MutableText LORE_MINING_LEVEL = ReadableString.translatable("item.iron_quarry.lore.mining_level", ReadableString.translatable("mining_level.iron_quarry." + toolEquivalent));
         MutableText LORE_DURABILITY = ReadableString.translatable("item.iron_quarry.lore.custom_durability", ZUtil.expandableFixedInt(durability), ZUtil.expandableFixedInt(maxDamage), durabilityPercent);
 
-        tooltip.add(LORE_MINING_LEVEL);
-        tooltip.add(LORE_DURABILITY);
+        textConsumer.accept(LORE_MINING_LEVEL);
+        textConsumer.accept(LORE_DURABILITY);
 
         if(stack.hasEnchantments()) {
-            tooltip.add(ReadableString.space());
+            textConsumer.accept(ReadableString.space());
         }
     }
 
@@ -97,7 +99,7 @@ public class DrillItem extends Item implements ICustomEnchantabilityProvider, IC
 
         if(defaultToolComponent == null) {
             Main.LOGGER.warn("Could not find tool component for tool: {}", toolId);
-            this.toolComponent = new ToolComponent(List.of(), 0.0F, 0);
+            this.toolComponent = new ToolComponent(List.of(), 0.0F, 0, true);
         } else {
             Main.LOGGER.info("Found tool component for tool: {} {}", toolId, defaultToolComponent.rules());
             this.toolComponent = defaultToolComponent;
