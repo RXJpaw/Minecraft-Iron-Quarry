@@ -20,7 +20,9 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.storage.NbtReadView;
 import net.minecraft.text.OrderedText;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -78,11 +80,10 @@ public class ZUtil {
             World world = lootableBlockEntity.getWorld();
             if(world == null) return null;
 
-            NbtCompound nbtCompound = new NbtCompound();
-            lootableBlockEntity.writeNbt(nbtCompound, world.getRegistryManager());
+            NbtCompound nbtCompound = lootableBlockEntity.createComponentlessNbt(world.getRegistryManager());
             if(nbtCompound.isEmpty()) return null;
 
-            ContainerLock lock = ContainerLock.fromNbt(nbtCompound, world.getRegistryManager());
+            ContainerLock lock = ContainerLock.read(NbtReadView.create(ErrorReporter.EMPTY, world.getRegistryManager(), nbtCompound));
             if(!lock.equals(ContainerLock.EMPTY)) return null;
 
             return lootableBlockEntity;

@@ -48,10 +48,10 @@ public class RenderUtil {
         drawTexture(context, texture, x, y, u, v, width, height, 256, 256);
     }
     public static void drawTexture(DrawContext context, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
-        context.drawTexture(RenderLayer::getGuiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight);
     }
     public static void drawTexture(DrawContext context, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color) {
-        context.drawTexture(RenderLayer::getGuiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight, color);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight, color);
     }
     public static int whiteWithAlpha(double alpha) {
         int a = (int) Math.round(MathHelper.clamp(alpha, 0.0, 1.0) * 255.0);
@@ -96,7 +96,7 @@ public class RenderUtil {
                pos.x >  range || pos.y >  range || pos.z >  range;
     }
 
-    public static void drawZBufferedCuboid(Cuboid cuboid, MatrixStack matrices, int viewDistance) {
+    public static void drawZBufferedCuboid(Cuboid cuboid, MatrixStack matrices, int viewDistance, float red, float green, float blue, float alpha) {
         double squaredViewDistance = Math.pow(viewDistance, 2);
 
         Matrix4f positionMatrix = matrices.peek().getPositionMatrix();
@@ -108,20 +108,20 @@ public class RenderUtil {
         List<SpriteVec2f> filteredSplitBoxLines = splitBoxLines.stream().filter(vec -> vec.squaredDistanceTo(new Vector3f()) <= squaredViewDistance).toList();
 
         //Visible Outlines
-        drawLines(tessellator, Lines.VISIBLE_LINES, positionMatrix, matrices.peek(), filteredSplitBoxLines, 1.0F);
+        drawLines(tessellator, Lines.VISIBLE_LINES, positionMatrix, matrices.peek(), filteredSplitBoxLines, red, green, blue, alpha);
 
         //Hidden Outlines
-        drawLines(tessellator, Lines.HIDDEN_LINES, positionMatrix, matrices.peek(), filteredSplitBoxLines, 0.2F);
+        drawLines(tessellator, Lines.HIDDEN_LINES, positionMatrix, matrices.peek(), filteredSplitBoxLines, red, green, blue, alpha * 0.2F);
     }
 
-    private static void drawLines(Tessellator tessellator, RenderLayer renderLayer, Matrix4f positionMatrix, MatrixStack.Entry entry, List<SpriteVec2f> lines, float alpha) {
+    private static void drawLines(Tessellator tessellator, RenderLayer renderLayer, Matrix4f positionMatrix, MatrixStack.Entry entry, List<SpriteVec2f> lines, float red, float green, float blue, float alpha) {
         BufferBuilder buffer = tessellator.begin(renderLayer.getDrawMode(), renderLayer.getVertexFormat());
 
         for (SpriteVec2f line : lines) {
             Vector3f n = line.normalize();
 
-            buffer.vertex(positionMatrix, line.from.x, line.from.y, line.from.z).color(1.0F, 1.0F, 1.0F, alpha).normal(entry, n.x, n.y, n.z);
-            buffer.vertex(positionMatrix, line.to.x, line.to.y, line.to.z).color(1.0F, 1.0F, 1.0F, alpha).normal(entry, n.x, n.y, n.z);
+            buffer.vertex(positionMatrix, line.from.x, line.from.y, line.from.z).color(red, green, blue, alpha).normal(entry, n.x, n.y, n.z);
+            buffer.vertex(positionMatrix, line.to.x, line.to.y, line.to.z).color(red, green, blue, alpha).normal(entry, n.x, n.y, n.z);
         }
 
         BuiltBuffer builtBuffer = buffer.endNullable();

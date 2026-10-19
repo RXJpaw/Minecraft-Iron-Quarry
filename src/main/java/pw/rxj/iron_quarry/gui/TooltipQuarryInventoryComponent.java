@@ -2,10 +2,8 @@ package pw.rxj.iron_quarry.gui;
 
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
-import org.joml.Matrix4f;
 import pw.rxj.iron_quarry.render.RenderUtil;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
 import pw.rxj.iron_quarry.util.ComplexInventory;
@@ -48,7 +46,7 @@ public class TooltipQuarryInventoryComponent implements CustomTooltipComponent {
     }
 
     @Override
-    public void drawText(TextRenderer textRenderer, int x, int y, Matrix4f matrix, VertexConsumerProvider.Immediate vertexConsumers) {
+    public void drawText(DrawContext context, TextRenderer textRenderer, int x, int y) {
 
     }
 

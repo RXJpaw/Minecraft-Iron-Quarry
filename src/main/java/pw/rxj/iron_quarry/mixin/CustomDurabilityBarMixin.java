@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.mixin;
 
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,8 +21,8 @@ public abstract class CustomDurabilityBarMixin {
             int fillX = x + 2;
             int fillY = y + 13;
 
-            context.fill(RenderLayer.getGuiOverlay(), fillX, fillY, fillX + 13,   fillY + 2, 200, -16777216);
-            context.fill(RenderLayer.getGuiOverlay(), fillX, fillY, fillX + step, fillY + 1, 200, color | -16777216);
+            context.fill(RenderPipelines.GUI, fillX, fillY, fillX + 13,   fillY + 2, -16777216);
+            context.fill(RenderPipelines.GUI, fillX, fillY, fillX + step, fillY + 1, color | -16777216);
         }
     }
 }

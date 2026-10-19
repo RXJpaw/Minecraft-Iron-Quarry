@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Mixin(DrawContext.class)
 public abstract class TooltipRenderMixin {
     @Shadow @Final private MinecraftClient client;
-    @Shadow protected abstract void drawTooltip(TextRenderer textRenderer, List<TooltipComponent> components, int x, int y, TooltipPositioner positioner, @Nullable Identifier texture);
+    @Shadow protected abstract void drawTooltip(TextRenderer textRenderer, List<TooltipComponent> components, int x, int y, TooltipPositioner positioner, @Nullable Identifier texture, boolean focused);
 
     @Inject(method = "drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/util/Identifier;)V", at = @At(value = "HEAD"), cancellable = true)
     private void renderTooltip(TextRenderer textRenderer, List<Text> lines, Optional<TooltipData> data, int x, int y, @Nullable Identifier texture, CallbackInfo ci) {
@@ -41,19 +41,25 @@ public abstract class TooltipRenderMixin {
                 }
             }
 
-            this.drawTooltip(textRenderer, list, x, y, HoveredTooltipPositioner.INSTANCE, texture); ci.cancel();
+            this.drawTooltip(textRenderer, list, x, y, HoveredTooltipPositioner.INSTANCE, texture, false); ci.cancel();
         }
     }
 
-    @Inject(method = "drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;IILnet/minecraft/client/gui/tooltip/TooltipPositioner;Lnet/minecraft/util/Identifier;)V", at = @At(value = "INVOKE", target = "Ljava/util/List;isEmpty()Z"))
-    private void renderTooltipCompat(TextRenderer textRenderer, List<TooltipComponent> components, int x, int y, TooltipPositioner positioner, @Nullable Identifier texture, CallbackInfo ci) {
+    @Inject(method = "drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;IILnet/minecraft/client/gui/tooltip/TooltipPositioner;Lnet/minecraft/util/Identifier;Z)V", at = @At(value = "INVOKE", target = "Ljava/util/List;isEmpty()Z"))
+    private void renderTooltipCompat(TextRenderer textRenderer, List<TooltipComponent> components, int x, int y, TooltipPositioner positioner, @Nullable Identifier texture, boolean focused, CallbackInfo ci) {
         if(client == null) return;
 
-        if(components.size() > 1 && components.get(1) instanceof CustomTooltipComponent customTooltipComponent) {
+        int componentIndex = -1;
+        for (int i = 1; i < components.size(); i++) {
+            if(components.get(i) instanceof CustomTooltipComponent) {
+                componentIndex = i; break;
+            }
+        }
+
+        if(componentIndex > 0 && components.get(componentIndex) instanceof CustomTooltipComponent customTooltipComponent) {
             CustomTooltipData customTooltipData = customTooltipComponent.getCustomTooltipData();
             if(!customTooltipData.renderAtMarker()) return;
 
-            TooltipComponent substituteComponent = components.remove(1);
             int replaceIndex = 0;
 
             for (int i = 0; i < components.size(); i++) {
@@ -64,7 +70,12 @@ public abstract class TooltipRenderMixin {
                 }
             }
 
-            if(replaceIndex > 0) components.set(replaceIndex, substituteComponent);
+            if(replaceIndex <= 0) return;
+
+            TooltipComponent substituteComponent = components.remove(componentIndex);
+            if(componentIndex < replaceIndex) replaceIndex--;
+
+            components.set(replaceIndex, substituteComponent);
         }
     }
 }

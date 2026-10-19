@@ -5,7 +5,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -15,6 +14,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import org.joml.Matrix3x2fStack;
 import pw.rxj.iron_quarry.Global;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
@@ -180,7 +180,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             RenderUtil.drawTexture(context, AUGMENTATION_CONFIGURATION_TEXTURE, augmentsMenuX, augmentsMenuY, 0, 0, augmentsMenuWidth, augmentsMenuHeight);
 
             RenderUtil.runScissored(context, augmentsMenuX, augmentsMenuY, augmentsMenuWidth, augmentsMenuHeight, () -> {
-                context.drawTextWithShadow(this.textRenderer, ReadableString.translatable("screen.iron_quarry.quarry_block.title.augmentation"), augmentsMenuX + 20, augmentsMenuY + 7, 0xFFFFFF);
+                context.drawTextWithShadow(this.textRenderer, ReadableString.translatable("screen.iron_quarry.quarry_block.title.augmentation"), augmentsMenuX + 20, augmentsMenuY + 7, 0xFFFFFFFF);
             });
 
             for (ManagedSlot slot: AUGMENT_SLOTS) {
@@ -232,7 +232,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             RenderUtil.drawTexture(context, OPTIONS_CONFIGURATION_TEXTURE, ioConfigX, ioConfigY, 0, 0, ioConfigWidth, ioConfigHeight);
 
             RenderUtil.runScissored(context, ioConfigX, ioConfigY, ioConfigWidth, ioConfigHeight, () -> {
-                context.drawTextWithShadow(this.textRenderer, ReadableString.translatable("screen.iron_quarry.quarry_block.title.configuration"), ioConfigX + 20, ioConfigY + 7, 0xFFFFFF);
+                context.drawTextWithShadow(this.textRenderer, ReadableString.translatable("screen.iron_quarry.quarry_block.title.configuration"), ioConfigX + 20, ioConfigY + 7, 0xFFFFFFFF);
             });
 
             IO_OPTIONS.forEach(ioOption -> {
@@ -290,9 +290,9 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
 
         if(!this.handler.getCursorStack().isEmpty()) return;
 
-        MatrixStack matrices = context.getMatrices();
-        matrices.push();
-        matrices.translate(-this.x, -this.y, 100);
+        Matrix3x2fStack matrices = context.getMatrices();
+        matrices.pushMatrix();
+        matrices.translate(-this.x, -this.y);
 
         if(EnergyDisplay.isMouseOver(mouseX, mouseY)) {
             context.drawTooltip(this.textRenderer, EnergyDisplay.getSuppliedText(), mouseX, mouseY);
@@ -314,7 +314,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             }
         }
 
-        matrices.pop();
+        matrices.popMatrix();
     }
 
     @Override
@@ -387,6 +387,6 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     }
 
     public static void drawIoHighlight(DrawContext context, int x, int y) {
-        context.fillGradient(x, y, x + 16, y + 16, 0, 1612718112, 1612718112);
+        context.fillGradient(x, y, x + 16, y + 16, 1612718112, 1612718112);
     }
 }

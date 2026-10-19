@@ -4,8 +4,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
+import org.joml.Matrix3x2fStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,13 +21,12 @@ public abstract class InGameHudMixin {
     @Inject(method = "renderMiscOverlays", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/RenderTickCounter;getDynamicDeltaTicks()F"))
     public void renderMiscOverlays(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         float tickDelta = tickCounter.getTickProgress(false);
-        MatrixStack matrices = context.getMatrices();
-        matrices.push();
+        Matrix3x2fStack matrices = context.getMatrices();
+        matrices.pushMatrix();
 
-        matrices.translate(0, 0, -90);
         InGameHudRenderCallback.START.invoker().onStart(context, tickDelta);
 
-        matrices.pop();
+        matrices.popMatrix();
     }
 
     @Shadow @Final private MinecraftClient client;

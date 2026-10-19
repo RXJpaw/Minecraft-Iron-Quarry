@@ -2,14 +2,14 @@ package pw.rxj.iron_quarry.util;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.component.type.ContainerComponent;
+import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -95,35 +95,13 @@ public class ComplexInventory extends SimpleInventory {
         return occupiedSlots;
     }
 
-    public NbtList write(RegistryWrapper.WrapperLookup registries){
-        NbtList items = new NbtList();
-
-        java.util.Iterator<ItemStack> stacks = this.heldStacks.iterator();
-
-        for (int i = 0; stacks.hasNext(); i++) {
-            ItemStack stack = stacks.next();
-
-            if(stack.isEmpty()) continue;
-
-            NbtCompound item = (NbtCompound) stack.toNbt(registries);
-            item.putByte("Slot", (byte) i);
-
-            items.add(item);
-        }
-
-        return items;
+    public void write(WriteView view){
+        Inventories.writeData(view, this.heldStacks);
     }
-    public void read(NbtList nbtList, RegistryWrapper.WrapperLookup registries){
+    public void read(ReadView view){
         this.clear();
 
-        for(int i = 0; i < nbtList.size(); ++i) {
-            NbtCompound item = nbtList.getCompoundOrEmpty(i);
-            int slot = nbtList.getCompoundOrEmpty(i).getByte("Slot", (byte) 0) & 255;
-
-            if (slot < this.heldStacks.size()) {
-                ItemStack.fromNbt(registries, item).ifPresent(stack -> this.heldStacks.set(slot, stack));
-            }
-        }
+        Inventories.readData(view, this.heldStacks);
     }
 
     //components

@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
@@ -19,6 +18,7 @@ import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
 import oshi.util.tuples.Quartet;
 import pw.rxj.iron_quarry.Main;
@@ -107,11 +107,7 @@ public class BlueprintPreviewRenderer {
 
         // WorldRenderEvents.END doesn't call this when the world border is rendered.
         // Resulting in color, transparency and brightness being way off.
-        RenderSystem.setShaderColor(0.976F, 0.718F, 0.192F, 0.667F);
-
-        RenderUtil.drawZBufferedCuboid(limitedCuboid.inflate(0.02), matrices, viewDistance);
-
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderUtil.drawZBufferedCuboid(limitedCuboid.inflate(0.02), matrices, viewDistance, 0.976F, 0.718F, 0.192F, 0.667F);
 
         matrices.pop();
     }
@@ -163,7 +159,7 @@ public class BlueprintPreviewRenderer {
     private static void renderOnScreen(DrawContext context, double tickDelta) {
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
         TextRenderer textRenderer = minecraftClient.textRenderer;
-        MatrixStack matrices = context.getMatrices();
+        Matrix3x2fStack matrices = context.getMatrices();
 
         for (ScreenPosData pair : screenPosList) {
             ScreenPos screenPos = pair.getA();
@@ -177,34 +173,34 @@ public class BlueprintPreviewRenderer {
             if(minecraftClient.getWindow().getScaleFactor() <= 1) scale *= 1.5F;
 
 
-            matrices.push();
+            matrices.pushMatrix();
 
-            matrices.translate(screenPos.x, screenPos.y, 90.0);
-            matrices.scale(scale, scale, scale);
-            matrices.translate(-6, -6, 0.0);
+            matrices.translate(screenPos.x, screenPos.y);
+            matrices.scale(scale, scale);
+            matrices.translate(-6, -6);
 
             RenderUtil.drawTexture(context, BLUEPRINT_POSITIONS_TEXTURE, 0, 0, texUV.x, texUV.y, 13, 13, 36, 36, RenderUtil.whiteWithAlpha(alpha));
 
-            matrices.pop();
+            matrices.popMatrix();
 
             //Add 1 to shift the center, because the texture had to be offset.
             if(screenPos.add(1, 1).distanceToCenter() <= 14 * scale) {
-                matrices.push();
+                matrices.pushMatrix();
 
-                matrices.translate(screenPos.x, screenPos.y + 9 * scale, 0.0F);
+                matrices.translate(screenPos.x, screenPos.y + 9 * scale);
 
                 MutableText text = Text.literal(String.format("%,.1fm", distance));
                 int width = textRenderer.getWidth(text);
                 int height = 8;
                 scale /= 1.5F;
 
-                matrices.scale(scale, scale, scale);
-                matrices.translate(1 + width / -2.0F, 0.0, 0.0);
+                matrices.scale(scale, scale);
+                matrices.translate(1 + width / -2.0F, 0.0F);
 
                 context.fill(-2, -2, width + 1, height + 1, 1409286144);
                 context.drawText(textRenderer, text, 0, 0, new Color(1.0F, 1.0F, 1.0F, alpha).getRGB(), true);
 
-                matrices.pop();
+                matrices.popMatrix();
             }
 
         }

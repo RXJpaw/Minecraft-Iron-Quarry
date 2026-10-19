@@ -3,7 +3,7 @@ package pw.rxj.iron_quarry.block;
 import com.mojang.serialization.MapCodec;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -12,7 +12,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -343,7 +343,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     public void initClient() {
         ResourceReloadListener.include(this.getTextureId());
         ResourceReloadListener.include(this.getParticleTextureId());
-        BlockRenderLayerMap.INSTANCE.putBlock(this, RenderLayer.getCutoutMipped());
+        BlockRenderLayerMap.putBlock(this, BlockRenderLayer.CUTOUT_MIPPED);
     }
 
     public TexturePosition getTexturePosition(Face face, Boolean alt){

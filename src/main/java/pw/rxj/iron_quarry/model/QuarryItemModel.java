@@ -20,6 +20,7 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
+import pw.rxj.iron_quarry.util.ZUtil;
 
 @Environment(EnvType.CLIENT)
 public record QuarryItemModel(QuarryModel model, ModelSettings settings) implements ItemModel {
@@ -28,6 +29,11 @@ public record QuarryItemModel(QuarryModel model, ModelSettings settings) impleme
 
     @Override
     public void update(ItemRenderState state, ItemStack stack, ItemModelManager resolver, ItemDisplayContext displayContext, @Nullable ClientWorld world, @Nullable LivingEntity user, int seed) {
+        state.addModelKey(this);
+        if(ZUtil.getBlockOrItem(stack) instanceof QuarryBlock quarryBlock) {
+            state.addModelKey(quarryBlock.getMachineConfiguration(stack).write());
+        }
+
         ItemRenderState.LayerRenderState layer = state.newLayer();
 
         layer.setRenderLayer(RenderLayers.getItemLayer(stack));

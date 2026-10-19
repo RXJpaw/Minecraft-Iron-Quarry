@@ -29,6 +29,8 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -526,75 +528,50 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         componentMapBuilder.add(MachineConfiguration.COMPONENT, Configuration);
     }
     @Override
-    public void removeFromCopiedStackNbt(NbtCompound nbt) {
-        nbt.remove("rxj.pw/Energy");
-        nbt.remove("rxj.pw/Storage");
-        nbt.remove("rxj.pw/Config");
+    public void removeFromCopiedStackData(WriteView view) {
+        view.remove("rxj.pw/Energy");
+        view.remove("rxj.pw/Storage");
+        view.remove("rxj.pw/Config");
     }
 
     //NBT Handling
     @Override
-    public void readNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+    public void readData(ReadView view) {
         //Energy
-        NbtCompound Energy = tag.getCompoundOrEmpty("rxj.pw/Energy");
+        NbtCompound Energy = view.read("rxj.pw/Energy", NbtCompound.CODEC).orElseGet(NbtCompound::new);
         EnergyContainer.read(Energy);
 
         //Storage
-        NbtCompound Storage = tag.getCompoundOrEmpty("rxj.pw/Storage");
+        ReadView Storage = view.getReadView("rxj.pw/Storage");
 
-        NbtCompound StorageOutputInventory = Storage.getCompoundOrEmpty("OutputInventory");
-        OutputInventory.read(StorageOutputInventory.getListOrEmpty("Items"), registryLookup);
-
-        NbtCompound StorageBatteryInputInventory = Storage.getCompoundOrEmpty("BatteryInputInventory");
-        BatteryInputInventory.read(StorageBatteryInputInventory.getListOrEmpty("Items"), registryLookup);
-
-        NbtCompound StorageBlueprintInventory = Storage.getCompoundOrEmpty("BlueprintInventory");
-        BlueprintInventory.read(StorageBlueprintInventory.getListOrEmpty("Items"), registryLookup);
-
-        NbtCompound StorageDrillInventory = Storage.getCompoundOrEmpty("DrillInventory");
-        DrillInventory.read(StorageDrillInventory.getListOrEmpty("Items"), registryLookup);
-
-        NbtCompound StorageMachineUpgradesInventory = Storage.getCompoundOrEmpty("MachineUpgradesInventory");
-        MachineUpgradesInventory.read(StorageMachineUpgradesInventory.getListOrEmpty("Items"), registryLookup);
+        OutputInventory.read(Storage.getReadView("OutputInventory"));
+        BatteryInputInventory.read(Storage.getReadView("BatteryInputInventory"));
+        BlueprintInventory.read(Storage.getReadView("BlueprintInventory"));
+        DrillInventory.read(Storage.getReadView("DrillInventory"));
+        MachineUpgradesInventory.read(Storage.getReadView("MachineUpgradesInventory"));
 
         //Config
-        NbtCompound Config = tag.getCompoundOrEmpty("rxj.pw/Config");
+        NbtCompound Config = view.read("rxj.pw/Config", NbtCompound.CODEC).orElseGet(NbtCompound::new);
         Configuration.read(Config);
     }
     @Override
-    public void writeNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+    public void writeData(WriteView view) {
         //Energy
         NbtCompound Energy = EnergyContainer.write();
-        tag.put("rxj.pw/Energy", Energy);
+        view.put("rxj.pw/Energy", NbtCompound.CODEC, Energy);
 
         //Storage
-        NbtCompound Storage = new NbtCompound();
+        WriteView Storage = view.get("rxj.pw/Storage");
 
-        NbtCompound StorageOutputInventory = new NbtCompound();
-        StorageOutputInventory.put("Items", OutputInventory.write(registryLookup));
-        Storage.put("OutputInventory", StorageOutputInventory);
-
-        NbtCompound StorageBatteryInputInventory = new NbtCompound();
-        StorageBatteryInputInventory.put("Items", BatteryInputInventory.write(registryLookup));
-        Storage.put("BatteryInputInventory", StorageBatteryInputInventory);
-
-        NbtCompound StorageBlueprintInventory = new NbtCompound();
-        StorageBlueprintInventory.put("Items", BlueprintInventory.write(registryLookup));
-        Storage.put("BlueprintInventory", StorageBlueprintInventory);
-
-        NbtCompound StorageDrillInventory = new NbtCompound();
-        StorageDrillInventory.put("Items", DrillInventory.write(registryLookup));
-        Storage.put("DrillInventory", StorageDrillInventory);
-
-        NbtCompound StorageMachineUpgradesInventory = new NbtCompound();
-        StorageMachineUpgradesInventory.put("Items", MachineUpgradesInventory.write(registryLookup));
-        Storage.put("MachineUpgradesInventory", StorageMachineUpgradesInventory);
-
-        tag.put("rxj.pw/Storage", Storage);
+        OutputInventory.write(Storage.get("OutputInventory"));
+        BatteryInputInventory.write(Storage.get("BatteryInputInventory"));
+        BlueprintInventory.write(Storage.get("BlueprintInventory"));
+        DrillInventory.write(Storage.get("DrillInventory"));
+        MachineUpgradesInventory.write(Storage.get("MachineUpgradesInventory"));
 
         //Config
         NbtCompound Config = Configuration.write();
-        tag.put("rxj.pw/Config", Config);
+        view.put("rxj.pw/Config", NbtCompound.CODEC, Config);
     }
 
     @Nullable

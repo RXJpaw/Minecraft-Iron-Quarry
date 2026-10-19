@@ -2,10 +2,8 @@ package pw.rxj.iron_quarry.gui;
 
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
-import org.joml.Matrix4f;
 import oshi.util.tuples.Pair;
 import pw.rxj.iron_quarry.render.RenderUtil;
 import pw.rxj.iron_quarry.Main;
@@ -43,7 +41,7 @@ public class TooltipInventoryComponent implements CustomTooltipComponent {
     }
 
     @Override
-    public void drawText(TextRenderer textRenderer, int x, int y, Matrix4f matrix, VertexConsumerProvider.Immediate vertexConsumers) {
+    public void drawText(DrawContext context, TextRenderer textRenderer, int x, int y) {
 
     }
 
@@ -68,7 +66,7 @@ public class TooltipInventoryComponent implements CustomTooltipComponent {
         context.drawStackOverlay(textRenderer, itemStack, x + 1, y + 1);
 
         if(disabled) {
-            context.fillGradient(x, y, x + 18, y + 18, 160, -1073741824, -1073741824);
+            context.fillGradient(x, y, x + 18, y + 18, 0xAA000000, 0xAA000000);
         }
     }
 }

@@ -4,10 +4,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import org.joml.Matrix3x2fStack;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.event.InGameHudRenderCallback;
 import pw.rxj.iron_quarry.item.BlueprintItem;
@@ -55,10 +55,10 @@ public class QuarryMonitorOverlayRenderer {
 
         //texture render
 
-        MatrixStack matrices = context.getMatrices();
+        Matrix3x2fStack matrices = context.getMatrices();
 
-        matrices.push();
-        matrices.translate(x, y, 90.0);
+        matrices.pushMatrix();
+        matrices.translate(x, y);
 
         RenderUtil.drawTexture(context, OVERLAY_TEXTURE, 0, 0, 0, 0, 42, 45, 128, 128);
 
@@ -71,7 +71,7 @@ public class QuarryMonitorOverlayRenderer {
             RenderUtil.drawTexture(context, OVERLAY_TEXTURE, 34, 3 + 39 - chargedPixels, 47, 3 + 39 - chargedPixels, 5, chargedPixels, 128, 128);
         }
 
-        matrices.pop();
+        matrices.popMatrix();
 
         //item render
         //Renders over subtitles. In versions prior to 1.20 this could be fixed by messing with the ModelViewStack,
