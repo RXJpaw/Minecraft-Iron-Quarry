@@ -4,11 +4,9 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
-import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.util.Identifier;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.block.ZBlocks;
-import pw.rxj.iron_quarry.interfaces.IModelPredicateProvider;
 import pw.rxj.iron_quarry.model.ZModels;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.render.BlueprintPreviewRenderer;
@@ -33,14 +31,6 @@ public class Client implements ClientModInitializer {
         ZModels.register();
 
         HandledScreens.register(Main.QUARRY_BLOCK_SCREEN_HANDLER, QuarryBlockScreen::new);
-
-        ModelPredicateProviderRegistry.register(Identifier.of(Main.MOD_ID, "handled_model_predicate"), (stack, world, entity, seed) -> {
-            if(stack.getItem() instanceof IModelPredicateProvider modelPredicateProvider) {
-                return modelPredicateProvider.getModelPredicate(stack, world, entity, seed);
-            }
-
-            return 0.0F;
-        });
 
         ZNetwork.registerClient();
     }

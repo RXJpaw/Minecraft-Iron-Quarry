@@ -260,7 +260,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         if(quarryBlock == null) return;
 
         ItemStack itemStack = new ItemStack(quarryBlock);
-        blockEntity.setStackNbt(itemStack, registryLookup);
+        itemStack.applyComponentsFrom(blockEntity.createComponentMap());
 
         stack.set(ZComponents.QUARRY_MONITOR_CACHED_QUARRY, itemStack);
         stack.set(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, System.currentTimeMillis());

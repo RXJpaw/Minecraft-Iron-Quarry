@@ -92,6 +92,7 @@ public class RenderUtil {
         RenderSystem.lineWidth(3.0F);
         RenderSystem.enableBlend();
         RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
 
         List<SpriteVec2f> boxLines = cuboid.getLines();
         List<SpriteVec2f> splitBoxLines = boxLines.stream().map(vec -> vec.autoSplit(8.0F)).flatMap(List::stream).toList();
@@ -109,6 +110,7 @@ public class RenderUtil {
         RenderSystem.lineWidth(1.0F);
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
+        RenderSystem.disableDepthTest();
     }
 
     private static void drawLines(Tessellator tessellator, Matrix4f positionMatrix, MatrixStack.Entry entry, List<SpriteVec2f> lines, float alpha) {

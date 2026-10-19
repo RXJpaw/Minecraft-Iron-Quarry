@@ -88,9 +88,9 @@ public class DamageableSmithingTemplateItem extends SmithingTemplateItem impleme
     private static final MutableText AUGMENTING_BASE_SLOT_DESCRIPTION_TEXT = Text.translatable("item.iron_quarry.augmenting_template.base_slot_description");
     private static final MutableText AUGMENTING_ADDITIONS_SLOT_DESCRIPTION_TEXT = Text.translatable("item.iron_quarry.augmenting_template.additions_slot_description");
 
-    private static final Identifier EMPTY_SLOT_AUGMENT_TEXTURE = Identifier.of(Main.MOD_ID, "item/empty_slot/augment");
-    private static final Identifier EMPTY_SLOT_INGOT_TEXTURE = Identifier.of("minecraft", "item/empty_slot_ingot");
-    private static final Identifier EMPTY_SLOT_LAPIS_LAZULI_TEXTURE = Identifier.of("minecraft", "item/empty_slot_lapis_lazuli");
-    private static final Identifier EMPTY_SLOT_REDSTONE_DUST_TEXTURE = Identifier.of("minecraft", "item/empty_slot_redstone_dust");
+    private static final Identifier EMPTY_SLOT_AUGMENT_TEXTURE = Identifier.of(Main.MOD_ID, "container/slot/augment");
+    private static final Identifier EMPTY_SLOT_INGOT_TEXTURE = Identifier.ofVanilla("container/slot/ingot");
+    private static final Identifier EMPTY_SLOT_LAPIS_LAZULI_TEXTURE = Identifier.ofVanilla("container/slot/lapis_lazuli");
+    private static final Identifier EMPTY_SLOT_REDSTONE_DUST_TEXTURE = Identifier.ofVanilla("container/slot/redstone_dust");
 
 }

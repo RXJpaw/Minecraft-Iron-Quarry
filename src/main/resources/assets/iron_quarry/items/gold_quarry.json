@@ -1,0 +1,6 @@
+{
+    "model": {
+        "type": "iron_quarry:quarry",
+        "model": "iron_quarry:block/gold_quarry"
+    }
+}

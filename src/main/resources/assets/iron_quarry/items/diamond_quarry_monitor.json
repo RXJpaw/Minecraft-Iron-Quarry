@@ -1,0 +1,6 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "iron_quarry:item/diamond_quarry_monitor"
+    }
+}

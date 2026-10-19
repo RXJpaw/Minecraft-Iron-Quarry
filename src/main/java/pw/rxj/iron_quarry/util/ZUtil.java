@@ -158,7 +158,7 @@ public class ZUtil {
         } else if(pitch > 45.0F) {
             return Direction.DOWN;
         } else {
-            return Direction.fromRotation(yaw);
+            return Direction.fromHorizontalDegrees(yaw);
         }
     }
 

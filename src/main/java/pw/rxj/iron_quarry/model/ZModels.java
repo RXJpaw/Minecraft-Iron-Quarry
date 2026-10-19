@@ -1,6 +1,8 @@
 package pw.rxj.iron_quarry.model;
 
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
+import net.minecraft.client.render.item.model.ItemModelTypes;
+import net.minecraft.client.render.item.property.numeric.NumericProperties;
 import pw.rxj.iron_quarry.block.ZBlocks;
 
 import java.util.List;
@@ -23,8 +25,15 @@ public class ZModels {
     );
 
     public static void register() {
-        ModelLoadingPlugin.register(pluginContext -> pluginContext.resolveModel().register(context ->
-                complexModelList.stream().filter(model -> model.isOf(context.id())).findFirst().orElse(null)
-        ));
+        ModelLoadingPlugin.register(pluginContext -> pluginContext.modifyModelOnLoad().register((model, context) -> {
+            for (ComplexModel complexModel : complexModelList) {
+                if(complexModel.isOf(context.id())) return complexModel;
+            }
+
+            return model;
+        }));
+
+        ItemModelTypes.ID_MAPPER.put(QuarryItemModel.ID, QuarryItemModel.Unbaked.CODEC);
+        NumericProperties.ID_MAPPER.put(HandledModelPredicateProperty.ID, HandledModelPredicateProperty.CODEC);
     }
 }

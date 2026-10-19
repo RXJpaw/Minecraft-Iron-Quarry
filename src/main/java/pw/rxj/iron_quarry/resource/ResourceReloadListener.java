@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.MissingSprite;
+import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -38,7 +39,7 @@ public class ResourceReloadListener implements ResourceReloader {
                         Optional<Resource> resource = resourceManager.getResource(resourceId);
 
                         if (resource.isEmpty()) {
-                            textureManager.registerTexture(resourceId, MissingSprite.getMissingSpriteTexture());
+                            textureManager.registerTexture(resourceId, new NativeImageBackedTexture(MissingSprite.createImage()));
                         }
 
                         loadableResourceIds.add(resourceId);

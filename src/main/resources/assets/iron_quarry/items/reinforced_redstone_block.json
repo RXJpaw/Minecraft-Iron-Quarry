@@ -1,0 +1,6 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "iron_quarry:item/reinforced_redstone_block"
+    }
+}

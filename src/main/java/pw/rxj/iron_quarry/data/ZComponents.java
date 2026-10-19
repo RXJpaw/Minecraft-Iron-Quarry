@@ -41,7 +41,7 @@ public class ZComponents {
 
     public static ComponentType<Boolean> BLUEPRINT_SEALED = register("blueprint_sealed", (builder) -> builder
             .codec(Codec.BOOL)
-            .packetCodec(PacketCodecs.BOOL));
+            .packetCodec(PacketCodecs.BOOLEAN));
     public static ComponentType<RegistryKey<World>> BLUEPRINT_WORLD = register("blueprint_world", (builder) -> builder
             .codec(Identifier.CODEC.xmap((id) -> RegistryKey.of(RegistryKeys.WORLD, id), RegistryKey::getValue))
             .packetCodec(Identifier.PACKET_CODEC.xmap((id) -> RegistryKey.of(RegistryKeys.WORLD, id), RegistryKey::getValue)));

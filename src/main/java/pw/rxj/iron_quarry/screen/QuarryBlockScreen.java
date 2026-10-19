@@ -116,7 +116,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         if(block == null) return;
 
         ItemStack stack = new ItemStack(block);
-        blockEntity.setStackNbt(stack, minecraftClient.world.getRegistryManager());
+        stack.applyComponentsFrom(blockEntity.createComponentMap());
 
         ComplexEnergyContainer EnergyContainer = blockEntity.EnergyContainer;
         MachineConfiguration MachineConfiguration = blockEntity.Configuration;
@@ -273,7 +273,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     protected void drawSlot(DrawContext context, Slot slot) {
         if(AUGMENT_SLOTS.contains((ManagedSlot) slot)) {
             TrackableZone.Zone zone = AugmentsConfig.zone;
-            RenderUtil.runScissored(context, zone.x, zone.y, zone.width, zone.height, () -> {
+            RenderUtil.runScissored(context, zone.x - this.x, zone.y - this.y, zone.width, zone.height, () -> {
                 super.drawSlot(context, slot);
             });
         } else {

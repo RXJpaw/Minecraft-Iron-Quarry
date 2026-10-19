@@ -6,3 +6,5 @@ accessible method net/minecraft/block/entity/LockableContainerBlockEntity writeN
 extendable method net/minecraft/client/gui/screen/ingame/HandledScreen drawSlot (Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/screen/slot/Slot;)V
 accessible class net/minecraft/component/type/ContainerComponent$Slot
 accessible method net/minecraft/component/type/ContainerComponent$Slot <init> (ILnet/minecraft/item/ItemStack;)V
+accessible field net/minecraft/client/render/item/model/ItemModelTypes ID_MAPPER Lnet/minecraft/util/dynamic/Codecs$IdMapper;
+accessible field net/minecraft/client/render/item/property/numeric/NumericProperties ID_MAPPER Lnet/minecraft/util/dynamic/Codecs$IdMapper;

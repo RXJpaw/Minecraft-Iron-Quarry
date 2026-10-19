@@ -1,7 +1,6 @@
 package pw.rxj.iron_quarry.types;
 
 import net.minecraft.client.util.SpriteIdentifier;
-import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.records.TexturePosition;
@@ -23,8 +22,10 @@ public enum IoState {
     public static Identifier getTextureId(){
         return Identifier.of(Main.MOD_ID, "textures/block/options_io.png");
     }
+    private static final Identifier BLOCK_ATLAS_TEXTURE = Identifier.ofVanilla("textures/atlas/blocks.png");
+
     public static SpriteIdentifier getSpriteId(){
-        return new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, "block/options_io"));
+        return new SpriteIdentifier(BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, "block/options_io"));
     }
 
     private IoState(int id, String name) {

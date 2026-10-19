@@ -18,8 +18,8 @@ import pw.rxj.iron_quarry.util.ZUtil;
 
 @Mixin(InGameHud.class)
 public abstract class InGameHudMixin {
-    @Inject(method = "render", at = @At(value = "HEAD"))
-    public void render(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+    @Inject(method = "renderMiscOverlays", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/RenderTickCounter;getLastFrameDuration()F"))
+    public void renderMiscOverlays(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         float tickDelta = tickCounter.getTickDelta(false);
         MatrixStack matrices = context.getMatrices();
         matrices.push();

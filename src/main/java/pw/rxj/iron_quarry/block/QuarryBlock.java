@@ -24,7 +24,6 @@ import net.minecraft.recipe.ShapedRecipe;
 import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.text.MutableText;
@@ -291,7 +290,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         if (blockEntity instanceof QuarryBlockEntity) {
             if (!world.isClient && player.isCreative()) {
                 ItemStack itemStack = new ItemStack(this);
-                blockEntity.setStackNbt(itemStack, world.getRegistryManager());
+                itemStack.applyComponentsFrom(blockEntity.createComponentMap());
 
                 ItemEntity itemEntity = new ItemEntity(world, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, itemStack);
                 itemEntity.setToDefaultPickupDelay();
@@ -330,11 +329,13 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     public Identifier getParticleTextureId(){
         return Identifier.of(Main.MOD_ID, "textures/" + this.textureReference + "_particles.png");
     }
+    private static final Identifier BLOCK_ATLAS_TEXTURE = Identifier.ofVanilla("textures/atlas/blocks.png");
+
     public SpriteIdentifier getSpriteId(){
-        return new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, this.textureReference));
+        return new SpriteIdentifier(BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, this.textureReference));
     }
     public SpriteIdentifier getParticleSpriteId(){
-        return new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, this.textureReference + "_particles"));
+        return new SpriteIdentifier(BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, this.textureReference + "_particles"));
     }
     @Environment(EnvType.CLIENT)
     public void initClient() {
