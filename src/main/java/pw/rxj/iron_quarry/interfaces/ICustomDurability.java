@@ -1,8 +1,6 @@
 package pw.rxj.iron_quarry.interfaces;
 
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.enchantment.UnbreakingEnchantment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -12,7 +10,6 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.data.ZComponents;
@@ -34,25 +31,15 @@ public interface ICustomDurability {
         return this.getMaxCDamage() - this.getCDamage(stack);
     }
 
-    default boolean cdamage(ItemStack stack, int amount, Random random, @Nullable ServerPlayerEntity player) {
-        int i;
-        if (amount > 0) {
-            i = EnchantmentHelper.getLevel(Enchantments.UNBREAKING, stack);
-            int j = 0;
-
-            for(int k = 0; i > 0 && k < amount; ++k) {
-                if (UnbreakingEnchantment.shouldPreventDamage(stack, i, random)) {
-                    ++j;
-                }
-            }
-
-            amount -= j;
+    default boolean cdamage(ItemStack stack, int amount, @Nullable ServerWorld world, @Nullable ServerPlayerEntity player) {
+        if (amount > 0 && world != null) {
+            amount = EnchantmentHelper.getItemDamage(world, stack, amount);
             if (amount <= 0) {
                 return false;
             }
         }
 
-        i = this.getCDamage(stack) + amount;
+        int i = this.getCDamage(stack) + amount;
         this.setCDamage(stack, i);
         return i >= this.getMaxCDamage();
     }

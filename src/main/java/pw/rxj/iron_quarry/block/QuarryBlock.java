@@ -10,18 +10,18 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.item.TooltipData;
-import net.minecraft.client.item.TooltipType;
+import net.minecraft.item.tooltip.TooltipData;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.recipe.ShapedRecipe;
+import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.PlayerScreenHandler;
@@ -303,8 +303,8 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     }
 
     @Override
-    public ItemStack getCraftingOutput(ShapedRecipe handler, RecipeInputInventory recipeInputInventory, RegistryWrapper.WrapperLookup wrapperLookup) {
-        return IHandledCrafting.COPY_CENTER_SLOT_NBT.apply(handler, recipeInputInventory, wrapperLookup);
+    public ItemStack getCraftingOutput(ShapedRecipe handler, CraftingRecipeInput input, RegistryWrapper.WrapperLookup wrapperLookup) {
+        return IHandledCrafting.COPY_CENTER_SLOT_NBT.apply(handler, input, wrapperLookup);
     }
 
     public int getTicksPerOperation(){
@@ -325,10 +325,10 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     }
 
     public Identifier getTextureId(){
-        return new Identifier(Main.MOD_ID, "textures/" + this.textureReference + ".png");
+        return Identifier.of(Main.MOD_ID, "textures/" + this.textureReference + ".png");
     }
     public Identifier getParticleTextureId(){
-        return new Identifier(Main.MOD_ID, "textures/" + this.textureReference + "_particles.png");
+        return Identifier.of(Main.MOD_ID, "textures/" + this.textureReference + "_particles.png");
     }
     public SpriteIdentifier getSpriteId(){
         return new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, this.textureReference));

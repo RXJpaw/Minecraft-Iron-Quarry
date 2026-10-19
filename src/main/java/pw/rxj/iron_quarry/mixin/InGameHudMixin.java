@@ -3,6 +3,7 @@ package pw.rxj.iron_quarry.mixin;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
@@ -18,7 +19,8 @@ import pw.rxj.iron_quarry.util.ZUtil;
 @Mixin(InGameHud.class)
 public abstract class InGameHudMixin {
     @Inject(method = "render", at = @At(value = "HEAD"))
-    public void render(DrawContext context, float tickDelta, CallbackInfo ci) {
+    public void render(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+        float tickDelta = tickCounter.getTickDelta(false);
         MatrixStack matrices = context.getMatrices();
         matrices.push();
 

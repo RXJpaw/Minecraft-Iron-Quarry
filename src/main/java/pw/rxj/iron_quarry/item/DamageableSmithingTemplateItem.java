@@ -1,6 +1,6 @@
 package pw.rxj.iron_quarry.item;
 
-import net.minecraft.client.item.TooltipType;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;

@@ -1,5 +1,6 @@
 package pw.rxj.iron_quarry.util;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
@@ -9,7 +10,11 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.OrderedText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -180,5 +185,23 @@ public class ZUtil {
         }
 
         return indexSet;
+    }
+
+    public static RegistryEntry<Enchantment> getEnchantmentEntry(RegistryWrapper.WrapperLookup registryLookup, RegistryKey<Enchantment> enchantment) {
+        return registryLookup.getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(enchantment);
+    }
+    public static int getEnchantmentLevel(ItemStack stack, RegistryKey<Enchantment> enchantment) {
+        for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : stack.getEnchantments().getEnchantmentEntries()) {
+            if(entry.getKey().matchesKey(enchantment)) return entry.getIntValue();
+        }
+
+        return 0;
+    }
+    public static int getCappedEnchantmentLevel(ItemStack stack, RegistryKey<Enchantment> enchantment) {
+        for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : stack.getEnchantments().getEnchantmentEntries()) {
+            if(entry.getKey().matchesKey(enchantment)) return Math.min(entry.getIntValue(), entry.getKey().value().getMaxLevel());
+        }
+
+        return 0;
     }
 }

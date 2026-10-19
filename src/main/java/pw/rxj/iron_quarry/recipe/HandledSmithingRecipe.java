@@ -2,13 +2,13 @@ package pw.rxj.iron_quarry.recipe;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SmithingTransformRecipe;
+import net.minecraft.recipe.input.SmithingRecipeInput;
 import net.minecraft.registry.RegistryWrapper;
 import pw.rxj.iron_quarry.interfaces.IHandledSmithing;
 import pw.rxj.iron_quarry.util.ZUtil;
@@ -84,13 +84,13 @@ public class HandledSmithingRecipe extends SmithingTransformRecipe {
     }
 
     @Override
-    public ItemStack craft(Inventory inventory, RegistryWrapper.WrapperLookup registryLookup) {
+    public ItemStack craft(SmithingRecipeInput input, RegistryWrapper.WrapperLookup registryLookup) {
         ItemStack result = this.getResult(registryLookup).copy();
 
         if(ZUtil.getBlockOrItem(result) instanceof IHandledSmithing handledSmithing) {
-            return handledSmithing.getSmithingOutput(this, inventory, registryLookup);
+            return handledSmithing.getSmithingOutput(this, input, registryLookup);
         }
 
-        return super.craft(inventory, registryLookup);
+        return super.craft(input, registryLookup);
     }
 }

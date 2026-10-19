@@ -1,9 +1,10 @@
 package pw.rxj.iron_quarry.item;
 
-import net.minecraft.client.item.TooltipType;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ToolComponent;
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -19,10 +20,10 @@ import pw.rxj.iron_quarry.resource.config.server.QuarryDrillStatsConfig;
 import pw.rxj.iron_quarry.util.ReadableString;
 import pw.rxj.iron_quarry.util.ZUtil;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public class DrillItem extends Item implements ICustomEnchantabilityProvider, ICustomDurability {
     private ToolComponent toolComponent;
@@ -71,12 +72,8 @@ public class DrillItem extends Item implements ICustomEnchantabilityProvider, IC
         return true;
     }
     @Override
-    public HashSet<Enchantment> getViableEnchantments(ItemStack stack) {
-        HashSet<Enchantment> enchantments = new HashSet<>();
-        enchantments.add(Enchantments.UNBREAKING);
-        enchantments.add(Enchantments.EFFICIENCY);
-
-        return enchantments;
+    public Set<RegistryKey<Enchantment>> getViableEnchantments(ItemStack stack) {
+        return Set.of(Enchantments.UNBREAKING, Enchantments.EFFICIENCY);
     }
     @Override
     public int getMaxCDamage() {

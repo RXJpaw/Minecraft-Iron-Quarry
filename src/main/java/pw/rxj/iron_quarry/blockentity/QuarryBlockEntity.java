@@ -465,13 +465,13 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             if(EnergyContainer.getStored() < energyConsumption) return drillResults;
 
             //loot generation
-            ItemStack mockPickaxe = drillItem.getToolStack();
+            ItemStack mockPickaxe = drillItem.getToolStack().copy();
 
             if(upgradesUtil.hasSilkTouch()) {
-                mockPickaxe.addEnchantment(Enchantments.SILK_TOUCH, 1);
+                mockPickaxe.addEnchantment(ZUtil.getEnchantmentEntry(serverWorldToBreak.getRegistryManager(), Enchantments.SILK_TOUCH), 1);
             } else {
                 int fortuneLevel = FortuneUtil.fromProbability(upgradesUtil.getFortuneMultiplier());
-                mockPickaxe.addEnchantment(Enchantments.FORTUNE, fortuneLevel);
+                if(fortuneLevel > 0) mockPickaxe.addEnchantment(ZUtil.getEnchantmentEntry(serverWorldToBreak.getRegistryManager(), Enchantments.FORTUNE), fortuneLevel);
             }
 
             //only drop item if required mining level is present
@@ -491,7 +491,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             EnergyContainer.useEnergy(energyConsumption);
             blockActress.setBlockState(Blocks.AIR);
 
-            boolean drillBroke = drillItem.cdamage(drillStack, 1, serverWorldToBreak.getRandom(), null);
+            boolean drillBroke = drillItem.cdamage(drillStack, 1, serverWorldToBreak, null);
             if(drillBroke) drillItem.triggerBreakEvent(drillStack, quarryPos.toCenterPos(), serverWorldToBreak);
 
             MiningQueue.remove(miningQueueIndex);

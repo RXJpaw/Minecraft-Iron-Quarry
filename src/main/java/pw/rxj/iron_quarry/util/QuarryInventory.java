@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.util;
 
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -46,7 +46,7 @@ public class QuarryInventory {
             }
         }
 
-        protected static DataComponentType<ComplexInventory> registerComponent(String id) {
+        protected static ComponentType<ComplexInventory> registerComponent(String id) {
             return ZComponents.register(id, (builder) -> builder
                     .codec(ComplexInventory.CODEC)
                     .packetCodec(ComplexInventory.PACKET_CODEC)
@@ -56,7 +56,7 @@ public class QuarryInventory {
 
 
     public static class Output extends ReferencedQuarryInventory {
-        public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_output");
+        public static ComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_output");
 
         private Output(@Nullable QuarryBlockEntity ref) {
             super(18, ref);
@@ -69,7 +69,7 @@ public class QuarryInventory {
         }
     }
     public static class BatteryInput extends ReferencedQuarryInventory {
-        public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_battery_input");
+        public static ComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_battery_input");
 
         private BatteryInput(@Nullable QuarryBlockEntity ref) {
             super(1, ref);
@@ -89,7 +89,7 @@ public class QuarryInventory {
         }
     }
     public static class MachineUpgrades extends ReferencedQuarryInventory {
-        public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_machine_upgrades");
+        public static ComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_machine_upgrades");
 
         private MachineUpgrades(@Nullable QuarryBlockEntity ref) {
             super(6, ref);
@@ -116,7 +116,7 @@ public class QuarryInventory {
         }
     }
     public static class Blueprint extends ReferencedQuarryInventory {
-        public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_blueprint");
+        public static ComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_blueprint");
 
         private Blueprint(@Nullable QuarryBlockEntity ref) {
             super(1, ref);
@@ -134,7 +134,7 @@ public class QuarryInventory {
         }
     }
     public static class Drill extends ReferencedQuarryInventory {
-        public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_drill");
+        public static ComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_drill");
 
         private Drill(@Nullable QuarryBlockEntity ref) {
             super(1, ref);

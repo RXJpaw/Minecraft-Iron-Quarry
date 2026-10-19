@@ -3,8 +3,8 @@ package pw.rxj.iron_quarry.item;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.item.TooltipData;
-import net.minecraft.client.item.TooltipType;
+import net.minecraft.item.tooltip.TooltipData;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
@@ -16,6 +16,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
+import net.minecraft.recipe.input.SmithingRecipeInput;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.ScreenHandlerContext;
@@ -198,14 +199,14 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
-    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, Inventory inventory, RegistryWrapper.WrapperLookup registryLookup) {
-        ItemStack template = inventory.getStack(0).copy();
+    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, RegistryWrapper.WrapperLookup registryLookup) {
+        ItemStack template = input.getStackInSlot(0).copy();
         if(DamageableSmithingTemplateItem.isNotOf(template)) return ItemStack.EMPTY;
 
-        ItemStack base = inventory.getStack(1).copy();
+        ItemStack base = input.getStackInSlot(1).copy();
         if(AugmentItem.isNotOf(base)) return ItemStack.EMPTY;
 
-        ItemStack addition = inventory.getStack(2).copy();
+        ItemStack addition = input.getStackInSlot(2).copy();
         AugmentStack augmentStack = AugmentStack.from(addition.copy());
 
         if(augmentStack == null) {
@@ -221,8 +222,6 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         if(templateItem == null) return new SimpleInventory(template, input, addition, ItemStack.EMPTY);
 
         ItemStack comparisonStack = input.copy();
-        Random random = Random.create();
-
         while(addition.getCount() > 0) {
             ItemStack stack = addition.copy();
             stack.setCount(1);
@@ -237,7 +236,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             this.addAmount(input, augmentStackAmount);
             this.setType(input, augmentStack.type());
 
-            templateItem.cdamage(template, augmentStackAmount, random, null);
+            templateItem.cdamage(template, augmentStackAmount, null, null);
             addition.decrement(1);
         }
 
@@ -290,7 +289,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         outputInv.unlockLastRecipe(player, List.of(template, base, addition));
 
         if(augmentStack == null) {
-            templateItem.cdamage(template, 1, Random.create(), null);
+            templateItem.cdamage(template, 1, null, null);
             templateItem.triggerBreakEventIfNeeded(template, player.getPos(), player.getWorld());
             inputInv.setStack(0, template);
 

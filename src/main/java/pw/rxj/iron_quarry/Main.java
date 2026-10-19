@@ -6,9 +6,11 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.item.v1.EnchantmentEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.util.TriState;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -36,6 +38,7 @@ import pw.rxj.iron_quarry.event.GameLifecycleCallback;
 import pw.rxj.iron_quarry.factory.ZLootTables;
 import pw.rxj.iron_quarry.factory.ZTradeOffers;
 import pw.rxj.iron_quarry.interfaces.IBlockAttackable;
+import pw.rxj.iron_quarry.interfaces.ICustomEnchantabilityProvider;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
 import pw.rxj.iron_quarry.interfaces.IHandledUseBlock;
 import pw.rxj.iron_quarry.interfaces.ITickingInventoryItem;
@@ -104,6 +107,14 @@ public class Main implements ModInitializer {
 			}
 		});
 
+		EnchantmentEvents.ALLOW_ENCHANTING.register((enchantment, target, enchantingContext) -> {
+			if(ZUtil.getBlockOrItem(target) instanceof ICustomEnchantabilityProvider enchantabilityProvider) {
+				return enchantabilityProvider.getViableEnchantments(target).stream().anyMatch(enchantment::matchesKey) ? TriState.TRUE : TriState.FALSE;
+			}
+
+			return TriState.DEFAULT;
+		});
+
 		ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
 			if(entity instanceof ItemEntity itemEntity) {
 				if(ZUtil.getBlockOrItem(itemEntity.getStack()) instanceof IHandledItemEntity handledItemEntity) {
@@ -129,9 +140,9 @@ public class Main implements ModInitializer {
 		EnergyStorage.SIDED.registerForBlockEntity(QuarryBlockEntity::getEnergySideConfiguration, ZBlockEntities.QUARRY_BLOCK_ENTITY);
 		ItemStorage.SIDED.registerForBlockEntity(QuarryBlockEntity::getItemSideConfiguration, ZBlockEntities.QUARRY_BLOCK_ENTITY);
 
-		Registry.register(Registries.SCREEN_HANDLER, new Identifier(MOD_ID, "quarry_block_screen_handler"), QUARRY_BLOCK_SCREEN_HANDLER);
+		Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "quarry_block_screen_handler"), QUARRY_BLOCK_SCREEN_HANDLER);
 
-		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "handled_smithing_recipe"), HandledSmithingRecipe.SERIALIZER);
+		Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(MOD_ID, "handled_smithing_recipe"), HandledSmithingRecipe.SERIALIZER);
 
 		Registry.register(Registries.ITEM_GROUP, ITEM_GROUP, FabricItemGroup.builder()
 				.displayName(Text.translatable("itemGroup.iron_quarry.universal"))

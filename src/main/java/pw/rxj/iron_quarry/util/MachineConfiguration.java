@@ -2,7 +2,7 @@ package pw.rxj.iron_quarry.util;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
@@ -138,7 +138,7 @@ public class MachineConfiguration {
             instance.group(Codec.INT.listOf().listOf().fieldOf("sided_io").forGetter(MachineConfiguration::toIntList))
                     .apply(instance, MachineConfiguration::new)
     );
-    public static final DataComponentType<MachineConfiguration> COMPONENT = ZComponents.register("machine_configuration", (builder) -> builder
+    public static final ComponentType<MachineConfiguration> COMPONENT = ZComponents.register("machine_configuration", (builder) -> builder
             .codec(CODEC)
             .packetCodec(PACKET_CODEC)
             .cache());

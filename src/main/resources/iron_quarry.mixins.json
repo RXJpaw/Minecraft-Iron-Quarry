@@ -6,8 +6,6 @@
     "mixins": [
         "BootstrapResourceMixin",
         "BootstrapServerMixin",
-        "EnchantmentHelperMixin",
-        "EnchantmentMixin",
         "GrindstoneInsertionMixin",
         "GrindstoneScreenHandlerMixin",
         "HandledShapedRecipeMixin",

@@ -34,7 +34,7 @@ public class Client implements ClientModInitializer {
 
         HandledScreens.register(Main.QUARRY_BLOCK_SCREEN_HANDLER, QuarryBlockScreen::new);
 
-        ModelPredicateProviderRegistry.register(new Identifier(Main.MOD_ID, "handled_model_predicate"), (stack, world, entity, seed) -> {
+        ModelPredicateProviderRegistry.register(Identifier.of(Main.MOD_ID, "handled_model_predicate"), (stack, world, entity, seed) -> {
             if(stack.getItem() instanceof IModelPredicateProvider modelPredicateProvider) {
                 return modelPredicateProvider.getModelPredicate(stack, world, entity, seed);
             }

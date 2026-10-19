@@ -10,7 +10,7 @@ import pw.rxj.iron_quarry.block.ZBlocks;
 public class ZBlockEntities {
     public static final BlockEntityType<QuarryBlockEntity> QUARRY_BLOCK_ENTITY = Registry.register(
             Registries.BLOCK_ENTITY_TYPE,
-            new Identifier(Main.MOD_ID, "quarry_block_entity"),
+            Identifier.of(Main.MOD_ID, "quarry_block_entity"),
             BlockEntityType.Builder.create(QuarryBlockEntity::new,
                     ZBlocks.COPPER_QUARRY.getBlock(),
                     ZBlocks.IRON_QUARRY.getBlock(),

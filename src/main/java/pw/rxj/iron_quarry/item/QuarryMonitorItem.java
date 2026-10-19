@@ -2,14 +2,14 @@ package pw.rxj.iron_quarry.item;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.item.TooltipData;
-import net.minecraft.client.item.TooltipType;
+import net.minecraft.item.tooltip.TooltipData;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.recipe.ShapedRecipe;
+import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
@@ -156,8 +156,8 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     }
 
     @Override
-    public ItemStack getCraftingOutput(ShapedRecipe handler, RecipeInputInventory recipeInputInventory, RegistryWrapper.WrapperLookup wrapperLookup) {
-        return IHandledCrafting.COPY_CENTER_SLOT_NBT.apply(handler, recipeInputInventory, wrapperLookup);
+    public ItemStack getCraftingOutput(ShapedRecipe handler, CraftingRecipeInput input, RegistryWrapper.WrapperLookup wrapperLookup) {
+        return IHandledCrafting.COPY_CENTER_SLOT_NBT.apply(handler, input, wrapperLookup);
     }
 
     @Override

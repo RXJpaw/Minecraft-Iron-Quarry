@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.item.TooltipType;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
@@ -34,11 +34,11 @@ import java.util.Optional;
 
 public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     //A path to the gui texture. In this example we use the texture from the dispenser
-    public static final Identifier BACKGROUND_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/quarry_block_interface.png");
-    public static final Identifier BACKGROUND_IO_OVERLAY = new Identifier(Main.MOD_ID, "textures/gui/quarry_block_io_overlay.png");
-    public static final Identifier OPTIONS_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/options.png");
-    public static final Identifier OPTIONS_CONFIGURATION_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/options_configuration.png");
-    public static final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = new Identifier(Main.MOD_ID, "textures/gui/augmentation_configuration.png");
+    public static final Identifier BACKGROUND_TEXTURE = Identifier.of(Main.MOD_ID, "textures/gui/quarry_block_interface.png");
+    public static final Identifier BACKGROUND_IO_OVERLAY = Identifier.of(Main.MOD_ID, "textures/gui/quarry_block_io_overlay.png");
+    public static final Identifier OPTIONS_TEXTURE = Identifier.of(Main.MOD_ID, "textures/gui/options.png");
+    public static final Identifier OPTIONS_CONFIGURATION_TEXTURE = Identifier.of(Main.MOD_ID, "textures/gui/options_configuration.png");
+    public static final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = Identifier.of(Main.MOD_ID, "textures/gui/augmentation_configuration.png");
 
     private final TrackableZone InfoDisplay = TrackableZone.empty();
     private final TrackableZone EnergyDisplay = TrackableZone.empty();

@@ -141,8 +141,11 @@ public class QuarryModel implements ComplexModel {
     }
 
     @Nullable
-    @Override
     public BakedModel bake(Baker baker, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
+        return this.bake(baker, textureGetter, rotationContainer);
+    }
+    @Nullable
+    public BakedModel bake(Baker baker, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer) {
         PARTICLE_SPRITE = textureGetter.apply(PARTICLE_SPRITE_ID);
         QUARRY_SPRITE = textureGetter.apply(QUARRY_SPRITE_ID);
         IO_SPRITE = textureGetter.apply(IO_SPRITE_ID);
@@ -165,16 +168,16 @@ public class QuarryModel implements ComplexModel {
 
             emitter.square(direction, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F);
             this.quarryBlock.getTexturePosition(face, isOpen).applySprite(emitter, 0, 256);
-            emitter.spriteBake(0, QUARRY_SPRITE, MutableQuadView.BAKE_NORMALIZED);
-            emitter.spriteColor(0, -1, -1, -1, -1);
+            emitter.spriteBake(QUARRY_SPRITE, MutableQuadView.BAKE_NORMALIZED);
+            emitter.color(-1, -1, -1, -1);
             emitter.emit();
 
             if(!isOpen) continue;
 
             emitter.square(direction, 0.25F, 0.25F, 0.75F, 0.75F, 0.0F);
             IoState.getTexturePosition(configuration.getIoState(face)).applySprite(emitter, 0, 256);
-            emitter.spriteBake(0, IO_SPRITE, MutableQuadView.BAKE_NORMALIZED);
-            emitter.spriteColor(0, -1, -1, -1, -1);
+            emitter.spriteBake(IO_SPRITE, MutableQuadView.BAKE_NORMALIZED);
+            emitter.color(-1, -1, -1, -1);
             emitter.emit();
         }
 

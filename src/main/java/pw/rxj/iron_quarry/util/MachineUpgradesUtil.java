@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.util;
 
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
@@ -50,7 +49,7 @@ public class MachineUpgradesUtil {
                 this.inefficiency += inefficiency/100;
                 this.slowness = augmentType.speedIneff(this.slowness);
             } else if(stack.getItem() instanceof DrillItem) {
-                int efficiencyLevel = Math.min(EnchantmentHelper.getLevel(Enchantments.EFFICIENCY, stack), Enchantments.EFFICIENCY.getMaxLevel());
+                int efficiencyLevel = ZUtil.getCappedEnchantmentLevel(stack, Enchantments.EFFICIENCY);
                 if(efficiencyLevel <= 0) continue;
 
                 float speedMultiplier = (float) Math.pow(1.3, efficiencyLevel) - 1.0F;

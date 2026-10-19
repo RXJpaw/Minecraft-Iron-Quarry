@@ -5,7 +5,7 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.item.TooltipType;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.component.DataComponentTypes;
@@ -18,6 +18,7 @@ import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.recipe.input.SmithingRecipeInput;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -59,10 +60,10 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     }
 
     @Override
-    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, Inventory inventory, RegistryWrapper.WrapperLookup registryLookup) {
+    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, RegistryWrapper.WrapperLookup registryLookup) {
         ItemStack output = handler.getResult(registryLookup).copy();
         if(BlueprintItem.isNotOf(output)) return ItemStack.EMPTY;
-        ItemStack base = inventory.getStack(1).copy();
+        ItemStack base = input.getStackInSlot(1).copy();
 
         if(this.isSealed(base)) return ItemStack.EMPTY;
         if(this.getFirstPos(base).isEmpty()) return ItemStack.EMPTY;

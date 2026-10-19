@@ -21,7 +21,7 @@ public enum IoState {
 
     private static final List<IoState> ALL = List.of(BLOCKED, ORANGE, BLUE, GREEN, PURPLE, RED);
     public static Identifier getTextureId(){
-        return new Identifier(Main.MOD_ID, "textures/block/options_io.png");
+        return Identifier.of(Main.MOD_ID, "textures/block/options_io.png");
     }
     public static SpriteIdentifier getSpriteId(){
         return new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, "block/options_io"));

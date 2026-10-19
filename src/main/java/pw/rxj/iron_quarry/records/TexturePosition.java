@@ -32,9 +32,9 @@ public record TexturePosition(int u, int v, int width, int height) {
     }
 
     public void applySprite(QuadEmitter emitter, int spriteIndex, int spriteSize) {
-        emitter.sprite(0, spriteIndex, (float) (u) / spriteSize,         (float) (v) / spriteSize);          //top left
-        emitter.sprite(1, spriteIndex, (float) (u) / spriteSize,         (float) (v + height) / spriteSize); //bottom left
-        emitter.sprite(2, spriteIndex, (float) (u + width) / spriteSize, (float) (v + height) / spriteSize); //bottom right
-        emitter.sprite(3, spriteIndex, (float) (u + width) / spriteSize, (float) (v) / spriteSize);          //top right
+        emitter.uv(0, (float) (u) / spriteSize,         (float) (v) / spriteSize);          //top left
+        emitter.uv(1, (float) (u) / spriteSize,         (float) (v + height) / spriteSize); //bottom left
+        emitter.uv(2, (float) (u + width) / spriteSize, (float) (v + height) / spriteSize); //bottom right
+        emitter.uv(3, (float) (u + width) / spriteSize, (float) (v) / spriteSize);          //top right
     }
 }

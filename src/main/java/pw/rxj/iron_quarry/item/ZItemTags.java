@@ -23,7 +23,7 @@ public class ZItemTags {
     public static final TagKey<Item> AUGMENT_SPEED_T1_ENHANCERS = of("augment_speed_tier1_enhancers");
     public static final TagKey<Item> AUGMENT_SPEED_T2_ENHANCERS = of("augment_speed_tier2_enhancers");
     public static final TagKey<Item> AUGMENT_SPEED_T3_ENHANCERS = of("augment_speed_tier3_enhancers");
-    public static final TagKey<Item> C_WRENCHES = commonOf("wrenches");
+    public static final TagKey<Item> C_WRENCHES = commonOf("tools/wrench");
 
     public static List<TagKey<Item>> AUGMENT_ENHANCERS = List.of(
             ZItemTags.AUGMENT_FORTUNE_T1_ENHANCERS,

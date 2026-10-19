@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.recipe.input.SmithingRecipeInput;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.ScreenHandlerContext;
@@ -17,7 +18,7 @@ import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 
 public interface IHandledSmithing {
-    ItemStack getSmithingOutput(HandledSmithingRecipe handler, Inventory inventory, RegistryWrapper.WrapperLookup registryLookup);
+    ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, RegistryWrapper.WrapperLookup registryLookup);
 
     default ItemStack getSmithingOutputPreview(Ingredient base, Ingredient addition, ItemStack output) {
         return null;

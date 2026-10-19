@@ -73,7 +73,6 @@ public class RenderUtil {
 
         Matrix4f positionMatrix = matrices.peek().getPositionMatrix();
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
 
         RenderSystem.defaultBlendFunc();
 
@@ -89,33 +88,29 @@ public class RenderUtil {
 
         //Visible Outlines
         RenderSystem.depthFunc(GL11.GL_LESS);
-        buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
-
-        for (SpriteVec2f line : filteredSplitBoxLines) {
-            Vector3f n = line.normalize();
-
-            buffer.vertex(positionMatrix, line.from.x, line.from.y, line.from.z).color(1.0F, 1.0F, 1.0F, 1.0F).normal(matrices.peek(), n.x, n.y, n.z).next();
-            buffer.vertex(positionMatrix, line.to.x, line.to.y, line.to.z).color(1.0F, 1.0F, 1.0F, 1.0F).normal(matrices.peek(), n.x, n.y, n.z).next();
-        }
-
-        tessellator.draw();
+        drawLines(tessellator, positionMatrix, matrices.peek(), filteredSplitBoxLines, 1.0F);
 
         //Hidden Outlines
         RenderSystem.depthFunc(GL11.GL_GREATER);
-        buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
-
-        for (SpriteVec2f line : filteredSplitBoxLines) {
-            Vector3f n = line.normalize();
-
-            buffer.vertex(positionMatrix, line.from.x, line.from.y, line.from.z).color(1.0F, 1.0F, 1.0F, 0.2F).normal(matrices.peek(), n.x, n.y, n.z).next();
-            buffer.vertex(positionMatrix, line.to.x, line.to.y, line.to.z).color(1.0F, 1.0F, 1.0F, 0.2F).normal(matrices.peek(), n.x, n.y, n.z).next();
-        }
-
-        tessellator.draw();
+        drawLines(tessellator, positionMatrix, matrices.peek(), filteredSplitBoxLines, 0.2F);
 
         RenderSystem.depthFunc(GL11.GL_LEQUAL);
         RenderSystem.lineWidth(1.0F);
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
+    }
+
+    private static void drawLines(Tessellator tessellator, Matrix4f positionMatrix, MatrixStack.Entry entry, List<SpriteVec2f> lines, float alpha) {
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+
+        for (SpriteVec2f line : lines) {
+            Vector3f n = line.normalize();
+
+            buffer.vertex(positionMatrix, line.from.x, line.from.y, line.from.z).color(1.0F, 1.0F, 1.0F, alpha).normal(entry, n.x, n.y, n.z);
+            buffer.vertex(positionMatrix, line.to.x, line.to.y, line.to.z).color(1.0F, 1.0F, 1.0F, alpha).normal(entry, n.x, n.y, n.z);
+        }
+
+        BuiltBuffer builtBuffer = buffer.endNullable();
+        if(builtBuffer != null) BufferRenderer.drawWithGlobalProgram(builtBuffer);
     }
 }
