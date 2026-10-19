@@ -47,6 +47,9 @@ public class ComplexEnergyContainer extends SimpleSidedEnergyContainer {
     public void read(NbtCompound data){
         this.amount = data.getLong("Stored");
     }
+    public void read(long amount){
+        this.amount = amount;
+    }
     public NbtCompound write(){
         NbtCompound data = new NbtCompound();
 

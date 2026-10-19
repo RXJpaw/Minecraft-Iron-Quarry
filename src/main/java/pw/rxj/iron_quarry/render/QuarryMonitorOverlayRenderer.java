@@ -24,6 +24,7 @@ public class QuarryMonitorOverlayRenderer {
 
     private static void renderOnScreen(DrawContext context, double tickDelta) {
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        if(minecraftClient.world == null) return;
         ClientPlayerEntity player = minecraftClient.player;
         if(player == null) return;
 

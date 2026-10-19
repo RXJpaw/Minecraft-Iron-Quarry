@@ -8,19 +8,19 @@ import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 
 @EqualsAndHashCode
 public class QuarryDrillStatsConfig {
-    public final Entry copperDrill = new Entry(649, 1, 2);
-    public final Entry ironDrill = new Entry(1_284, 2, 5);
-    public final Entry diamondDrill = new Entry(6_649, 3, 4);
-    public final Entry netheriteDrill = new Entry(93_750, 4, 5);
-    public final Entry shulkerDrill = new Entry(159_375, 5, 7);
-    public final Entry netherStarDrill = new Entry(796_875, 6, 9);
+    public final Entry copperDrill = new Entry(649, 2, "minecraft:stone_pickaxe");
+    public final Entry ironDrill = new Entry(1_284, 5, "minecraft:iron_pickaxe");
+    public final Entry diamondDrill = new Entry(6_649, 4, "minecraft:diamond_pickaxe");
+    public final Entry netheriteDrill = new Entry(93_750,  5, "minecraft:netherite_pickaxe");
+    public final Entry shulkerDrill = new Entry(159_375, 7, "minecraft:netherite_pickaxe");
+    public final Entry netherStarDrill = new Entry(796_875, 9, "minecraft:netherite_pickaxe");
 
     @EqualsAndHashCode
     @AllArgsConstructor
     public static class Entry {
         public final int durability;
-        public final int miningLevel;
         public final int enchantability;
+        public final String toolEquivalent;
     }
 
     public static class Handler extends AbstractInnerConfigHandler {

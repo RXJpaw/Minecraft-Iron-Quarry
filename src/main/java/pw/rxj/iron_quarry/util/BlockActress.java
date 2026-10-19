@@ -1,9 +1,9 @@
 package pw.rxj.iron_quarry.util;
 
-import net.fabricmc.fabric.api.mininglevel.v1.MiningLevelManager;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.type.ToolComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.loot.context.LootContextParameters;
@@ -107,8 +107,8 @@ public class BlockActress {
                         .add(LootContextParameters.TOOL, miningTool)
         );
     }
-    public int getRequiredMiningLevel() {
-        return MiningLevelManager.getRequiredMiningLevel(this.blockState);
+    public boolean isCorrectForDrops(ToolComponent toolComponent) {
+        return !this.blockState.isToolRequired() || toolComponent.isCorrectForDrops(this.blockState);
     }
 
     public BlockPosState toBlockPosState() {

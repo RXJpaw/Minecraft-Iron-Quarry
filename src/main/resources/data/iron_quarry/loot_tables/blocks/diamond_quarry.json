@@ -6,22 +6,15 @@
             "entries": [
                 {
                     "type": "minecraft:item",
-                    "name": "iron_quarry:diamond_quarry",
-                    "functions": [
-                        {
-                            "function": "minecraft:copy_nbt",
-                            "source": "block_entity",
-                            "ops": [
-                                {
-                                    "source": "{}",
-                                    "target": "BlockEntityTag",
-                                    "op": "replace"
-                                }
-                            ]
-                        }
-                    ]
+                    "name": "iron_quarry:diamond_quarry"
                 }
             ]
+        }
+    ],
+    "functions": [
+        {
+            "source": "block_entity",
+            "function": "minecraft:copy_components"
         }
     ]
 }

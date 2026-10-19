@@ -5,19 +5,19 @@ import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 
 public interface IHandledSmithing {
-    ItemStack getSmithingOutput(HandledSmithingRecipe handler, Inventory inventory, DynamicRegistryManager dynamicRegistryManager);
+    ItemStack getSmithingOutput(HandledSmithingRecipe handler, Inventory inventory, RegistryWrapper.WrapperLookup registryLookup);
 
     default ItemStack getSmithingOutputPreview(Ingredient base, Ingredient addition, ItemStack output) {
         return null;
@@ -28,14 +28,11 @@ public interface IHandledSmithing {
     }
 
     default void makeSmithingPreview(ItemStack stack, TagKey<Item> additionTag) {
-        stack.getOrCreateNbt().putString("smithing_output_preview", additionTag.id().toString());
+        stack.set(ZComponents.SMITHING_OUTPUT_PREVIEW, additionTag.id());
     }
 
     default @Nullable Identifier getSmithingPreviewAdditionId(ItemStack stack) {
-        NbtCompound nbtCompound = stack.getNbt();
-        if(nbtCompound == null) return null;
-
-        return Identifier.tryParse(nbtCompound.getString("smithing_output_preview"));
+        return stack.get(ZComponents.SMITHING_OUTPUT_PREVIEW);
     }
     default @Nullable TagKey<Item> getSmithingPreviewAdditionTag(ItemStack stack) {
         Identifier addition = this.getSmithingPreviewAdditionId(stack);

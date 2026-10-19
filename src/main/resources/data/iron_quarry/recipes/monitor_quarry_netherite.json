@@ -1,0 +1,23 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        " CA",
+        "CMC",
+        "AC "
+    ],
+    "key": {
+        "M": {
+            "item": "iron_quarry:diamond_quarry_monitor"
+        },
+        "C": {
+            "item": "iron_quarry:circuit_mk4"
+        },
+        "A": {
+            "item": "minecraft:end_crystal"
+        }
+    },
+    "result": {
+        "count": 1,
+        "id": "iron_quarry:netherite_quarry_monitor"
+    }
+}

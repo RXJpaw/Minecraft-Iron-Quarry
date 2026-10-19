@@ -3,8 +3,8 @@ package pw.rxj.iron_quarry.item;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.item.TooltipData;
+import net.minecraft.client.item.TooltipType;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
@@ -14,22 +14,18 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Rarity;
-import net.minecraft.world.World;
+import net.minecraft.util.math.random.Random;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
+import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.gui.CustomTooltipData;
 import pw.rxj.iron_quarry.gui.TooltipInventoryData;
 import pw.rxj.iron_quarry.interfaces.*;
@@ -140,7 +136,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
         AugmentType augmentType = this.getType(stack);
         int capacity = this.getCapacity(stack);
         int stored = this.getAmount(stack);
@@ -195,10 +191,6 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
-    public Rarity getRarity(ItemStack stack) {
-        return super.getRarity(stack);
-    }
-    @Override
     public boolean hasGlint(ItemStack stack) {
         if(this.isUnique() || getAmount(stack) >= getType(stack).getCapacity(CAPACITY_UPGRADE_SLOTS)) return true;
 
@@ -206,41 +198,53 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
-    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, Inventory inventory, DynamicRegistryManager dynamicRegistryManager) {
+    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, Inventory inventory, RegistryWrapper.WrapperLookup registryLookup) {
+        ItemStack template = inventory.getStack(0).copy();
+        if(DamageableSmithingTemplateItem.isNotOf(template)) return ItemStack.EMPTY;
+
         ItemStack base = inventory.getStack(1).copy();
         if(AugmentItem.isNotOf(base)) return ItemStack.EMPTY;
 
         ItemStack addition = inventory.getStack(2).copy();
-        AugmentStack augmentStack = AugmentStack.from(addition);
+        AugmentStack augmentStack = AugmentStack.from(addition.copy());
 
         if(augmentStack == null) {
             boolean result = this.putUpgrade(base, addition);
             return result ? base : ItemStack.EMPTY;
         } else {
-            Inventory outcome = this.getSmithingOutcome(base, addition);
+            Inventory outcome = this.getSmithingOutcome(template, base, addition);
             return outcome.getStack(3);
         }
     }
-    public Inventory getSmithingOutcome(ItemStack input, ItemStack addition) {
+    public Inventory getSmithingOutcome(ItemStack template, ItemStack input, ItemStack addition) {
+        DamageableSmithingTemplateItem templateItem = DamageableSmithingTemplateItem.instanceFrom(template);
+        if(templateItem == null) return new SimpleInventory(template, input, addition, ItemStack.EMPTY);
+
         ItemStack comparisonStack = input.copy();
+        Random random = Random.create();
 
         while(addition.getCount() > 0) {
             ItemStack stack = addition.copy();
             stack.setCount(1);
 
             AugmentStack augmentStack = AugmentStack.from(stack);
-            if(augmentStack == null) return new SimpleInventory(ItemStack.EMPTY, input, addition, ItemStack.EMPTY);
+            if(augmentStack == null) return new SimpleInventory(template, input, addition, ItemStack.EMPTY);
+            int augmentStackAmount = augmentStack.amount();
+
+            if(templateItem.getCDurability(template) < augmentStackAmount) break;
 
             if(!this.canInsert(input, augmentStack)) break;
-            this.addAmount(input, augmentStack.amount());
+            this.addAmount(input, augmentStackAmount);
             this.setType(input, augmentStack.type());
+
+            templateItem.cdamage(template, augmentStackAmount, random, null);
             addition.decrement(1);
         }
 
         if(this.getAmount(comparisonStack) == this.getAmount(input)) {
-            return new SimpleInventory(ItemStack.EMPTY, input, addition, ItemStack.EMPTY);
+            return new SimpleInventory(template, input, addition, ItemStack.EMPTY);
         } else {
-            return new SimpleInventory(ItemStack.EMPTY, ItemStack.EMPTY, addition, input);
+            return new SimpleInventory(template, ItemStack.EMPTY, addition, input);
         }
     }
     @Override
@@ -271,27 +275,43 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
     @Override
     public Boolean handleSmithingTakeOutput(PlayerEntity player, Inventory inputInv, CraftingResultInventory outputInv, ScreenHandlerContext context) {
+        ItemStack template = inputInv.getStack(0).copy();
+        DamageableSmithingTemplateItem templateItem = DamageableSmithingTemplateItem.instanceFrom(template);
+        if(templateItem == null) return false;
+
         ItemStack base = inputInv.getStack(1).copy();
         if(AugmentItem.isNotOf(base)) return false;
 
         ItemStack addition = inputInv.getStack(2).copy();
         AugmentStack augmentStack = AugmentStack.from(addition);
 
-        if(augmentStack == null) {
-            return false;
-        } else {
-            outputInv.unlockLastRecipe(player, List.of(inputInv.getStack(0), inputInv.getStack(1), inputInv.getStack(2)));
+        ItemStack outputStack = outputInv.getStack(0);
+        outputStack.onCraftByPlayer(player.getWorld(), player, outputStack.getCount());
+        outputInv.unlockLastRecipe(player, List.of(template, base, addition));
 
-            Inventory outcome = this.getSmithingOutcome(base, addition);
+        if(augmentStack == null) {
+            templateItem.cdamage(template, 1, Random.create(), null);
+            templateItem.triggerBreakEventIfNeeded(template, player.getPos(), player.getWorld());
+            inputInv.setStack(0, template);
+
+            base.decrement(1);
+            inputInv.setStack(1, base);
+
+            addition.decrement(1);
+            inputInv.setStack(2, addition);
+        } else {
+            Inventory outcome = this.getSmithingOutcome(template, base, addition);
+
+            ItemStack outcomeTemplate = outcome.getStack(0);
+            templateItem.triggerBreakEventIfNeeded(outcomeTemplate, player.getPos(), player.getWorld());
+
+            inputInv.setStack(0, outcomeTemplate);
             inputInv.setStack(1, outcome.getStack(1));
             inputInv.setStack(2, outcome.getStack(2));
-
-            ItemStack output = outcome.getStack(3);
-            output.onCraftByPlayer(player.getWorld(), player, output.getCount());
-
-            context.run((world, pos) -> world.syncWorldEvent(1044, pos, 0));
-            return true;
         }
+
+        context.run((world, pos) -> world.syncWorldEvent(1044, pos, 0));
+        return true;
     }
 
     @Override
@@ -316,28 +336,23 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     public AugmentType getType(@NotNull ItemStack stack) {
         if(this.isUnique()) return this.getUniqueType();
 
-        NbtCompound nbtCompound = stack.getNbt();
-        if(nbtCompound == null) return AugmentType.EMPTY;
-
-        AugmentType type = AugmentType.from(nbtCompound.getString("Type"));
-        if(type != null) return type;
-        return AugmentType.EMPTY;
+        return stack.getOrDefault(ZComponents.AUGMENT_TYPE, AugmentType.EMPTY);
     }
     public void setType(@NotNull ItemStack stack, AugmentType type) {
         if (type == null) type = AugmentType.EMPTY;
-        stack.getOrCreateNbt().putString("Type", type.getName());
+
+        stack.set(ZComponents.AUGMENT_TYPE, type);
     }
 
     public int getAmount(@NotNull ItemStack stack) {
         if(this.isUnique()) return UNIQUE_SET_AMOUNT;
 
-        NbtCompound nbtCompound = stack.getNbt();
-        if(nbtCompound == null) return 0;
-
-        return nbtCompound.getInt("Amount");
+        return stack.getOrDefault(ZComponents.AUGMENT_AMOUNT, 0);
     }
     public void setAmount(@NotNull ItemStack stack, int amount) {
-        stack.getOrCreateNbt().putInt("Amount", amount);
+        if(amount < 0) return;
+
+        stack.set(ZComponents.AUGMENT_AMOUNT, amount);
     }
     public void addAmount(@NotNull ItemStack stack, int amount) {
         this.setAmount(stack, this.getAmount(stack) + amount);
@@ -356,28 +371,21 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     public boolean putUpgrade(@NotNull ItemStack stack, ItemStack upgrade) {
-        NbtCompound stackNbt = stack.copy().getOrCreateNbt();
-        NbtList nbtList = stackNbt.getList("Upgrades", NbtElement.COMPOUND_TYPE);
+        List<Identifier> itemIdList = new ArrayList<>(stack.getOrDefault(ZComponents.AUGMENT_UPGRADES, List.of()));
 
         if(Ingredient.fromTag(ZItemTags.AUGMENT_CAPACITY_ENHANCERS).test(upgrade)) {
             List<Item> capacityUpgrades = this.getUpgrades(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
             if(capacityUpgrades.size() >= CAPACITY_UPGRADE_SLOTS) return false;
         }
 
-        String upgradeId = Registries.ITEM.getId(upgrade.getItem()).toString();
+        Identifier upgradeId = Registries.ITEM.getId(upgrade.getItem());
 
-        for (NbtElement nbtElement : nbtList) {
-            if(nbtElement instanceof NbtCompound nbtCompound) {
-                if(nbtCompound.getString("id").equals(upgradeId)) return false;
-            }
+        for (Identifier itemId : itemIdList) {
+            if(itemId.equals(upgradeId)) return false;
         }
 
-        NbtCompound itemNbt = new NbtCompound();
-        itemNbt.putString("id", upgradeId);
-        nbtList.add(itemNbt);
-
-        stackNbt.put("Upgrades", nbtList);
-        stack.setNbt(stackNbt);
+        itemIdList.add(upgradeId);
+        stack.set(ZComponents.AUGMENT_UPGRADES, List.copyOf(itemIdList));
 
         return true;
     }
@@ -396,22 +404,12 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             return List.of(matchingStacks[stackIndex].getItem());
         }
 
-        NbtCompound stackNbt = stack.copy().getOrCreateNbt();
-        NbtList nbtList = stackNbt.getList("Upgrades", NbtElement.COMPOUND_TYPE);
-
+        List<Identifier> itemIdList = stack.getOrDefault(ZComponents.AUGMENT_UPGRADES, new ArrayList<>());
         List<Item> upgradeList = new ArrayList<>();
 
-        for (NbtElement nbtElement : nbtList) {
-            if(nbtElement instanceof NbtCompound nbtCompound) {
-                String id = nbtCompound.getString("id");
-                if(id == null) continue;
-
-                Identifier itemId = Identifier.tryParse(id);
-                if(itemId == null) continue;
-
-                Optional<Item> item = Registries.ITEM.getOrEmpty(itemId);
-                item.ifPresent(upgradeList::add);
-            }
+        for (Identifier id : itemIdList) {
+            Optional<Item> item = Registries.ITEM.getOrEmpty(id);
+            item.ifPresent(upgradeList::add);
         }
 
         return upgradeList;

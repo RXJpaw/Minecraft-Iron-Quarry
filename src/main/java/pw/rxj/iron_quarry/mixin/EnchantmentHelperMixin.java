@@ -5,6 +5,7 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.item.ItemStack;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,7 +19,7 @@ import java.util.List;
 @Mixin(EnchantmentHelper.class)
 public abstract class EnchantmentHelperMixin {
     @Inject(method = "getPossibleEntries", at = @At(value = "HEAD"), cancellable = true)
-    private static void getPossibleEntries(int power, ItemStack stack, boolean treasureAllowed, CallbackInfoReturnable<List<EnchantmentLevelEntry>> cir) {
+    private static void getPossibleEntries(FeatureSet enabledFeatures, int power, ItemStack stack, boolean treasureAllowed, CallbackInfoReturnable<List<EnchantmentLevelEntry>> cir) {
         if(stack.getItem() instanceof ICustomEnchantabilityProvider enchantabilityProvider) {
             List<EnchantmentLevelEntry> enchantmentLevelEntries = new ArrayList<>();
             HashSet<Enchantment> viableEnchantments = enchantabilityProvider.getViableEnchantments(stack);

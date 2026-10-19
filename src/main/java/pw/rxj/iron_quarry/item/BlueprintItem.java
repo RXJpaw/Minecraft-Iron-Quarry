@@ -5,9 +5,10 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipType;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
@@ -15,10 +16,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
@@ -27,9 +27,11 @@ import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.data.BlueprintPositionComponent;
+import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.interfaces.*;
-import pw.rxj.iron_quarry.network.KeyedActionPacket;
 import pw.rxj.iron_quarry.network.PacketBlueprintExpand;
+import pw.rxj.iron_quarry.network.PacketKeyedAction;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.render.Cuboid;
@@ -57,8 +59,8 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     }
 
     @Override
-    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, Inventory inventory, DynamicRegistryManager dynamicRegistryManager) {
-        ItemStack output = handler.getResult(dynamicRegistryManager).copy();
+    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, Inventory inventory, RegistryWrapper.WrapperLookup registryLookup) {
+        ItemStack output = handler.getResult(registryLookup).copy();
         if(BlueprintItem.isNotOf(output)) return ItemStack.EMPTY;
         ItemStack base = inventory.getStack(1).copy();
 
@@ -67,9 +69,8 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         if(this.getSecondPos(base).isEmpty()) return ItemStack.EMPTY;
 
         this.setSealed(base, true);
-        output.setNbt(base.getNbt());
 
-        return output;
+        return base.copyComponentsToNewStack(output.getItem(), output.getCount());
     }
     @Override
     public ItemStack getSmithingOutputPreview(Ingredient base, Ingredient addition, ItemStack output) {
@@ -89,15 +90,14 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         return this.isSealed(stack);
     }
     @Override
-    public ItemStack getGrindingOutput(ItemStack stack, ItemStack follower) {
-        if(!follower.isEmpty()) return null;
+    public ItemStack getGrindingOutput(ItemStack stack, ItemStack other) {
+        if(!other.isEmpty()) return null;
         ItemStack output = stack.copy();
 
-        NbtCompound nbtCompound = output.getNbt();
-        if(nbtCompound == null) return null;
-
-        nbtCompound.remove("Sealed");
-        nbtCompound.remove("MinedChunks");
+        if(output.getItem() instanceof BlueprintItem blueprintItem) {
+            blueprintItem.setSealed(output, false);
+            blueprintItem.resetMinedChunks(output);
+        }
 
         return output;
     }
@@ -197,7 +197,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
         RegistryKey<World> worldKey = this.getWorldRegistryKey(stack).orElse(null);
         Identifier worldId = worldKey != null ? worldKey.getValue() : null;
 
@@ -224,7 +224,6 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
 
             tooltip.add(ReadableString.space());
             tooltip.add(LORE_MINED);
-
             if(this.allChunksMined(stack)) {
                 MutableText LORE_COMPLETED = ReadableString.translatable("item.iron_quarry.blueprint.lore.completed");
                 tooltip.add(LORE_COMPLETED);
@@ -295,26 +294,17 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     public boolean renderItemName(ItemStack stack) {
         return !this.isSealed(stack) && this.getFirstPos(stack).isPresent() && this.getSecondPos(stack).isPresent() && !this.allChunksMined(stack);
     }
-    @Override
-    public Rarity getRarity(ItemStack stack) {
-        return this.isSealed(stack) ? Rarity.EPIC : Rarity.UNCOMMON;
-    }
+
     public boolean hasGlint(ItemStack stack) {
-        return isSealed(stack);
+        return this.isSealed(stack);
     }
 
     public void setSealed(ItemStack stack, boolean sealed){
-        if(sealed) {
-            stack.getOrCreateNbt().putBoolean("Sealed", true);
-        } else if(stack.getNbt() != null) {
-            stack.getNbt().remove("Sealed");
-        }
+        stack.set(ZComponents.BLUEPRINT_SEALED, sealed);
+        stack.set(DataComponentTypes.RARITY, sealed ? Rarity.EPIC : Rarity.UNCOMMON);
     }
     public boolean isSealed(ItemStack stack){
-        NbtCompound nbt = stack.getNbt();
-        if(nbt == null) return false;
-
-        return nbt.getBoolean("Sealed");
+        return stack.getOrDefault(ZComponents.BLUEPRINT_SEALED, false);
     }
 
     @Override
@@ -344,7 +334,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         if(!hand.equals(Hand.MAIN_HAND) || !user.isCreative()) return TypedActionResult.fail(stack);
 
         if(MinecraftClient.getInstance().options.sneakKey.isPressed()) {
-            ZNetwork.sendToServer(KeyedActionPacket.bake("key.sneak", hand, ActionGoal.USE, BlockHitResult.createMissed(Vec3d.ZERO, Direction.UP, BlockPos.ORIGIN)));
+            ZNetwork.sendToServer(PacketKeyedAction.bake("key.sneak", hand, ActionGoal.USE, BlockHitResult.createMissed(Vec3d.ZERO, Direction.UP, BlockPos.ORIGIN)));
             return TypedActionResult.success(stack, false);
         }
 
@@ -387,24 +377,15 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
 
         this.resetPositions(stack);
 
-        String worldKey = ZUtil.toString(newWorldKey);
-        stack.getOrCreateNbt().putString("World", worldKey);
+        stack.set(ZComponents.BLUEPRINT_WORLD, newWorldKey);
 
     }
     public Optional<RegistryKey<World>> getWorldRegistryKey(ItemStack stack) {
-        NbtCompound itemNbt = stack.getNbt();
-        if(itemNbt == null) return Optional.empty();
-
-        String worldKey = itemNbt.getString("World");
-        return Optional.ofNullable(ZUtil.toRegistryKey(worldKey));
+        return Optional.ofNullable(stack.get(ZComponents.BLUEPRINT_WORLD));
     }
 
     public void resetPositions(ItemStack stack) {
-        NbtCompound nbt = stack.getNbt();
-        if(nbt == null) return;
-
-        nbt.remove(DualPosition.FIRST.getNbtLiteral());
-        nbt.remove(DualPosition.SECOND.getNbtLiteral());
+        stack.remove(ZComponents.BLUEPRINT_POSITION);
     }
     public void setFirstPos(ItemStack stack, @Nullable World world, BlockPos blockPos) {
         this.setPosition(DualPosition.FIRST, stack, world, blockPos);
@@ -420,7 +401,11 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
             throw new IllegalStateException("BlueprintItem#setWorld has to be called first if no world is supplied.");
         }
 
-        stack.getOrCreateNbt().put(position.getNbtLiteral(), ZUtil.toBlockPosNbt(blockPos));
+        BlueprintPositionComponent blueprintPosition = stack.getOrDefault(ZComponents.BLUEPRINT_POSITION, BlueprintPositionComponent.twin(blockPos));
+
+        blueprintPosition.setPosition(position, blockPos);
+
+        stack.set(ZComponents.BLUEPRINT_POSITION, blueprintPosition);
     }
     public Optional<BlockPos> getFirstPos(ItemStack stack) {
         return Optional.ofNullable(this.getPosition(DualPosition.FIRST, stack));
@@ -429,20 +414,14 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         return Optional.ofNullable(this.getPosition(DualPosition.SECOND, stack));
     }
     private @Nullable BlockPos getPosition(DualPosition position, ItemStack stack) {
-        NbtCompound itemNbt = stack.getNbt();
-        if(itemNbt == null) return null;
+        BlueprintPositionComponent blueprintPosition = stack.get(ZComponents.BLUEPRINT_POSITION);
+        if(blueprintPosition == null) return null;
 
-        NbtCompound positionNbt = itemNbt.getCompound(position.getNbtLiteral());
-        if(positionNbt.isEmpty()) return null;
-
-        return ZUtil.nbtToBlockPos(positionNbt);
+        return blueprintPosition.getPosition(position);
     }
 
     public long getMinedChunks(ItemStack stack) {
-        NbtCompound itemNbt = stack.getNbt();
-        if(itemNbt == null) return 0;
-
-        return itemNbt.getInt("MinedChunks");
+        return stack.getOrDefault(ZComponents.BLUEPRINT_MINED_CHUNKS, 0L);
     }
     public long getMineableChunks(ItemStack stack) {
         BlockPos firstPos = this.getFirstPos(stack).orElse(null);
@@ -467,18 +446,13 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         return mined == mineable;
     }
     public void resetMinedChunks(ItemStack stack) {
-        NbtCompound nbt = stack.getNbt();
-        if(nbt == null) return;
-
-        nbt.remove("MinedChunks");
+        stack.remove(ZComponents.BLUEPRINT_MINED_CHUNKS);
     }
     public void increaseMinedChunks(ItemStack stack) {
         this.increaseMinedChunks(stack, 1);
     }
     public void increaseMinedChunks(ItemStack stack, long amount) {
-        long minedChunks = this.getMinedChunks(stack);
-
-        stack.getOrCreateNbt().putLong("MinedChunks", minedChunks + amount);
+        stack.set(ZComponents.BLUEPRINT_MINED_CHUNKS, this.getMinedChunks(stack) + amount);
     }
 
     public List<@NotNull ChunkPos> getNextChunkPos(ItemStack stack, int maxPositions){

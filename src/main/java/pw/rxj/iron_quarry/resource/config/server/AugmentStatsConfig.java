@@ -16,13 +16,13 @@ public class AugmentStatsConfig {
     public static class Entry {
         public final boolean disabled;
         public final int baseAmount;
-        public final float multiplier;
+        public final int maxEfficiency;
         public final float inefficiency;
 
         public Entry(AugmentType augmentType) {
             this.disabled = augmentType.isDisabled();
             this.baseAmount = augmentType.getBaseAmount();
-            this.multiplier = augmentType.getMultiplier();
+            this.maxEfficiency = augmentType.getMaxEfficiency();
             this.inefficiency = augmentType.getInefficiency();
         }
     }

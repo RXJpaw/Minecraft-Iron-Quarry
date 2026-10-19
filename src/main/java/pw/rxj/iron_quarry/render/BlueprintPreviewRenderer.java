@@ -13,7 +13,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
@@ -26,12 +25,14 @@ import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.event.InGameHudRenderCallback;
 import pw.rxj.iron_quarry.item.BlueprintItem;
+import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
-import pw.rxj.iron_quarry.util.ZUtil;
+import pw.rxj.iron_quarry.util.ItemStackUtil;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class BlueprintPreviewRenderer {
@@ -53,25 +54,26 @@ public class BlueprintPreviewRenderer {
         ClientPlayerEntity player = minecraftClient.player;
         if(player == null) return;
 
-        final ItemStack blueprintStack;
+        AtomicReference<ItemStack> atomicBlueprintStack = new AtomicReference<>();
 
-        ItemStack stackInMainHand = player.getStackInHand(Hand.MAIN_HAND);
-        ItemStack stackInOffHand = player.getStackInHand(Hand.OFF_HAND);
+        ItemStackUtil.ofAnyHand(player, BlueprintItem.class).ifPresent(stackUtil -> {
+            atomicBlueprintStack.set(stackUtil.stack);
+        });
+        if(atomicBlueprintStack.get() == null) {
+            ItemStackUtil.ofAnyHand(player, QuarryBlock.class).ifPresent(stackUtil -> {
+                ItemStack stack = stackUtil.item.getBlueprintStack(stackUtil.stack);
+                if(!stack.isEmpty()) atomicBlueprintStack.set(stack);
+            });
+        }
+        if(atomicBlueprintStack.get() == null) {
+            ItemStackUtil.ofAnyHand(player, QuarryMonitorItem.class).ifPresent(stackUtil -> {
+                ItemStack stack = stackUtil.item.getCachedBlueprintStack(stackUtil.stack);
+                if(!stack.isEmpty()) atomicBlueprintStack.set(stack);
+            });
+        }
 
-        if(BlueprintItem.isOf(stackInMainHand)) {
-            blueprintStack = stackInMainHand;
-        } else if(BlueprintItem.isOf(stackInOffHand)) {
-            blueprintStack = stackInOffHand;
-        } else if(ZUtil.getBlockOrItem(stackInMainHand) instanceof QuarryBlock quarryBlock) {
-            ItemStack stack = quarryBlock.getBlueprintStack(stackInMainHand);
-            if(stack.isEmpty()) return;
-            blueprintStack = stack;
-        } else if(ZUtil.getBlockOrItem(stackInOffHand) instanceof QuarryBlock quarryBlock) {
-            ItemStack stack = quarryBlock.getBlueprintStack(stackInOffHand);
-            if(stack.isEmpty()) return;
-            blueprintStack = stack;
-        } else return;
-
+        final ItemStack blueprintStack = atomicBlueprintStack.get();
+        if(blueprintStack == null) return;
         final BlueprintItem blueprintItem = (BlueprintItem) blueprintStack.getItem();
 
         RegistryKey<World> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack).orElse(null);
@@ -79,11 +81,13 @@ public class BlueprintPreviewRenderer {
 
         Camera camera = context.camera();
         MatrixStack matrices = context.matrixStack();
+        if(matrices == null) return;
+        Matrix4f positionMatrix = context.positionMatrix();
         Matrix4f projectionMatrix = context.projectionMatrix();
 
         BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack).orElse(null);
         BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack).orElse(null);
-        prepareRenderOnScreen(matrices, firstPos, secondPos, camera, projectionMatrix);
+        prepareRenderOnScreen(firstPos, secondPos, camera, positionMatrix, projectionMatrix);
         if(firstPos == null || secondPos == null) return;
 
         float tickDelta = context.tickDelta();
@@ -112,12 +116,12 @@ public class BlueprintPreviewRenderer {
         matrices.pop();
     }
 
-    private static void prepareRenderOnScreen(MatrixStack matrices, @Nullable BlockPos firstPos, @Nullable BlockPos secondPos, Camera camera, Matrix4f projectionMatrix) {
+    private static void prepareRenderOnScreen(@Nullable BlockPos firstPos, @Nullable BlockPos secondPos, Camera camera, Matrix4f positionMatrix, Matrix4f projectionMatrix) {
         if(firstPos != null) {
             Vec3d pos1 = RenderUtil.vec3dFrom(firstPos);
 
             screenPosList.add(new ScreenPosData(
-                    RenderUtil.worldToScreen(pos1, matrices.peek().getPositionMatrix(), projectionMatrix),
+                    RenderUtil.worldToScreen(pos1, positionMatrix, projectionMatrix),
                     pos1.distanceTo(camera.getPos()),
                     new Vec2f(0, 0),
                     1.0F
@@ -128,7 +132,7 @@ public class BlueprintPreviewRenderer {
             Vec3d pos2 = RenderUtil.vec3dFrom(secondPos);
 
             screenPosList.add(new ScreenPosData(
-                    RenderUtil.worldToScreen(pos2, matrices.peek().getPositionMatrix(), projectionMatrix),
+                    RenderUtil.worldToScreen(pos2, positionMatrix, projectionMatrix),
                     pos2.distanceTo(camera.getPos()),
                     new Vec2f(13, 0),
                     1.0F
@@ -212,7 +216,7 @@ public class BlueprintPreviewRenderer {
     public static void register() {
         ResourceReloadListener.include(BLUEPRINT_POSITIONS_TEXTURE);
 
-        WorldRenderEvents.END.register(BlueprintPreviewRenderer::renderInWorld);
+        WorldRenderEvents.AFTER_TRANSLUCENT.register(BlueprintPreviewRenderer::renderInWorld);
         InGameHudRenderCallback.START.register(BlueprintPreviewRenderer::renderOnScreen);
     }
 }

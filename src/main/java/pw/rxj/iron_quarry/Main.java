@@ -8,7 +8,6 @@ import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.ItemEntity;
@@ -31,6 +30,8 @@ import org.apache.logging.log4j.message.Message;
 import pw.rxj.iron_quarry.block.ZBlocks;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blockentity.ZBlockEntities;
+import pw.rxj.iron_quarry.data.QuarryBlockScreenData;
+import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.event.GameLifecycleCallback;
 import pw.rxj.iron_quarry.factory.ZLootTables;
 import pw.rxj.iron_quarry.factory.ZTradeOffers;
@@ -67,7 +68,7 @@ public class Main implements ModInitializer {
 	);
 	public static final ConfigHandler CONFIG = ConfigHandler.bake(FabricLoader.getInstance().getConfigDir().resolve(MOD_ID));
 
-	public static final ScreenHandlerType<QuarryBlockScreenHandler> QUARRY_BLOCK_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(QuarryBlockScreenHandler::new);
+	public static final ScreenHandlerType<QuarryBlockScreenHandler> QUARRY_BLOCK_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(QuarryBlockScreenHandler::new, QuarryBlockScreenData.PACKET_CODEC);
 
 	public static final RegistryKey<ItemGroup> ITEM_GROUP = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier.of(MOD_ID, "universal"));
 
@@ -80,6 +81,7 @@ public class Main implements ModInitializer {
 
 		ChunkLoadingManager.register();
 		ZBlockEntities.register();
+		ZComponents.register();
 		ZBlocks.register();
 		ZItems.register();
 
@@ -125,7 +127,6 @@ public class Main implements ModInitializer {
 		});
 
 		EnergyStorage.SIDED.registerForBlockEntity(QuarryBlockEntity::getEnergySideConfiguration, ZBlockEntities.QUARRY_BLOCK_ENTITY);
-		FluidStorage.SIDED.registerForBlockEntity(QuarryBlockEntity::getFluidSideConfiguration, ZBlockEntities.QUARRY_BLOCK_ENTITY);
 		ItemStorage.SIDED.registerForBlockEntity(QuarryBlockEntity::getItemSideConfiguration, ZBlockEntities.QUARRY_BLOCK_ENTITY);
 
 		Registry.register(Registries.SCREEN_HANDLER, new Identifier(MOD_ID, "quarry_block_screen_handler"), QUARRY_BLOCK_SCREEN_HANDLER);

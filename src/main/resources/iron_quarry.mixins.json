@@ -2,9 +2,8 @@
     "required": true,
     "minVersion": "0.8",
     "package": "pw.rxj.iron_quarry.mixin",
-    "compatibilityLevel": "JAVA_17",
+    "compatibilityLevel": "JAVA_21",
     "mixins": [
-        "BootstrapClientMixin",
         "BootstrapResourceMixin",
         "BootstrapServerMixin",
         "EnchantmentHelperMixin",
@@ -16,6 +15,7 @@
         "SmithingScreenHandlerMixin"
     ],
     "client": [
+        "BootstrapClientMixin",
         "CustomDurabilityBarMixin",
         "DynamicItemNameRendererMixin",
         "EnergyBarMixin",

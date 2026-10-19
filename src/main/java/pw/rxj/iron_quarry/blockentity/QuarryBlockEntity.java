@@ -2,9 +2,6 @@ package pw.rxj.iron_quarry.blockentity;
 
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.fluid.base.SingleFluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -15,28 +12,23 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -46,6 +38,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
+import pw.rxj.iron_quarry.data.QuarryBlockScreenData;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.DrillItem;
 import pw.rxj.iron_quarry.network.PacketQuarryBlockBreak;
@@ -56,6 +49,7 @@ import pw.rxj.iron_quarry.types.IoState;
 import pw.rxj.iron_quarry.util.*;
 import team.reborn.energy.api.EnergyStorage;
 import team.reborn.energy.api.EnergyStorageUtil;
+import team.reborn.energy.impl.EnergyImpl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -63,7 +57,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory {
+public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory<QuarryBlockScreenData> {
     public QuarryBlockEntity(BlockPos pos, BlockState state) {
         super(ZBlockEntities.QUARRY_BLOCK_ENTITY, pos, state);
     }
@@ -220,7 +214,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
 
             Transaction transaction = Transaction.openOuter();
 
-            Storage itemStorage = ItemStorage.SIDED.find(this.world, this.pos.add(direction.getVector()), direction.getOpposite());
+            Storage<ItemVariant> itemStorage = ItemStorage.SIDED.find(this.world, this.pos.add(direction.getVector()), direction.getOpposite());
             if(itemStorage != null) {
                 for (int i = 0; i < inventory.size(); i++) {
                     ItemStack itemStack = inventory.getStack(i);
@@ -234,32 +228,6 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
 
             transaction.commit();
         }
-    }
-
-    //Fluid Handling
-    public final SingleFluidStorage CoolantTank = new SingleFluidStorage() {
-        @Override
-        protected long getCapacity(FluidVariant variant) {
-            return FluidConstants.BUCKET * 2;
-        }
-
-        @Override
-        protected void onFinalCommit() {
-            QuarryBlockEntity.this.markDirty();
-        }
-    };
-
-    public SingleFluidStorage getFluidSideConfiguration(Direction direction){
-        if(direction == null) return null;
-
-        Face face = Face.from(direction, this.getCachedState().get(QuarryBlock.FACING));
-        Object object = this.Configuration.getLinkedIo(face);
-
-        if(object instanceof SingleFluidStorage fluidStorage) {
-            return fluidStorage;
-        }
-
-        return null;
     }
 
     //World Ticking
@@ -497,7 +465,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             if(EnergyContainer.getStored() < energyConsumption) return drillResults;
 
             //loot generation
-            ItemStack mockPickaxe = Items.NETHERITE_PICKAXE.getDefaultStack();
+            ItemStack mockPickaxe = drillItem.getToolStack();
 
             if(upgradesUtil.hasSilkTouch()) {
                 mockPickaxe.addEnchantment(Enchantments.SILK_TOUCH, 1);
@@ -507,7 +475,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             }
 
             //only drop item if required mining level is present
-            if(drillItem.getMiningLevel() >= blockActress.getRequiredMiningLevel()) {
+            if(blockActress.isCorrectForDrops(drillItem.getToolComponent())) {
                 List<ItemStack> droppedStacks = blockActress.getDroppedStacks(quarryBlockState, quarryPos, mockPickaxe);
 
                 if(OutputInventory.canInsertAll(droppedStacks)) {
@@ -524,16 +492,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             blockActress.setBlockState(Blocks.AIR);
 
             boolean drillBroke = drillItem.cdamage(drillStack, 1, serverWorldToBreak.getRandom(), null);
-            if(drillBroke) {
-                double x = quarryPos.getX() + 0.5;
-                double y = quarryPos.getY() + 0.5;
-                double z = quarryPos.getZ() + 0.5;
-
-                PlaySoundS2CPacket soundPacket = new PlaySoundS2CPacket(RegistryEntry.of(SoundEvents.ENTITY_ITEM_BREAK), SoundCategory.BLOCKS, x, y, z, 1.0F, 1.0F, serverWorldToBreak.getSeed());
-                serverWorldToBreak.getServer().getPlayerManager().sendToAround(null, x, y, z, 64.0, serverWorldToBreak.getRegistryKey(), soundPacket);
-
-                drillStack.setCount(0);
-            }
+            if(drillBroke) drillItem.triggerBreakEvent(drillStack, quarryPos.toCenterPos(), serverWorldToBreak);
 
             MiningQueue.remove(miningQueueIndex);
             drillResults.add(blockPosState);
@@ -542,10 +501,40 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         return drillResults;
     }
 
+    @Override
+    protected void readComponents(ComponentsAccess components) {
+        EnergyContainer.read(components.getOrDefault(EnergyImpl.ENERGY_COMPONENT, 0L));
+
+        OutputInventory.read(components.get(QuarryInventory.Output.COMPONENT));
+        BatteryInputInventory.read(components.get(QuarryInventory.BatteryInput.COMPONENT));
+        BlueprintInventory.read(components.get(QuarryInventory.Blueprint.COMPONENT));
+        DrillInventory.read(components.get(QuarryInventory.Drill.COMPONENT));
+        MachineUpgradesInventory.read(components.get(QuarryInventory.MachineUpgrades.COMPONENT));
+
+        Configuration.read(components.get(MachineConfiguration.COMPONENT));
+    }
+    @Override
+    protected void addComponents(ComponentMap.Builder componentMapBuilder) {
+        componentMapBuilder.add(EnergyImpl.ENERGY_COMPONENT, EnergyContainer.getStored());
+
+        componentMapBuilder.add(QuarryInventory.Output.COMPONENT, OutputInventory);
+        componentMapBuilder.add(QuarryInventory.BatteryInput.COMPONENT, BatteryInputInventory);
+        componentMapBuilder.add(QuarryInventory.Blueprint.COMPONENT, BlueprintInventory);
+        componentMapBuilder.add(QuarryInventory.Drill.COMPONENT, DrillInventory);
+        componentMapBuilder.add(QuarryInventory.MachineUpgrades.COMPONENT, MachineUpgradesInventory);
+
+        componentMapBuilder.add(MachineConfiguration.COMPONENT, Configuration);
+    }
+    @Override
+    public void removeFromCopiedStackNbt(NbtCompound nbt) {
+        nbt.remove("rxj.pw/Energy");
+        nbt.remove("rxj.pw/Storage");
+        nbt.remove("rxj.pw/Config");
+    }
 
     //NBT Handling
     @Override
-    public void readNbt(NbtCompound tag) {
+    public void readNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
         //Energy
         NbtCompound Energy = tag.getCompound("rxj.pw/Energy");
         EnergyContainer.read(Energy);
@@ -553,31 +542,27 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         //Storage
         NbtCompound Storage = tag.getCompound("rxj.pw/Storage");
 
-        NbtCompound StorageCoolantTank = Storage.getCompound("CoolantTank");
-        CoolantTank.variant = FluidVariant.fromNbt(StorageCoolantTank.getCompound("Variant"));
-        CoolantTank.amount = StorageCoolantTank.getLong("Amount");
-
         NbtCompound StorageOutputInventory = Storage.getCompound("OutputInventory");
-        OutputInventory.read(StorageOutputInventory.getList("Items", NbtElement.COMPOUND_TYPE));
+        OutputInventory.read(StorageOutputInventory.getList("Items", NbtElement.COMPOUND_TYPE), registryLookup);
 
         NbtCompound StorageBatteryInputInventory = Storage.getCompound("BatteryInputInventory");
-        BatteryInputInventory.read(StorageBatteryInputInventory.getList("Items", NbtElement.COMPOUND_TYPE));
+        BatteryInputInventory.read(StorageBatteryInputInventory.getList("Items", NbtElement.COMPOUND_TYPE), registryLookup);
 
         NbtCompound StorageBlueprintInventory = Storage.getCompound("BlueprintInventory");
-        BlueprintInventory.read(StorageBlueprintInventory.getList("Items", NbtElement.COMPOUND_TYPE));
+        BlueprintInventory.read(StorageBlueprintInventory.getList("Items", NbtElement.COMPOUND_TYPE), registryLookup);
 
         NbtCompound StorageDrillInventory = Storage.getCompound("DrillInventory");
-        DrillInventory.read(StorageDrillInventory.getList("Items", NbtElement.COMPOUND_TYPE));
+        DrillInventory.read(StorageDrillInventory.getList("Items", NbtElement.COMPOUND_TYPE), registryLookup);
 
         NbtCompound StorageMachineUpgradesInventory = Storage.getCompound("MachineUpgradesInventory");
-        MachineUpgradesInventory.read(StorageMachineUpgradesInventory.getList("Items", NbtElement.COMPOUND_TYPE));
+        MachineUpgradesInventory.read(StorageMachineUpgradesInventory.getList("Items", NbtElement.COMPOUND_TYPE), registryLookup);
 
         //Config
         NbtCompound Config = tag.getCompound("rxj.pw/Config");
         Configuration.read(Config);
     }
     @Override
-    public void writeNbt(NbtCompound tag) {
+    public void writeNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
         //Energy
         NbtCompound Energy = EnergyContainer.write();
         tag.put("rxj.pw/Energy", Energy);
@@ -585,29 +570,24 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         //Storage
         NbtCompound Storage = new NbtCompound();
 
-        NbtCompound StorageCoolantTank = new NbtCompound();
-        StorageCoolantTank.put("Variant", CoolantTank.variant.toNbt());
-        StorageCoolantTank.putLong("Amount", CoolantTank.amount);
-        Storage.put("CoolantTank", StorageCoolantTank);
-
         NbtCompound StorageOutputInventory = new NbtCompound();
-        StorageOutputInventory.put("Items", OutputInventory.write());
+        StorageOutputInventory.put("Items", OutputInventory.write(registryLookup));
         Storage.put("OutputInventory", StorageOutputInventory);
 
         NbtCompound StorageBatteryInputInventory = new NbtCompound();
-        StorageBatteryInputInventory.put("Items", BatteryInputInventory.write());
+        StorageBatteryInputInventory.put("Items", BatteryInputInventory.write(registryLookup));
         Storage.put("BatteryInputInventory", StorageBatteryInputInventory);
 
         NbtCompound StorageBlueprintInventory = new NbtCompound();
-        StorageBlueprintInventory.put("Items", BlueprintInventory.write());
+        StorageBlueprintInventory.put("Items", BlueprintInventory.write(registryLookup));
         Storage.put("BlueprintInventory", StorageBlueprintInventory);
 
         NbtCompound StorageDrillInventory = new NbtCompound();
-        StorageDrillInventory.put("Items", DrillInventory.write());
+        StorageDrillInventory.put("Items", DrillInventory.write(registryLookup));
         Storage.put("DrillInventory", StorageDrillInventory);
 
         NbtCompound StorageMachineUpgradesInventory = new NbtCompound();
-        StorageMachineUpgradesInventory.put("Items", MachineUpgradesInventory.write());
+        StorageMachineUpgradesInventory.put("Items", MachineUpgradesInventory.write(registryLookup));
         Storage.put("MachineUpgradesInventory", StorageMachineUpgradesInventory);
 
         tag.put("rxj.pw/Storage", Storage);
@@ -623,8 +603,8 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         return BlockEntityUpdateS2CPacket.create(this);
     }
     @Override
-    public NbtCompound toInitialChunkDataNbt() {
-        return createNbt();
+    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
+        return createNbt(registryLookup);
     }
 
     public void updateListeners(){
@@ -646,8 +626,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     }
 
     @Override
-    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buffer) {
-        buffer.writeIdentifier(Registries.BLOCK.getId(this.getQuarryBlock()));
-        buffer.writeBlockPos(pos);
+    public QuarryBlockScreenData getScreenOpeningData(ServerPlayerEntity player) {
+        return QuarryBlockScreenData.of(this.getQuarryBlock(), pos);
     }
 }

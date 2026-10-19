@@ -17,7 +17,7 @@
         }
     },
     "result": {
-        "item": "iron_quarry:circuit_blank",
-        "count": 16
+        "count": 16,
+        "id": "iron_quarry:circuit_blank"
     }
 }

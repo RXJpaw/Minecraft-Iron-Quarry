@@ -17,6 +17,7 @@
         }
     },
     "result": {
-        "item": "iron_quarry:iron_quarry"
+        "count": 1,
+        "id": "iron_quarry:iron_quarry"
     }
 }

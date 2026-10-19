@@ -4,8 +4,10 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import pw.rxj.iron_quarry.Main;
+import pw.rxj.iron_quarry.event.GameLifecycleCallback;
 import pw.rxj.iron_quarry.interfaces.IModifyItemGroupEntries;
 import pw.rxj.iron_quarry.resource.config.server.QuarryDrillStatsConfig;
 import pw.rxj.iron_quarry.resource.config.server.QuarryMonitorConfig;
@@ -19,8 +21,12 @@ public class ZItems {
     private static final QuarryDrillStatsConfig.Handler QUARRY_DRILL_STATS_CONFIG = Main.CONFIG.getQuarryDrillStatsConfig();
     private static final QuarryMonitorConfig.Handler QUARRY_MONITOR_CONFIG = Main.CONFIG.getQuarryMonitorConfig();
 
+    public static final ItemEntry<DamageableSmithingTemplateItem> AUGMENTING_TEMPLATE = ItemEntry.<DamageableSmithingTemplateItem>build()
+            .withItem(DamageableSmithingTemplateItem.createAugmentingTemplate())
+            .withId(Main.MOD_ID, "augmenting_template");
+
     public static final ItemEntry<BlueprintItem> BLUEPRINT = ItemEntry.<BlueprintItem>build()
-            .withItem(new BlueprintItem(new Item.Settings().maxCount(1)))
+            .withItem(new BlueprintItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON)))
             .withId(Main.MOD_ID, "blueprint");
 
     public static final ItemEntry<Item> CIRCUIT_BLANK = ItemEntry.build()
@@ -95,6 +101,8 @@ public class ZItems {
             .withId(Main.MOD_ID, "sculk_quarry_monitor");
 
     private static final List<ItemEntry<?>> itemEntryList = List.of(
+            AUGMENTING_TEMPLATE,
+
             BLUEPRINT,
 
             CIRCUIT_BLANK,
@@ -124,7 +132,14 @@ public class ZItems {
 
     public static void register(){
         for (ItemEntry<?> itemEntry : itemEntryList) {
-            Registry.register(Registries.ITEM, itemEntry.getId(), itemEntry.getItem());
+            Identifier id = itemEntry.getId();
+            Item item = itemEntry.getItem();
+
+            Registry.register(Registries.ITEM, id, item);
+
+            if(item instanceof DrillItem drillItem){
+                GameLifecycleCallback.IMMINENT_FIRST_RELOAD.register(drillItem::assignCorrectToolComponent);
+            }
         }
 
         ItemGroupEvents.modifyEntriesEvent(Main.ITEM_GROUP).register(entries -> {

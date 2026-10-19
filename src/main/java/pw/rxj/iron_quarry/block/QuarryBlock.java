@@ -4,28 +4,25 @@ import com.mojang.serialization.MapCodec;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.item.TooltipData;
+import net.minecraft.client.item.TooltipType;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.RecipeInputInventory;
-import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.recipe.ShapedRecipe;
-import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.state.StateManager;
@@ -38,7 +35,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,7 +50,7 @@ import pw.rxj.iron_quarry.interfaces.IHandledKeyedAction;
 import pw.rxj.iron_quarry.interfaces.IHandledUseBlock;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.item.ZItemTags;
-import pw.rxj.iron_quarry.network.KeyedActionPacket;
+import pw.rxj.iron_quarry.network.PacketKeyedAction;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.records.TexturePosition;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
@@ -75,7 +71,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     private int augmentLimit;
 
     protected QuarryBlock(Block reference, String texRef, QuarryStatsConfig.Entry entry) {
-        super(FabricBlockSettings.copyOf(reference));
+        super(Settings.copy(reference));
         this.textureReference = texRef;
 
         this.setDefaultState(this.stateManager.getDefaultState()
@@ -110,76 +106,30 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     public int getAugmentLimit(){
         return this.augmentLimit;
     }
+
+    public @NotNull MachineConfiguration getMachineConfiguration(ItemStack stack) {
+        return stack.getOrDefault(MachineConfiguration.COMPONENT, MachineConfiguration.empty());
+    }
     public @NotNull ComplexInventory getAugmentInventory(ItemStack stack) {
-        ComplexInventory MachineUpgradesInventory = new ComplexInventory(this.getAugmentLimit());
-
-        if(stack == null) return MachineUpgradesInventory;
-        NbtCompound tag = stack.getNbt();
-        if(tag == null) return MachineUpgradesInventory;
-
-        NbtCompound Storage = tag.getCompound("BlockEntityTag").getCompound("rxj.pw/Storage");
-        NbtCompound StorageMachineUpgradesInventory = Storage.getCompound("MachineUpgradesInventory");
-        MachineUpgradesInventory.read(StorageMachineUpgradesInventory.getList("Items", NbtElement.COMPOUND_TYPE));
-
-        return MachineUpgradesInventory;
+        return stack.getOrDefault(QuarryInventory.MachineUpgrades.COMPONENT, ComplexInventory.ofSize(this.getAugmentLimit()));
+    }
+    public @NotNull ComplexInventory getOutputInventory(ItemStack stack) {
+        return stack.getOrDefault(QuarryInventory.Output.COMPONENT, QuarryInventory.Output.noRef());
     }
     public List<ItemStack> getMachineUpgradeStacks(ItemStack stack) {
         List<ItemStack> stacks = new ArrayList<>();
 
-        if(stack == null) return stacks;
-        NbtCompound tag = stack.getNbt();
-        if(tag == null) return stacks;
-
-        SimpleInventory MachineUpgradesInventory = this.getAugmentInventory(stack);
-        SimpleInventory DrillInventory = new SimpleInventory(1);
-
-        NbtCompound Storage = tag.getCompound("BlockEntityTag").getCompound("rxj.pw/Storage");
-        NbtCompound StorageDrillInventory = Storage.getCompound("DrillInventory");
-        DrillInventory.readNbtList(StorageDrillInventory.getList("Items", NbtElement.COMPOUND_TYPE));
-
-        stacks.addAll(MachineUpgradesInventory.heldStacks);
-        stacks.addAll(DrillInventory.heldStacks);
+        stacks.add(this.getDrillStack(stack));
+        stacks.addAll(this.getAugmentInventory(stack).getHeldStacks());
 
         return stacks;
     }
 
-    public @NotNull MachineConfiguration getMachineConfiguration(ItemStack stack) {
-        MachineConfiguration MachineConfiguration = new MachineConfiguration();
-
-        if(stack == null) return MachineConfiguration;
-        NbtCompound tag = stack.getNbt();
-        if(tag == null) return MachineConfiguration;
-
-        NbtCompound Config = tag.getCompound("BlockEntityTag").getCompound("rxj.pw/Config");
-        MachineConfiguration.read(Config);
-
-        return MachineConfiguration;
+    public @NotNull ItemStack getDrillStack(ItemStack stack) {
+        return stack.getOrDefault(QuarryInventory.Drill.COMPONENT, ComplexInventory.ofSize(1)).getStack(0);
     }
     public @NotNull ItemStack getBlueprintStack(ItemStack stack) {
-        ComplexInventory BlueprintInventory = new ComplexInventory(1);
-
-        if(stack == null) return ItemStack.EMPTY;
-        NbtCompound tag = stack.getNbt();
-        if(tag == null) return ItemStack.EMPTY;
-
-        NbtCompound Storage = tag.getCompound("BlockEntityTag").getCompound("rxj.pw/Storage");
-        NbtCompound StorageBlueprintInventoryInventory = Storage.getCompound("BlueprintInventory");
-        BlueprintInventory.read(StorageBlueprintInventoryInventory.getList("Items", NbtElement.COMPOUND_TYPE));
-
-        return BlueprintInventory.getStack(0);
-    }
-    public @NotNull ItemStack getDrillStack(ItemStack stack) {
-        ComplexInventory DrillInventory = new ComplexInventory(1);
-
-        if(stack == null) return ItemStack.EMPTY;
-        NbtCompound tag = stack.getNbt();
-        if(tag == null) return ItemStack.EMPTY;
-
-        NbtCompound Storage = tag.getCompound("BlockEntityTag").getCompound("rxj.pw/Storage");
-        NbtCompound StorageDrillInventoryInventory = Storage.getCompound("DrillInventory");
-        DrillInventory.read(StorageDrillInventoryInventory.getList("Items", NbtElement.COMPOUND_TYPE));
-
-        return DrillInventory.getStack(0);
+        return stack.getOrDefault(QuarryInventory.Blueprint.COMPONENT, ComplexInventory.ofSize(1)).getStack(0);
     }
 
     @Override
@@ -192,7 +142,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
             : Optional.empty();
     }
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable BlockView world, List<Text> tooltip, TooltipContext options) {
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
         MachineUpgradesUtil machineUpgradesUtil = MachineUpgradesUtil.from(this.getMachineUpgradeStacks(stack));
 
         float yield_bonus = (machineUpgradesUtil.getFortuneMultiplier() - 1) * 100.0F;
@@ -285,7 +235,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         if (blockEntity instanceof QuarryBlockEntity quarryBlockEntity) {
             if(stack.isIn(ZItemTags.C_WRENCHES)) {
                 if(world.isClient() && MinecraftClient.getInstance().options.sneakKey.isPressed()) {
-                    ZNetwork.sendToServer(KeyedActionPacket.bake("key.sneak", hand, ActionGoal.USE_ON_BLOCK, hitResult));
+                    ZNetwork.sendToServer(PacketKeyedAction.bake("key.sneak", hand, ActionGoal.USE_ON_BLOCK, hitResult));
                 } else {
                     MachineConfiguration Configuration = quarryBlockEntity.Configuration;
                     Face face = Face.from(side, blockState.get(FACING));
@@ -341,7 +291,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         if (blockEntity instanceof QuarryBlockEntity) {
             if (!world.isClient && player.isCreative()) {
                 ItemStack itemStack = new ItemStack(this);
-                blockEntity.setStackNbt(itemStack);
+                blockEntity.setStackNbt(itemStack, world.getRegistryManager());
 
                 ItemEntity itemEntity = new ItemEntity(world, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, itemStack);
                 itemEntity.setToDefaultPickupDelay();
@@ -353,20 +303,8 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     }
 
     @Override
-    public ItemStack getCraftingOutput(ShapedRecipe handler, RecipeInputInventory recipeInputInventory, DynamicRegistryManager dynamicRegistryManager) {
-        ItemStack output = handler.getResult(dynamicRegistryManager).copy();
-
-        for (int i = 0; i < recipeInputInventory.size(); i++) {
-            ItemStack stack = recipeInputInventory.getStack(i).copy();
-
-            if(QuarryBlock.isOf(stack)) {
-                if(stack.hasNbt()) output.setNbt(stack.getNbt());
-
-                break;
-            }
-        }
-
-        return output;
+    public ItemStack getCraftingOutput(ShapedRecipe handler, RecipeInputInventory recipeInputInventory, RegistryWrapper.WrapperLookup wrapperLookup) {
+        return IHandledCrafting.COPY_CENTER_SLOT_NBT.apply(handler, recipeInputInventory, wrapperLookup);
     }
 
     public int getTicksPerOperation(){

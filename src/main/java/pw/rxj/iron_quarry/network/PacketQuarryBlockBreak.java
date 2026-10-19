@@ -3,41 +3,43 @@ package pw.rxj.iron_quarry.network;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.network.packet.BooleanBlockPosStatePacket;
 import pw.rxj.iron_quarry.render.RenderUtil;
 import pw.rxj.iron_quarry.resource.config.client.BlockBreakingConfig;
 
-public class PacketQuarryBlockBreak extends ComplexPacketHandler<BooleanBlockPosStatePacket> {
+public class PacketQuarryBlockBreak extends BooleanBlockPosStatePacket {
+    public static final PacketCodec<RegistryByteBuf, PacketQuarryBlockBreak> PACKET_CODEC = PacketCodec.of(PacketQuarryBlockBreak::write, PacketQuarryBlockBreak::new);
+    public static final CustomPayload.Id<PacketQuarryBlockBreak> PACKET_ID = register("quarry_block_break", PACKET_CODEC);
+
     private static final BlockBreakingConfig.Handler BLOCK_BREAKING_CONFIG = Main.CONFIG.getBlockBreakingConfig();
-    protected static PacketQuarryBlockBreak INSTANCE = new PacketQuarryBlockBreak();
 
-    private PacketQuarryBlockBreak() { }
-
-    @Override
-    public Identifier getChannelId() {
-        return Identifier.of(Main.MOD_ID, "quarry_block_break");
+    private PacketQuarryBlockBreak(Boolean bool, BlockPos blockPos, BlockState blockState) {
+        super(bool, blockPos, blockState);
     }
-    @Override
-    public @Nullable BooleanBlockPosStatePacket read(PacketByteBuf buf) {
-        return BooleanBlockPosStatePacket.read(buf);
+    private PacketQuarryBlockBreak(RegistryByteBuf buf) {
+        super(buf);
     }
 
     @Override
-    protected void receiveFromServer(MinecraftClient client, ClientPlayNetworkHandler handler, @NotNull BooleanBlockPosStatePacket packet, PacketSender response) {
+    public Id<PacketQuarryBlockBreak> getId() {
+        return PACKET_ID;
+    }
+
+    @Override
+    protected void receiveFromServer(BooleanBlockPosStatePacket payload, MinecraftClient client, ClientPlayerEntity player, PacketSender responseSender) {
         if(client.player == null || client.world == null) return;
 
-        BlockPos blockPos = packet.blockPos;
-        BlockState blockState = packet.blockState;
+        BlockPos blockPos = payload.blockPos;
+        BlockState blockState = payload.blockState;
 
         Vec3d blockPosVec = RenderUtil.vec3dFrom(blockPos);
         if(client.player.getPos().distanceTo(blockPosVec) > BLOCK_BREAKING_CONFIG.getDistance()) return;
@@ -46,7 +48,7 @@ public class PacketQuarryBlockBreak extends ComplexPacketHandler<BooleanBlockPos
             BlockSoundGroup blockSoundGroup = blockState.getSoundGroup();
             client.world.addBlockBreakParticles(blockPos, blockState);
 
-            if(packet.bool) {
+            if(payload.bool) {
                 float volume = ((blockSoundGroup.getVolume() + 1.0F) / 2.0F) * BLOCK_BREAKING_CONFIG.getVolume();
                 float pitch = blockSoundGroup.getPitch() * 0.8F;
 
@@ -57,7 +59,7 @@ public class PacketQuarryBlockBreak extends ComplexPacketHandler<BooleanBlockPos
         }
     }
 
-    public static PacketByteBuf bake(BlockPos blockPos, BlockState blockState, boolean sound) {
-        return BooleanBlockPosStatePacket.write(INSTANCE.getChannelId(), sound, blockPos, blockState);
+    public static PacketQuarryBlockBreak bake(BlockPos blockPos, BlockState blockState, boolean sound) {
+        return new PacketQuarryBlockBreak(sound, blockPos, blockState);
     }
 }

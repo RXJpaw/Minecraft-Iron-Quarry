@@ -19,7 +19,7 @@ public class SilkTouchAugmentConfig {
     public final byte villagerLevel = 3;
     public final boolean wanderingVillager = true;
     public final byte wanderingVillagerLevel = 2;
-    public final Price price = new Price("minecraft:emerald", (byte) 40, (byte) 64, "iron_quarry:advanced_amethyst", (byte) 3, (byte) 7);
+    public final Price price = new Price("minecraft:emerald", (byte) 40, (byte) 64, "iron_quarry:circuit_mk3", (byte) 3, (byte) 7);
 
     @EqualsAndHashCode
     @AllArgsConstructor
@@ -42,7 +42,7 @@ public class SilkTouchAugmentConfig {
 
         @SuppressWarnings("ConstantConditions")
         public boolean isVillagerEnabled() {
-            return this.server.silkTouchAugment.villagerProfession.equals("minecraft:none");
+            return !this.server.silkTouchAugment.villagerProfession.equals("minecraft:none");
         }
         public VillagerProfession getVillagerProfession() {
             Optional<VillagerProfession> villagerProfession = Registries.VILLAGER_PROFESSION.getOrEmpty(Identifier.tryParse(this.server.silkTouchAugment.villagerProfession));

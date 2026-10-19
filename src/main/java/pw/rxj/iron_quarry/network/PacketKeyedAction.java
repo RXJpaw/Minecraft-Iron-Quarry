@@ -4,46 +4,44 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.interfaces.IHandledKeyedAction;
 import pw.rxj.iron_quarry.network.packet.StringByteByteBlockHitResultPacket;
 import pw.rxj.iron_quarry.types.ActionGoal;
 import pw.rxj.iron_quarry.util.ZUtil;
 
-public class KeyedActionPacket extends ComplexPacketHandler<StringByteByteBlockHitResultPacket> {
-    protected static KeyedActionPacket INSTANCE = new KeyedActionPacket();
+public class PacketKeyedAction extends StringByteByteBlockHitResultPacket {
+    public static final PacketCodec<RegistryByteBuf, PacketKeyedAction> PACKET_CODEC = PacketCodec.of(PacketKeyedAction::write, PacketKeyedAction::new);
+    public static final CustomPayload.Id<PacketKeyedAction> PACKET_ID = register("blueprint_expand", PACKET_CODEC);
 
-    private KeyedActionPacket() { }
-
-    @Override
-    public Identifier getChannelId() {
-        return Identifier.of(Main.MOD_ID, "key_press_action");
+    private PacketKeyedAction(String string, Byte byte0, Byte byte1, BlockHitResult hitResult) {
+        super(string, byte0, byte1, hitResult);
+    }
+    private PacketKeyedAction(RegistryByteBuf buf) {
+        super(buf);
     }
 
     @Override
-    public @Nullable StringByteByteBlockHitResultPacket read(PacketByteBuf buf) {
-        return StringByteByteBlockHitResultPacket.read(buf);
+    public Id<PacketKeyedAction> getId() {
+        return PACKET_ID;
     }
 
     @Override
-    protected void receiveFromClient(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, @NotNull StringByteByteBlockHitResultPacket packet, PacketSender response) {
-        Hand hand = ZUtil.safeEnumConstant(Hand.class, packet.byte0);
+    protected void receiveFromClient(StringByteByteBlockHitResultPacket payload, MinecraftServer server, ServerPlayerEntity player, PacketSender responseSender) {
+        Hand hand = ZUtil.safeEnumConstant(Hand.class, payload.byte0);
         if(hand == null) return;
-        ActionGoal actionGoal = ZUtil.safeEnumConstant(ActionGoal.class, packet.byte1);
+        ActionGoal actionGoal = ZUtil.safeEnumConstant(ActionGoal.class, payload.byte1);
         if(actionGoal == null) return;
 
-        String keyName = packet.string;
-        BlockHitResult hitResult = packet.hitResult;
+        String keyName = payload.string;
+        BlockHitResult hitResult = payload.hitResult;
 
         ItemUsageContext context = new ItemUsageContext(player, hand, hitResult);
 
@@ -76,7 +74,7 @@ public class KeyedActionPacket extends ComplexPacketHandler<StringByteByteBlockH
         }
     }
 
-    public static PacketByteBuf bake(String keyName, Hand hand, ActionGoal actionGoal, BlockHitResult hitResult) {
-        return StringByteByteBlockHitResultPacket.write(INSTANCE.getChannelId(), keyName, (byte) hand.ordinal(), (byte) actionGoal.ordinal(), hitResult);
+    public static PacketKeyedAction bake(String keyName, Hand hand, ActionGoal actionGoal, BlockHitResult hitResult) {
+        return new PacketKeyedAction(keyName, (byte) hand.ordinal(), (byte) actionGoal.ordinal(), hitResult);
     }
 }

@@ -8,10 +8,12 @@ import pw.rxj.iron_quarry.resource.config.server.ChestLootingAugmentConfig;
 public class ZLootTables {
     private static final ChestLootingAugmentConfig.Handler CHEST_LOOTING_AUGMENT_CONFIG = Main.CONFIG.getChestLootingAugmentConfig();
     public static void register() {
-        LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
-            LootPool.Builder poolBuilder = CHEST_LOOTING_AUGMENT_CONFIG.getLootPoolBuilder(id);
+        Main.LOGGER.info("Registering loot tables..");
 
-            if(poolBuilder != null) tableBuilder.pool(poolBuilder);
+        LootTableEvents.MODIFY.register((registryKey, builder, lootTableSource) -> {
+            LootPool.Builder poolBuilder = CHEST_LOOTING_AUGMENT_CONFIG.getLootPoolBuilder(registryKey.getValue());
+
+            if(poolBuilder != null) builder.pool(poolBuilder);
         });
     }
 }

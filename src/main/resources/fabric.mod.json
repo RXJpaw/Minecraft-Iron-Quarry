@@ -38,10 +38,10 @@
     "accessWidener": "iron_quarry.accesswidener",
 
     "depends": {
-        "team_reborn_energy": "3.0.0",
+        "team_reborn_energy": "4.0.1",
         "fabricloader": ">=0.16.10",
         "fabric-api": "*",
-        "minecraft": "~1.20.2",
+        "minecraft": "~1.20.6",
         "java": ">=21"
     },
     "suggests": {

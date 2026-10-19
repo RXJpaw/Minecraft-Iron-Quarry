@@ -1,7 +1,7 @@
 {
     "type": "iron_quarry:handled_smithing_recipe",
     "template": {
-        "tag": "iron_quarry:empty_ingredient"
+        "item": "iron_quarry:circuit_mk1"
     },
     "base": {
         "item": "iron_quarry:blueprint"
@@ -10,6 +10,7 @@
         "item": "minecraft:amethyst_shard"
     },
     "result": {
-        "item": "iron_quarry:blueprint"
+        "count": 1,
+        "id": "iron_quarry:blueprint"
     }
 }

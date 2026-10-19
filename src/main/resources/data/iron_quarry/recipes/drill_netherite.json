@@ -17,6 +17,7 @@
         }
     },
     "result": {
-        "item": "iron_quarry:netherite_drill"
+        "count": 1,
+        "id": "iron_quarry:netherite_drill"
     }
 }

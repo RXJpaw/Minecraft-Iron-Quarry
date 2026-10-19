@@ -1,0 +1,23 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        " CA",
+        "CMC",
+        "AC "
+    ],
+    "key": {
+        "M": {
+            "item": "iron_quarry:netherite_quarry_monitor"
+        },
+        "C": {
+            "item": "iron_quarry:circuit_mk5"
+        },
+        "A": {
+            "item": "minecraft:sculk_shrieker"
+        }
+    },
+    "result": {
+        "count": 1,
+        "id": "iron_quarry:sculk_quarry_monitor"
+    }
+}

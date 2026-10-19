@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.mixin;
 
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,21 +18,12 @@ public abstract class DynamicItemNameRendererMixin {
         ItemStack stack = (ItemStack) (Object) this;
 
         if(ZUtil.getBlockOrItem(stack) instanceof IDynamicItemName dynamicItemName) {
-            NbtCompound nbtCompound = stack.getSubNbt("display");
+            Text customName = stack.get(DataComponentTypes.CUSTOM_NAME);
 
-            if (nbtCompound != null && nbtCompound.contains("Name", 8)) {
-                try {
-                    Text text = Text.Serialization.fromJson(nbtCompound.getString("Name"));
-                    if (text != null) {
-                        MutableText itemName = dynamicItemName.getDynamicItemName(stack).getText(text);
-                        cir.setReturnValue(itemName);
-                        return;
-                    }
-
-                    nbtCompound.remove("Name");
-                } catch (Exception e) {
-                    nbtCompound.remove("Name");
-                }
+            if (customName != null) {
+                MutableText itemName = dynamicItemName.getDynamicItemName(stack).getText(customName);
+                cir.setReturnValue(itemName);
+                return;
             }
 
             MutableText itemName = dynamicItemName.getDynamicItemName(stack).getText(stack.getItem().getName(stack));

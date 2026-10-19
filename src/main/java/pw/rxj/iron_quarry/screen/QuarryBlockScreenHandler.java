@@ -4,8 +4,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registries;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.math.BlockPos;
@@ -14,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
+import pw.rxj.iron_quarry.data.QuarryBlockScreenData;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.util.*;
 
@@ -34,12 +33,12 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
     //This constructor gets called on the client when the server wants it to open the screenHandler,
     //The client will call the other constructor with an empty Inventory and the screenHandler will automatically
     //sync this empty inventory with the inventory on the server.
-    public QuarryBlockScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buffer) {
+    public QuarryBlockScreenHandler(int syncId, PlayerInventory playerInventory, QuarryBlockScreenData data) {
         this(syncId, playerInventory, QuarryInventory.Output.noRef(), QuarryInventory.BatteryInput.noRef(), QuarryInventory.MachineUpgrades.noRef(),
-                QuarryInventory.Blueprint.noRef(), QuarryInventory.Drill.noRef(), new ComplexEnergyContainer(), new MachineConfiguration(), QuarryBlock.getFallback());
+                QuarryInventory.Blueprint.noRef(), QuarryInventory.Drill.noRef(), new ComplexEnergyContainer(), MachineConfiguration.empty(), QuarryBlock.getFallback());
 
-        this.quarryBlock = (QuarryBlock) Registries.BLOCK.get(buffer.readIdentifier());
-        this.blockPos = buffer.readBlockPos();
+        this.quarryBlock = (QuarryBlock) data.getBlock();
+        this.blockPos = data.getBlockPos();
         this.world = playerInventory.player.getWorld();
     }
 

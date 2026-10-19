@@ -1,30 +1,18 @@
 package pw.rxj.iron_quarry.network.packet;
 
-import io.netty.buffer.Unpooled;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryByteBuf;
+import pw.rxj.iron_quarry.network.ComplexPayloadHandler;
 
-public class ByteArrayPacket {
+public class ByteArrayPacket extends ComplexPayloadHandler<ByteArrayPacket> {
     public final byte[] bytes;
 
-    private ByteArrayPacket(byte[] bytes) {
+    protected ByteArrayPacket(byte[] bytes) {
         this.bytes = bytes;
     }
-
-    public static ByteArrayPacket read(PacketByteBuf buf) {
-        try {
-            byte[] bytes = buf.readByteArray();
-
-            return new ByteArrayPacket(bytes);
-        } catch(Exception ignored) {
-            return null;
-        }
+    protected ByteArrayPacket(RegistryByteBuf buf) {
+        this.bytes = buf.readByteArray();
     }
-    public static PacketByteBuf write(Identifier channel, byte[] bytes) {
-        PacketByteBuf packet = new PacketByteBuf(Unpooled.buffer());
-        packet.writeIdentifier(channel);
-        packet.writeByteArray(bytes);
-
-        return packet;
+    public void write(RegistryByteBuf buf) {
+        buf.writeByteArray(bytes);
     }
 }

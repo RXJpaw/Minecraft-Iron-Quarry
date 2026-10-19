@@ -1,17 +1,15 @@
 package pw.rxj.iron_quarry.interfaces;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import pw.rxj.iron_quarry.util.ZUtil;
+import team.reborn.energy.impl.EnergyImpl;
 
 public interface IEnergyContainer {
     int getBaseConsumption();
     int getEnergyCapacity();
 
     default long getEnergyStored(ItemStack stack) {
-        NbtCompound nbtCompound = stack.copy().getOrCreateNbt();;
-
-        return nbtCompound.getCompound("BlockEntityTag").getCompound("rxj.pw/Energy").getLong("Stored");
+        return stack.getOrDefault(EnergyImpl.ENERGY_COMPONENT, 0L);
     }
 
     static IEnergyContainer instanceOf(ItemStack stack) {

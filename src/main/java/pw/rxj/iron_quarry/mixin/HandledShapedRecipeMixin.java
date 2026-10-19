@@ -3,7 +3,7 @@ package pw.rxj.iron_quarry.mixin;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.ShapedRecipe;
-import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryWrapper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -15,12 +15,12 @@ import java.util.List;
 
 @Mixin(ShapedRecipe.class)
 public class HandledShapedRecipeMixin {
-    @Inject(method = "craft(Lnet/minecraft/inventory/RecipeInputInventory;Lnet/minecraft/registry/DynamicRegistryManager;)Lnet/minecraft/item/ItemStack;", at = @At(value = "HEAD"), cancellable = true)
-    private void getResult(RecipeInputInventory recipeInputInventory, DynamicRegistryManager dynamicRegistryManager, CallbackInfoReturnable<ItemStack> cir) {
+    @Inject(method = "craft(Lnet/minecraft/inventory/RecipeInputInventory;Lnet/minecraft/registry/RegistryWrapper$WrapperLookup;)Lnet/minecraft/item/ItemStack;", at = @At(value = "HEAD"), cancellable = true)
+    private void craft(RecipeInputInventory recipeInputInventory, RegistryWrapper.WrapperLookup wrapperLookup, CallbackInfoReturnable<ItemStack> cir) {
         List<ItemStack> stacks = recipeInputInventory.getHeldStacks();
 
         if(ZUtil.getBlockOrItem(stacks.get(4)) instanceof IHandledCrafting handledCrafting) {
-            ItemStack result = handledCrafting.getCraftingOutput((ShapedRecipe) (Object) this, recipeInputInventory, dynamicRegistryManager);
+            ItemStack result = handledCrafting.getCraftingOutput((ShapedRecipe) (Object) this, recipeInputInventory, wrapperLookup);
 
             cir.setReturnValue(result);
         }

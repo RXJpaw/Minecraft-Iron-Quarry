@@ -27,31 +27,22 @@ public abstract class GrindstoneScreenHandlerMixin extends ScreenHandler {
     @Shadow @Final
     private Inventory result;
 
-    @Inject(method = "updateResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getCount()I", ordinal = 0, shift = At.Shift.AFTER), cancellable = true)
+    @Inject(method = "updateResult", at = @At(value = "HEAD"), cancellable = true)
     private void updateResult(CallbackInfo ci) {
         ItemStack input0 = this.input.getStack(0);
         ItemStack input1 = this.input.getStack(1);
 
         boolean input0handled = ZUtil.getBlockOrItem(input0) instanceof IHandledGrinding handledGrinding && handledGrinding.isGrindable(input0);
         boolean input1handled = ZUtil.getBlockOrItem(input1) instanceof IHandledGrinding handledGrinding && handledGrinding.isGrindable(input1);
-        if(input0handled == input1handled) {
-            this.result.setStack(0, ItemStack.EMPTY);
-            this.sendContentUpdates();
-            ci.cancel(); return;
-        }
+        if(!input0handled && !input1handled) return;
+        if(input0handled && input1handled) return;
 
         ItemStack stack = input0handled ? input0 : input1;
         ItemStack follower = input0handled ? input1 : input0;
         IHandledGrinding handledGrinding = (IHandledGrinding) stack.getItem();
 
         ItemStack output = handledGrinding.getGrindingOutput(stack, follower);
-        if(output == null) {
-            this.result.setStack(0, ItemStack.EMPTY);
-            this.sendContentUpdates();
-            ci.cancel(); return;
-        }
-
-        this.result.setStack(0, output);
+        this.result.setStack(0, output == null ? ItemStack.EMPTY : output);
         this.sendContentUpdates();
         ci.cancel();
     }

@@ -94,8 +94,8 @@ public class RenderUtil {
         for (SpriteVec2f line : filteredSplitBoxLines) {
             Vector3f n = line.normalize();
 
-            buffer.vertex(positionMatrix, line.from.x, line.from.y, line.from.z).color(1.0F, 1.0F, 1.0F, 1.0F).normal(matrices.peek().getNormalMatrix(), n.x, n.y, n.z).next();
-            buffer.vertex(positionMatrix, line.to.x, line.to.y, line.to.z).color(1.0F, 1.0F, 1.0F, 1.0F).normal(matrices.peek().getNormalMatrix(), n.x, n.y, n.z).next();
+            buffer.vertex(positionMatrix, line.from.x, line.from.y, line.from.z).color(1.0F, 1.0F, 1.0F, 1.0F).normal(matrices.peek(), n.x, n.y, n.z).next();
+            buffer.vertex(positionMatrix, line.to.x, line.to.y, line.to.z).color(1.0F, 1.0F, 1.0F, 1.0F).normal(matrices.peek(), n.x, n.y, n.z).next();
         }
 
         tessellator.draw();
@@ -107,8 +107,8 @@ public class RenderUtil {
         for (SpriteVec2f line : filteredSplitBoxLines) {
             Vector3f n = line.normalize();
 
-            buffer.vertex(positionMatrix, line.from.x, line.from.y, line.from.z).color(1.0F, 1.0F, 1.0F, 0.2F).normal(matrices.peek().getNormalMatrix(), n.x, n.y, n.z).next();
-            buffer.vertex(positionMatrix, line.to.x, line.to.y, line.to.z).color(1.0F, 1.0F, 1.0F, 0.2F).normal(matrices.peek().getNormalMatrix(), n.x, n.y, n.z).next();
+            buffer.vertex(positionMatrix, line.from.x, line.from.y, line.from.z).color(1.0F, 1.0F, 1.0F, 0.2F).normal(matrices.peek(), n.x, n.y, n.z).next();
+            buffer.vertex(positionMatrix, line.to.x, line.to.y, line.to.z).color(1.0F, 1.0F, 1.0F, 0.2F).normal(matrices.peek(), n.x, n.y, n.z).next();
         }
 
         tessellator.draw();

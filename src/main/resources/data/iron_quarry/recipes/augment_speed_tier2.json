@@ -1,7 +1,7 @@
 {
     "type": "iron_quarry:handled_smithing_recipe",
     "template": {
-        "tag": "iron_quarry:empty_ingredient"
+        "item": "iron_quarry:augmenting_template"
     },
     "base": {
         "item": "iron_quarry:augment"
@@ -10,6 +10,7 @@
         "tag": "iron_quarry:augment_speed_tier2_enhancers"
     },
     "result": {
-        "item": "iron_quarry:augment"
+        "count": 1,
+        "id": "iron_quarry:augment"
     }
 }

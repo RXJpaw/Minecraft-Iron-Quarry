@@ -2,46 +2,45 @@ package pw.rxj.iron_quarry.item;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.item.TooltipData;
+import net.minecraft.client.item.TooltipType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
+import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.Registries;
+import net.minecraft.recipe.ShapedRecipe;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blockentity.ZBlockEntities;
+import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
+import pw.rxj.iron_quarry.interfaces.IHandledCrafting;
 import pw.rxj.iron_quarry.interfaces.ITickingInventoryItem;
 import pw.rxj.iron_quarry.resource.config.server.QuarryMonitorConfig;
 import pw.rxj.iron_quarry.util.ComplexInventory;
-import pw.rxj.iron_quarry.util.QuarryInventory;
 import pw.rxj.iron_quarry.util.ReadableString;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.List;
 import java.util.Optional;
 
-public class QuarryMonitorItem extends Item implements ITickingInventoryItem, ITooltipDataProvider {
+public class QuarryMonitorItem extends Item implements ITickingInventoryItem, ITooltipDataProvider, IHandledCrafting {
     private boolean interdimensional;
     private int range;
 
@@ -61,7 +60,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         long timestamp = this.getCachedTimestamp(stack);
 
         if(Screen.hasShiftDown() && timestamp > 0) {
-            ItemStack quarryBlockStack = this.getCachedQuarryBlockStack(stack);
+            ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
 
             if(!quarryBlockStack.isEmpty()) {
                 return quarryBlockStack.getName();
@@ -97,7 +96,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
     @Override
     public Optional<TooltipData> getTooltipData(ItemStack stack) {
-        ItemStack quarryBlockStack = this.getCachedQuarryBlockStack(stack);
+        ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
 
         if(ZUtil.getBlockOrItem(quarryBlockStack) instanceof QuarryBlock quarryBlock) {
             return quarryBlock.getTooltipData(quarryBlockStack);
@@ -106,13 +105,13 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         return Optional.empty();
     }
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        ItemStack quarryBlockStack = this.getCachedQuarryBlockStack(stack);
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
+        ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
         long timestamp = this.getCachedTimestamp(stack);
 
         if(Screen.hasShiftDown() && timestamp > 0) {
             if(ZUtil.getBlockOrItem(quarryBlockStack) instanceof QuarryBlock quarryBlock) {
-                quarryBlock.appendTooltip(quarryBlockStack, world, tooltip, context);
+                quarryBlock.appendTooltip(quarryBlockStack, context, tooltip, options);
             } else {
                 tooltip.add(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.status.unknown"));
             }
@@ -157,6 +156,11 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     }
 
     @Override
+    public ItemStack getCraftingOutput(ShapedRecipe handler, RecipeInputInventory recipeInputInventory, RegistryWrapper.WrapperLookup wrapperLookup) {
+        return IHandledCrafting.COPY_CENTER_SLOT_NBT.apply(handler, recipeInputInventory, wrapperLookup);
+    }
+
+    @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         PlayerEntity player = context.getPlayer();
         if(player == null) return ActionResult.FAIL;
@@ -192,23 +196,16 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
         this.resetPosition(stack);
 
-        String worldKey = ZUtil.toString(newWorldKey);
-        stack.getOrCreateNbt().putString("World", worldKey);
+        stack.set(ZComponents.QUARRY_MONITOR_WORLD, newWorldKey);
 
     }
     public Optional<RegistryKey<World>> getWorldRegistryKey(ItemStack stack) {
-        NbtCompound itemNbt = stack.getNbt();
-        if(itemNbt == null) return Optional.empty();
-
-        String worldKey = itemNbt.getString("World");
-        return Optional.ofNullable(ZUtil.toRegistryKey(worldKey));
+        return Optional.ofNullable(stack.get(ZComponents.QUARRY_MONITOR_WORLD));
     }
 
     public void resetPosition(ItemStack stack) {
-        NbtCompound nbt = stack.getNbt();
-        if(nbt == null) return;
+        stack.remove(ZComponents.QUARRY_MONITOR_POSITION);
 
-        nbt.remove("Position");
     }
     private void setPosition(ItemStack stack, @Nullable World world, BlockPos blockPos) {
         if(world != null) {
@@ -218,13 +215,10 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
             throw new IllegalStateException("QuarryItemMonitor#setWorld has to be called first if no world is supplied.");
         }
 
-        stack.getOrCreateNbt().put("Position", ZUtil.toBlockPosNbt(blockPos));
+        stack.set(ZComponents.QUARRY_MONITOR_POSITION, blockPos);
     }
-    public BlockPos getPosition(ItemStack stack) {
-        NbtCompound itemNbt = stack.getNbt();
-        if(itemNbt == null) return null;
-
-        return ZUtil.nbtToBlockPos(itemNbt.getCompound("Position"));
+    public @Nullable BlockPos getPosition(ItemStack stack) {
+        return stack.get(ZComponents.QUARRY_MONITOR_POSITION);
     }
 
     @Override
@@ -232,14 +226,14 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         MinecraftServer minecraftServer = world.getServer();
 
         if(ZUtil.getBlockOrItem(stack) instanceof QuarryMonitorItem quarryMonitorItem) {
-            if(System.currentTimeMillis() - quarryMonitorItem.getCachedTimestamp(stack) < 1000) return;
+            if(System.currentTimeMillis() - quarryMonitorItem.getCachedTimestamp(stack) < 1000L) return;
 
             QuarryBlockEntity quarryBlockEntity = quarryMonitorItem.fetchQuarryBlockEntity(minecraftServer, stack);
 
             if(quarryBlockEntity == null) {
                 quarryMonitorItem.clearCachedQuarry(stack);
             } else {
-                quarryMonitorItem.setCachedQuarry(stack, quarryBlockEntity);
+                quarryMonitorItem.setCachedQuarry(stack, quarryBlockEntity, world.getRegistryManager());
             }
         }
     }
@@ -250,6 +244,8 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         if(serverWorld == null) return null;
 
         BlockPos quarryPos = this.getPosition(stack);
+        if(quarryPos == null) return null;
+
         ChunkPos chunkPos = new ChunkPos(quarryPos.getX() >> 4, quarryPos.getZ() >> 4);
 
         WorldChunk worldChunk = serverWorld.getChunkManager().getWorldChunk(chunkPos.x, chunkPos.z);
@@ -260,123 +256,84 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
     }
 
-    public void setCachedQuarry(ItemStack stack, QuarryBlockEntity blockEntity) {
+    public void setCachedQuarry(ItemStack stack, QuarryBlockEntity blockEntity, RegistryWrapper.WrapperLookup registryLookup) {
         QuarryBlock quarryBlock = blockEntity.getQuarryBlock();
         if(quarryBlock == null) return;
 
-        NbtCompound quarryCompoundNbt = new NbtCompound();
-        blockEntity.writeNbt(quarryCompoundNbt);
+        ItemStack itemStack = new ItemStack(quarryBlock);
+        blockEntity.setStackNbt(itemStack, registryLookup);
 
-        NbtCompound quarryCompound = new NbtCompound();
-        quarryCompound.put("nbt", quarryCompoundNbt);
-        quarryCompound.putString("id", Registries.BLOCK.getId(quarryBlock).toString());
-        quarryCompound.putLong("timestamp", System.currentTimeMillis());
-
-        stack.getOrCreateNbt().put("CachedQuarry", quarryCompound);
+        stack.set(ZComponents.QUARRY_MONITOR_CACHED_QUARRY, itemStack);
+        stack.set(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, System.currentTimeMillis());
     }
 
-    private @Nullable NbtCompound getCachedQuarryCompound(ItemStack stack) {
-        NbtCompound itemNbt = stack.getNbt();
-        if(itemNbt == null) return null;
-
-        return itemNbt.getCompound("CachedQuarry");
+    private @NotNull ItemStack getCachedQuarryStack(ItemStack stack) {
+        return stack.getOrDefault(ZComponents.QUARRY_MONITOR_CACHED_QUARRY, ItemStack.EMPTY);
     }
     public boolean exists(ItemStack stack) {
-        NbtCompound quarryCompound = this.getCachedQuarryCompound(stack);
-        if(quarryCompound == null) return false;
+        ItemStack quarryStack = this.getCachedQuarryStack(stack);
 
-        return !quarryCompound.getCompound("nbt").isEmpty();
+        return !quarryStack.isEmpty();
     }
     public void clearCachedQuarry(ItemStack stack) {
-        NbtCompound quarryCompound = this.getCachedQuarryCompound(stack);
-        if(quarryCompound == null || quarryCompound.getCompound("nbt").isEmpty()) return;
+        ItemStack quarryStack = this.getCachedQuarryStack(stack);
+        if(quarryStack.isEmpty()) return;
 
-        quarryCompound.remove("nbt");
-        quarryCompound.putLong("timestamp", System.currentTimeMillis());
+        stack.remove(ZComponents.QUARRY_MONITOR_CACHED_QUARRY);
+        stack.set(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, System.currentTimeMillis());
     }
-    private @Nullable QuarryBlock getCachedQuarryBlock(NbtCompound nbtCompound) {
-        if(nbtCompound == null) return null;
+    private @Nullable QuarryBlock getCachedQuarryBlock(ItemStack quarryStack) {
+        if(quarryStack.isEmpty()) return null;
 
-        Identifier quarryBlockId = Identifier.tryParse(nbtCompound.getString("id"));
-        if(quarryBlockId == null) return null;
+        Block block = Block.getBlockFromItem(quarryStack.getItem());
 
-        Block block = Registries.BLOCK.getOrEmpty(quarryBlockId).orElse(null);
-        if(!(block instanceof QuarryBlock quarryBlock)) return null;
+        if(block instanceof QuarryBlock quarryBlock) {
+            return quarryBlock;
+        }
 
-        return quarryBlock;
-    }
-    public ItemStack getCachedQuarryBlockStack(ItemStack stack) {
-        NbtCompound quarryCompound = this.getCachedQuarryCompound(stack);
-        if(quarryCompound == null) return ItemStack.EMPTY;
-
-        QuarryBlock quarryBlock = this.getCachedQuarryBlock(quarryCompound);
-        if(quarryBlock == null) return ItemStack.EMPTY;
-
-        NbtCompound quarryCompoundNbt = quarryCompound.getCompound("nbt");
-        if(quarryCompoundNbt.isEmpty()) return ItemStack.EMPTY;
-
-        ItemStack quarryBlockStack = new ItemStack(quarryBlock);
-        BlockItem.setBlockEntityNbt(quarryBlockStack, ZBlockEntities.QUARRY_BLOCK_ENTITY, quarryCompoundNbt);
-
-        return quarryBlockStack;
-    }
-    @Deprecated(forRemoval = true)
-    // will not behave expectedly as some checks are done live, f.e. #getBlock
-    private @Nullable QuarryBlockEntity getCachedQuarryBlockEntity(ItemStack stack) {
-        NbtCompound quarryCompound = this.getCachedQuarryCompound(stack);
-        if(quarryCompound == null) return null;
-
-        QuarryBlock quarryBlock = this.getCachedQuarryBlock(quarryCompound);
-        if(quarryBlock == null) return null;
-
-        NbtCompound quarryCompoundNbt = quarryCompound.getCompound("nbt");
-        if(quarryCompoundNbt.isEmpty()) return null;
-
-        QuarryBlockEntity blockEntity = new QuarryBlockEntity(BlockPos.ORIGIN, quarryBlock.getDefaultState());
-        blockEntity.readNbt(quarryCompoundNbt);
-
-        return blockEntity;
+        return null;
     }
 
     public long getCachedTimestamp(ItemStack stack) {
-        NbtCompound quarryCompound = this.getCachedQuarryCompound(stack);
-        if(quarryCompound == null) return 0;
-
-        return quarryCompound.getLong("timestamp");
+        return stack.getOrDefault(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, 0L);
     }
     public float getCachedEnergyPct(ItemStack stack) {
-        NbtCompound quarryCompound = this.getCachedQuarryCompound(stack);
-        if(quarryCompound == null) return 0.0F;
+        ItemStack quarryStack = this.getCachedQuarryStack(stack);
+        if(quarryStack.isEmpty()) return 0.0F;
 
-        QuarryBlock quarryBlock = this.getCachedQuarryBlock(quarryCompound);
+        QuarryBlock quarryBlock = this.getCachedQuarryBlock(quarryStack);
         if(quarryBlock == null) return 0.0F;
 
-        return (float) quarryCompound.getCompound("nbt").getCompound("rxj.pw/Energy").getLong("Stored") / quarryBlock.getEnergyCapacity();
+        return (float) quarryBlock.getEnergyStored(quarryStack) / quarryBlock.getEnergyCapacity();
     }
     public float getCachedOutputInvPct(ItemStack stack) {
-        NbtCompound quarryCompound = this.getCachedQuarryCompound(stack);
-        if(quarryCompound == null) return 0.0F;
+        ItemStack quarryStack = this.getCachedQuarryStack(stack);
+        if(quarryStack.isEmpty()) return 0.0F;
 
-        ComplexInventory OutputInventory = QuarryInventory.Output.noRef();
-        NbtList OutputInventoryList = quarryCompound.getCompound("nbt").getCompound("rxj.pw/Storage").getCompound("OutputInventory").getList("Items", NbtElement.COMPOUND_TYPE);
+        QuarryBlock quarryBlock = this.getCachedQuarryBlock(quarryStack);
+        if(quarryBlock == null) return 0.0F;
 
-        return (float) OutputInventoryList.size() / OutputInventory.size();
+        ComplexInventory outputInventory = quarryBlock.getOutputInventory(quarryStack);
+
+        return (float) outputInventory.occupiedSlots() / outputInventory.size();
     }
     public ItemStack getCachedBlueprintStack(ItemStack stack) {
-        NbtCompound quarryCompound = this.getCachedQuarryCompound(stack);
-        if(quarryCompound == null) return ItemStack.EMPTY;
+        ItemStack quarryStack = this.getCachedQuarryStack(stack);
+        if(quarryStack.isEmpty()) return ItemStack.EMPTY;
 
-        NbtList BlueprintInventoryList = quarryCompound.getCompound("nbt").getCompound("rxj.pw/Storage").getCompound("BlueprintInventory").getList("Items", NbtElement.COMPOUND_TYPE);
+        QuarryBlock quarryBlock = this.getCachedQuarryBlock(quarryStack);
+        if(quarryBlock == null) return ItemStack.EMPTY;
 
-        return ItemStack.fromNbt(BlueprintInventoryList.getCompound(0));
+        return quarryBlock.getBlueprintStack(quarryStack);
     }
     public ItemStack getCachedDrillStack(ItemStack stack) {
-        NbtCompound quarryCompound = this.getCachedQuarryCompound(stack);
-        if(quarryCompound == null) return ItemStack.EMPTY;
+        ItemStack quarryStack = this.getCachedQuarryStack(stack);
+        if(quarryStack.isEmpty()) return ItemStack.EMPTY;
 
-        NbtList DrillInventoryList = quarryCompound.getCompound("nbt").getCompound("rxj.pw/Storage").getCompound("DrillInventory").getList("Items", NbtElement.COMPOUND_TYPE);
+        QuarryBlock quarryBlock = this.getCachedQuarryBlock(quarryStack);
+        if(quarryBlock == null) return ItemStack.EMPTY;
 
-        return ItemStack.fromNbt(DrillInventoryList.getCompound(0));
+        return quarryBlock.getDrillStack(quarryStack);
     }
 
     //warnings
@@ -401,7 +358,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         float invPct = this.getCachedOutputInvPct(stack);
         float energyPct = this.getCachedEnergyPct(stack);
         boolean hasDrillStack = this.getCachedDrillStack(stack).getItem() instanceof DrillItem;
-        ItemStack quarryBlockStack = this.getCachedQuarryBlockStack(stack);
+        ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
 
         return new boolean[] { quarryBlockStack.isEmpty(), invPct >= 0.7F, invPct >= 0.9F, energyPct <= 0.3F, energyPct <= 0.1F, !hasDrillStack };
     }

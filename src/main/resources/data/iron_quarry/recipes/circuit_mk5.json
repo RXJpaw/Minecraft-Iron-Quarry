@@ -20,7 +20,7 @@
         }
     },
     "result": {
-        "item": "iron_quarry:circuit_mk5",
-        "count": 1
+        "count": 1,
+        "id": "iron_quarry:circuit_mk5"
     }
 }

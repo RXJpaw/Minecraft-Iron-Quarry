@@ -4,10 +4,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipType;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.sound.SoundEvents;
@@ -115,7 +116,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         if(block == null) return;
 
         ItemStack stack = new ItemStack(block);
-        blockEntity.setStackNbt(stack);
+        blockEntity.setStackNbt(stack, minecraftClient.world.getRegistryManager());
 
         ComplexEnergyContainer EnergyContainer = blockEntity.EnergyContainer;
         MachineConfiguration MachineConfiguration = blockEntity.Configuration;
@@ -153,7 +154,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             List<Text> tooltip = new ArrayList<>();
 
             tooltip.add(ReadableString.translatable("screen.iron_quarry.quarry_block.title.info_display"));
-            block.appendTooltip(stack, blockEntity.getWorld(), tooltip, TooltipContext.Default.BASIC);
+            block.appendTooltip(stack, Item.TooltipContext.create(minecraftClient.world), tooltip, TooltipType.BASIC);
 
             int conflictAmount = machineUpgradesUtil.getConflictAmount();
 

@@ -20,6 +20,7 @@
         }
     },
     "result": {
-        "item": "iron_quarry:blueprint"
+        "count": 1,
+        "id": "iron_quarry:blueprint"
     }
 }

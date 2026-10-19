@@ -6,6 +6,7 @@ import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.inventory.ContainerLock;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKey;
@@ -22,24 +23,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashSet;
 
 public class ZUtil {
-    public static Object getBlockOrItem(ItemStack stack) {
+    public static ItemConvertible getBlockOrItem(ItemStack stack) {
         if(stack.getItem() instanceof BlockItem blockItem) {
             return blockItem.getBlock();
         }
 
         return stack.getItem();
-    }
-
-    public static NbtCompound toBlockPosNbt(BlockPos blockPos) {
-        NbtCompound blockPosNbt = new NbtCompound();
-        blockPosNbt.putInt("x", blockPos.getX());
-        blockPosNbt.putInt("y", blockPos.getY());
-        blockPosNbt.putInt("z", blockPos.getZ());
-
-        return blockPosNbt;
-    }
-    public static BlockPos nbtToBlockPos(NbtCompound nbt) {
-        return new BlockPos(nbt.getInt("x"), nbt.getInt("y"), nbt.getInt("z"));
     }
 
     public static String expandableFixedFloat(float input) {
@@ -76,8 +65,11 @@ public class ZUtil {
 
     public static @Nullable LootableContainerBlockEntity getUnlockedLootableContainer(@Nullable BlockEntity blockEntity) {
         if(blockEntity instanceof LootableContainerBlockEntity lootableBlockEntity) {
+            World world = lootableBlockEntity.getWorld();
+            if(world == null) return null;
+
             NbtCompound nbtCompound = new NbtCompound();
-            lootableBlockEntity.writeNbt(nbtCompound);
+            lootableBlockEntity.writeNbt(nbtCompound, world.getRegistryManager());
             if(nbtCompound.isEmpty()) return null;
 
             ContainerLock lock = ContainerLock.fromNbt(nbtCompound);

@@ -17,7 +17,7 @@
         }
     },
     "result": {
-        "item": "iron_quarry:circuit_mk1",
-        "count": 4
+        "count": 4,
+        "id": "iron_quarry:circuit_mk1"
     }
 }
