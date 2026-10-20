@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.util.LightCoordsUtil;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -18,6 +18,8 @@ import java.awt.*;
 public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
     private static final double MIN_MARKER_DEPTH = 1.0;
 
+    private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
+
     @Override
     protected ScreenPos project(Vec3 worldPos) {
         return RenderUtil.cameraToScreen(worldPos, this.camera, this.projectionMatrix);
@@ -26,7 +28,7 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
     public void render(CameraRenderState cameraRenderState) {
         Minecraft minecraftClient = Minecraft.getInstance();
         Font textRenderer = minecraftClient.font;
-        MultiBufferSource.BufferSource bufferSource = minecraftClient.renderBuffers().bufferSource();
+        int order = 0;
 
         for (ScreenPosData screenPosData : this.screenPosList) {
             ScreenPos screenPos = screenPosData.screenPos;
@@ -43,7 +45,7 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
             matrices.scale(scale, scale, 1.0F);
             matrices.translate(-6.0F, -6.0F, 0.0F);
 
-            RenderUtil.drawWorldTexture(matrices, BLUEPRINT_POSITIONS_TEXTURE, 0, 0, texUV.x, texUV.y, 13, 13, 36, 36, RenderUtil.whiteWithAlpha(alpha));
+            RenderUtil.drawWorldTexture(this.submitNodeStorage.order(order++), matrices, BLUEPRINT_POSITIONS_TEXTURE, 0, 0, texUV.x, texUV.y, 13, 13, 36, 36, RenderUtil.whiteWithAlpha(alpha));
 
             matrices.popPose();
 
@@ -61,13 +63,14 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
                 matrices.scale(scale, scale, 1.0F);
                 matrices.translate(1 + width / -2.0F, 0.0F, 0.0F);
 
-                RenderUtil.fillWorld(matrices, bufferSource, -2, -2, width + 1, height + 1, 1409286144);
-                textRenderer.drawInBatch(text, 0, 0, new Color(1.0F, 1.0F, 1.0F, alpha).getRGB(), true, matrices.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, 0, LightCoordsUtil.FULL_BRIGHT);
-                bufferSource.endBatch();
+                RenderUtil.fillWorld(this.submitNodeStorage.order(order++), matrices, -2, -2, width + 1, height + 1, 1409286144);
+                this.submitNodeStorage.order(order++).submitText(matrices, 0, 0, text.getVisualOrderText(), true, Font.DisplayMode.SEE_THROUGH, LightCoordsUtil.FULL_BRIGHT, new Color(1.0F, 1.0F, 1.0F, alpha).getRGB(), 0, 0);
 
                 matrices.popPose();
             }
         }
+
+        minecraftClient.gameRenderer.featureRenderDispatcher().renderAllFeatures(this.submitNodeStorage);
     }
 
     private PoseStack createMarkerMatrices(ScreenPosData screenPosData, CameraRenderState cameraRenderState) {

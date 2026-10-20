@@ -38,6 +38,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.data.QuarryBlockScreenData;
@@ -494,7 +495,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
             blockActress.setBlockState(Blocks.AIR);
 
             boolean drillBroke = drillItem.cdamage(drillStack, 1, serverWorldToBreak, null);
-            if(drillBroke) drillItem.triggerBreakEvent(drillStack, quarryPos.getCenter(), serverWorldToBreak);
+            if(drillBroke) drillItem.triggerBreakEvent(drillStack, Vec3.atCenterOf(quarryPos), serverWorldToBreak);
 
             MiningQueue.remove(miningQueueIndex);
             drillResults.add(blockPosState);

@@ -17,7 +17,7 @@ import java.util.List;
 public class ZBlocks {
     private static final QuarryStatsConfig.Handler QUARRY_STATS_CONFIG = Main.CONFIG.getQuarryStatsConfig();
 
-    public static final BlockEntry<QuarryBlock> COPPER_QUARRY = BlockEntry.of("copper_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_BLOCK), settings -> new QuarryBlock(settings, "block/copper_quarry", QUARRY_STATS_CONFIG.getCopperQuarry()));
+    public static final BlockEntry<QuarryBlock> COPPER_QUARRY = BlockEntry.of("copper_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_BLOCK.weathering().unaffected()), settings -> new QuarryBlock(settings, "block/copper_quarry", QUARRY_STATS_CONFIG.getCopperQuarry()));
     public static final BlockEntry<QuarryBlock> IRON_QUARRY = BlockEntry.of("iron_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK), settings -> new QuarryBlock(settings, "block/iron_quarry", QUARRY_STATS_CONFIG.getIronQuarry()));
     public static final BlockEntry<QuarryBlock> GOLD_QUARRY = BlockEntry.of("gold_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.GOLD_BLOCK), settings -> new QuarryBlock(settings, "block/gold_quarry", QUARRY_STATS_CONFIG.getGoldQuarry()));
     public static final BlockEntry<QuarryBlock> DIAMOND_QUARRY = BlockEntry.of("diamond_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.DIAMOND_BLOCK), settings -> new QuarryBlock(settings, "block/diamond_quarry", QUARRY_STATS_CONFIG.getDiamondQuarry()));

@@ -4,11 +4,7 @@ import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
@@ -16,7 +12,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.LightCoordsUtil;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -25,6 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -33,6 +30,7 @@ import org.joml.Vector4f;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import pw.rxj.iron_quarry.Main;
 
 public class RenderUtil {
@@ -41,15 +39,16 @@ public class RenderUtil {
     private static class Lines {
         private static final RenderPipeline VISIBLE_LINES_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(Main.MOD_ID, "pipeline/visible_lines"))
-                .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN, true))
+                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN, true))
                 .build());
         private static final RenderPipeline HIDDEN_LINES_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(Main.MOD_ID, "pipeline/hidden_lines"))
-                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN, true))
+                .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN, false))
                 .build());
-        private static final RenderType VISIBLE_LINES = RenderType.create("iron_quarry_visible_lines", RenderSetup.builder(VISIBLE_LINES_PIPELINE).bufferSize(1536).createRenderSetup());
-        private static final RenderType HIDDEN_LINES = RenderType.create("iron_quarry_hidden_lines", RenderSetup.builder(HIDDEN_LINES_PIPELINE).bufferSize(1536).createRenderSetup());
+        private static final RenderType VISIBLE_LINES = RenderType.create("iron_quarry_visible_lines", RenderSetup.builder(VISIBLE_LINES_PIPELINE).createRenderSetup());
+        private static final RenderType HIDDEN_LINES = RenderType.create("iron_quarry_hidden_lines", RenderSetup.builder(HIDDEN_LINES_PIPELINE).createRenderSetup());
         private static final float LINE_WIDTH = 3.0F;
+        private static final float MIN_DEPTH = 0.05F;
     }
 
     private static class Markers {
@@ -62,7 +61,6 @@ public class RenderUtil {
         private static RenderType of(Identifier texture) {
             return WORLD_MARKERS.computeIfAbsent(texture, id -> RenderType.create("iron_quarry_world_marker", RenderSetup.builder(WORLD_MARKER_PIPELINE)
                     .withTexture("Sampler0", id, () -> RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST))
-                    .bufferSize(256)
                     .createRenderSetup()));
         }
     }
@@ -98,7 +96,7 @@ public class RenderUtil {
 
     public static ScreenPos worldToScreen(Vec3 worldPos, Matrix4f positionMatrix, Matrix4f projectionMatrix) {
         Minecraft minecraftClient = Minecraft.getInstance();
-        Camera camera = minecraftClient.gameRenderer.getMainCamera();
+        Camera camera = minecraftClient.gameRenderer.mainCamera();
         Window window = minecraftClient.getWindow();
 
         Vector4f relativeWorldPos = new Vector4f(camera.position().reverse().add(worldPos).toVector3f(), 1.0F);
@@ -153,68 +151,76 @@ public class RenderUtil {
                pos.x >  range || pos.y >  range || pos.z >  range;
     }
 
-    public static void drawZBufferedCuboid(Cuboid cuboid, PoseStack matrices, int viewDistance, float red, float green, float blue, float alpha) {
+    public static void drawZBufferedCuboid(OrderedSubmitNodeCollector submitNodeCollector, Cuboid cuboid, PoseStack matrices, Vector3fc cameraForward, int viewDistance, float red, float green, float blue, float alpha) {
         double squaredViewDistance = Math.pow(viewDistance, 2);
-
-        Matrix4f positionMatrix = matrices.last().pose();
-        Tesselator tessellator = Tesselator.getInstance();
 
         //Outlines
         List<SpriteVec2f> boxLines = cuboid.getLines();
         List<SpriteVec2f> splitBoxLines = boxLines.stream().map(vec -> vec.autoSplit(8.0F)).flatMap(List::stream).toList();
-        List<SpriteVec2f> filteredSplitBoxLines = splitBoxLines.stream().filter(vec -> vec.squaredDistanceTo(new Vector3f()) <= squaredViewDistance).toList();
+        List<SpriteVec2f> filteredSplitBoxLines = splitBoxLines.stream().filter(vec -> vec.squaredDistanceTo(new Vector3f()) <= squaredViewDistance)
+                .map(vec -> clipBehindCamera(vec, matrices.last().pose(), cameraForward)).filter(Objects::nonNull).toList();
 
         //Visible Outlines
-        drawLines(tessellator, Lines.VISIBLE_LINES, positionMatrix, matrices.last(), filteredSplitBoxLines, red, green, blue, alpha);
+        drawLines(submitNodeCollector, Lines.VISIBLE_LINES, matrices, filteredSplitBoxLines, red, green, blue, alpha);
 
         //Hidden Outlines
-        drawLines(tessellator, Lines.HIDDEN_LINES, positionMatrix, matrices.last(), filteredSplitBoxLines, red, green, blue, alpha * 0.2F);
+        drawLines(submitNodeCollector, Lines.HIDDEN_LINES, matrices, filteredSplitBoxLines, red, green, blue, alpha * 0.2F);
     }
 
-    private static void drawLines(Tesselator tessellator, RenderType renderLayer, Matrix4f positionMatrix, PoseStack.Pose entry, List<SpriteVec2f> lines, float red, float green, float blue, float alpha) {
-        BufferBuilder buffer = tessellator.begin(renderLayer.mode(), renderLayer.format());
+    private static @Nullable SpriteVec2f clipBehindCamera(SpriteVec2f line, Matrix4f positionMatrix, Vector3fc cameraForward) {
+        float fromDepth = positionMatrix.transformPosition(new Vector3f(line.from)).dot(cameraForward);
+        float toDepth = positionMatrix.transformPosition(new Vector3f(line.to)).dot(cameraForward);
+        if(fromDepth < Lines.MIN_DEPTH && toDepth < Lines.MIN_DEPTH) return null;
 
-        for (SpriteVec2f line : lines) {
-            Vector3f n = line.normalize();
+        Vector3f from = new Vector3f(line.from);
+        Vector3f to = new Vector3f(line.to);
+        if(fromDepth < Lines.MIN_DEPTH) from.lerp(line.to, (Lines.MIN_DEPTH - fromDepth) / (toDepth - fromDepth));
+        if(toDepth < Lines.MIN_DEPTH) to.lerp(line.from, (Lines.MIN_DEPTH - toDepth) / (fromDepth - toDepth));
 
-            buffer.addVertex(positionMatrix, line.from.x, line.from.y, line.from.z).setColor(red, green, blue, alpha).setNormal(entry, n.x, n.y, n.z).setLineWidth(Lines.LINE_WIDTH);
-            buffer.addVertex(positionMatrix, line.to.x, line.to.y, line.to.z).setColor(red, green, blue, alpha).setNormal(entry, n.x, n.y, n.z).setLineWidth(Lines.LINE_WIDTH);
-        }
+        SpriteVec2f clippedLine = SpriteVec2f.from(from, to);
 
-        MeshData builtBuffer = buffer.build();
-        if(builtBuffer != null) renderLayer.draw(builtBuffer);
+        return toDepth < fromDepth ? clippedLine.swap() : clippedLine;
     }
 
-    public static void drawWorldTexture(PoseStack matrices, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color) {
-        RenderType renderLayer = Markers.of(texture);
-        Matrix4f positionMatrix = matrices.last().pose();
+    private static void drawLines(OrderedSubmitNodeCollector submitNodeCollector, RenderType renderLayer, PoseStack matrices, List<SpriteVec2f> lines, float red, float green, float blue, float alpha) {
+        if(lines.isEmpty()) return;
 
+        submitNodeCollector.submitCustomGeometry(matrices, renderLayer, (entry, buffer) -> {
+            Matrix4f positionMatrix = entry.pose();
+
+            for (SpriteVec2f line : lines) {
+                Vector3f n = line.normalize();
+
+                buffer.addVertex(positionMatrix, line.from.x, line.from.y, line.from.z).setColor(red, green, blue, alpha).setNormal(entry, n.x, n.y, n.z).setLineWidth(Lines.LINE_WIDTH);
+                buffer.addVertex(positionMatrix, line.to.x, line.to.y, line.to.z).setColor(red, green, blue, alpha).setNormal(entry, n.x, n.y, n.z).setLineWidth(Lines.LINE_WIDTH);
+            }
+        });
+    }
+
+    public static void drawWorldTexture(OrderedSubmitNodeCollector submitNodeCollector, PoseStack matrices, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color) {
         float minU = u / textureWidth;
         float maxU = (u + width) / textureWidth;
         float minV = v / textureHeight;
         float maxV = (v + height) / textureHeight;
 
-        BufferBuilder buffer = Tesselator.getInstance().begin(renderLayer.mode(), renderLayer.format());
+        submitNodeCollector.submitCustomGeometry(matrices, Markers.of(texture), (entry, buffer) -> {
+            Matrix4f positionMatrix = entry.pose();
 
-        buffer.addVertex(positionMatrix, x, y, 0.0F).setUv(minU, minV).setColor(color);
-        buffer.addVertex(positionMatrix, x, y + height, 0.0F).setUv(minU, maxV).setColor(color);
-        buffer.addVertex(positionMatrix, x + width, y + height, 0.0F).setUv(maxU, maxV).setColor(color);
-        buffer.addVertex(positionMatrix, x + width, y, 0.0F).setUv(maxU, minV).setColor(color);
-
-        MeshData builtBuffer = buffer.build();
-        if(builtBuffer != null) renderLayer.draw(builtBuffer);
+            buffer.addVertex(positionMatrix, x, y, 0.0F).setUv(minU, minV).setColor(color);
+            buffer.addVertex(positionMatrix, x, y + height, 0.0F).setUv(minU, maxV).setColor(color);
+            buffer.addVertex(positionMatrix, x + width, y + height, 0.0F).setUv(maxU, maxV).setColor(color);
+            buffer.addVertex(positionMatrix, x + width, y, 0.0F).setUv(maxU, minV).setColor(color);
+        });
     }
 
-    public static void fillWorld(PoseStack matrices, MultiBufferSource.BufferSource bufferSource, int x1, int y1, int x2, int y2, int color) {
-        RenderType renderLayer = RenderTypes.textBackgroundSeeThrough();
-        Matrix4f positionMatrix = matrices.last().pose();
-        VertexConsumer buffer = bufferSource.getBuffer(renderLayer);
+    public static void fillWorld(OrderedSubmitNodeCollector submitNodeCollector, PoseStack matrices, int x1, int y1, int x2, int y2, int color) {
+        submitNodeCollector.submitCustomGeometry(matrices, RenderTypes.textBackgroundSeeThrough(), (entry, buffer) -> {
+            Matrix4f positionMatrix = entry.pose();
 
-        buffer.addVertex(positionMatrix, x1, y1, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
-        buffer.addVertex(positionMatrix, x1, y2, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
-        buffer.addVertex(positionMatrix, x2, y2, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
-        buffer.addVertex(positionMatrix, x2, y1, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
-
-        bufferSource.endBatch(renderLayer);
+            buffer.addVertex(positionMatrix, x1, y1, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
+            buffer.addVertex(positionMatrix, x1, y2, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
+            buffer.addVertex(positionMatrix, x2, y2, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
+            buffer.addVertex(positionMatrix, x2, y1, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
+        });
     }
 }

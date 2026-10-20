@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -36,7 +37,7 @@ public class BlueprintPreviewRenderer {
         WORLD_MARKER_RENDERER.clear();
 
         Minecraft minecraftClient = Minecraft.getInstance();
-        if(minecraftClient.options.hideGui) return;
+        if(minecraftClient.gui.hud.isHidden()) return;
         if(minecraftClient.level == null) return;
         LocalPlayer player = minecraftClient.player;
         if(player == null) return;
@@ -67,7 +68,7 @@ public class BlueprintPreviewRenderer {
         if(!minecraftClient.level.dimension().equals(worldRegistryKey)) return;
 
         CameraRenderState cameraRenderState = context.levelState().cameraRenderState;
-        Camera camera = minecraftClient.gameRenderer.getMainCamera();
+        Camera camera = minecraftClient.gameRenderer.mainCamera();
         PoseStack matrices = context.poseStack();
         if(matrices == null) return;
         Matrix4f positionMatrix = cameraRenderState.viewRotationMatrix;
@@ -75,7 +76,7 @@ public class BlueprintPreviewRenderer {
 
         BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack).orElse(null);
         BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack).orElse(null);
-        if(firstPos != null && secondPos != null) renderCuboid(minecraftClient, player, camera, matrices, firstPos, secondPos);
+        if(firstPos != null && secondPos != null) renderCuboid(minecraftClient, player, camera, context.submitNodeCollector(), matrices, firstPos, secondPos);
 
         BlueprintMarkerRenderer markerRenderer = switch (BLUEPRINT_PREVIEW_CONFIG.getMarkerRenderMode()) {
             case HUD -> HUD_MARKER_RENDERER;
@@ -85,7 +86,7 @@ public class BlueprintPreviewRenderer {
         markerRenderer.update(firstPos, secondPos, camera, positionMatrix, projectionMatrix);
     }
 
-    private static void renderCuboid(Minecraft minecraftClient, LocalPlayer player, Camera camera, PoseStack matrices, BlockPos firstPos, BlockPos secondPos) {
+    private static void renderCuboid(Minecraft minecraftClient, LocalPlayer player, Camera camera, SubmitNodeCollector submitNodeCollector, PoseStack matrices, BlockPos firstPos, BlockPos secondPos) {
         float tickDelta = minecraftClient.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         int viewDistance = Math.min(minecraftClient.options.getEffectiveRenderDistance() * 16 * 3, RenderUtil.MAX_VIEW_DISTANCE * 16 * 3);
 
@@ -103,7 +104,7 @@ public class BlueprintPreviewRenderer {
 
         // WorldRenderEvents.END doesn't call this when the world border is rendered.
         // Resulting in color, transparency and brightness being way off.
-        RenderUtil.drawZBufferedCuboid(limitedCuboid.inflate(0.02), matrices, viewDistance, 0.976F, 0.718F, 0.192F, 0.667F);
+        RenderUtil.drawZBufferedCuboid(submitNodeCollector, limitedCuboid.inflate(0.02), matrices, camera.forwardVector(), viewDistance, 0.976F, 0.718F, 0.192F, 0.667F);
 
         matrices.popPose();
     }
@@ -111,7 +112,7 @@ public class BlueprintPreviewRenderer {
     public static void register() {
         ResourceReloadListener.include(BlueprintMarkerRenderer.BLUEPRINT_POSITIONS_TEXTURE);
 
-        LevelRenderEvents.END_MAIN.register(BlueprintPreviewRenderer::renderInWorld);
+        LevelRenderEvents.COLLECT_SUBMITS.register(BlueprintPreviewRenderer::renderInWorld);
 
         WorldRenderCallback.AFTER_LEVEL.register(WORLD_MARKER_RENDERER::render);
         InGameHudRenderCallback.START.register(HUD_MARKER_RENDERER::render);

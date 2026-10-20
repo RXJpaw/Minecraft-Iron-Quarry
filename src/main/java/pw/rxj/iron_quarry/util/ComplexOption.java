@@ -30,7 +30,7 @@ public class ComplexOption {
                 (optionText, value) -> Component.translatable(key + "." + value),
                 new OptionInstance.LazyEnum<>(() -> optionList, Optional::of, Codec.STRING),
                 defaultValue,
-                write
+                write::accept
         );
     }
 
@@ -52,7 +52,7 @@ public class ComplexOption {
                 new OptionInstance.IntRange(min, max),
                 Codec.intRange(min, max),
                 defaultValue,
-                write
+                write::accept
         );
     }
 

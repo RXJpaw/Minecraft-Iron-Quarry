@@ -240,7 +240,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         } else {
             Minecraft minecraftClient = Minecraft.getInstance();
 
-            if(minecraftClient.screen instanceof QuarryBlockScreen) {
+            if(minecraftClient.gui.screen() instanceof QuarryBlockScreen) {
                 MutableComponent LORE_SEAL_FIRST = ReadableString.translatable("item.iron_quarry.blueprint.lore.seal_first");
 
                 textConsumer.accept(ReadableString.space());

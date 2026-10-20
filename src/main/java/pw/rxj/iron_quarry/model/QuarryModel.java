@@ -74,10 +74,10 @@ public class QuarryModel implements BlockStateModel {
 
     @Override
     public void emitQuads(QuadEmitter emitter, BlockAndTintGetter blockView, BlockPos pos, BlockState state, RandomSource random, Predicate<Direction> cullTest) {
-        if(blockView.getBlockEntity(pos) instanceof QuarryBlockEntity blockEntity) {
-            Mesh mesh = this.getMesh(state.getValue(QuarryBlock.FACING), blockEntity.Configuration);
-            if(mesh != null) mesh.outputTo(emitter);
-        }
+        MachineConfiguration configuration = blockView.getBlockEntity(pos) instanceof QuarryBlockEntity blockEntity ? blockEntity.Configuration : MachineConfiguration.empty();
+
+        Mesh mesh = this.getMesh(state.getValue(QuarryBlock.FACING), configuration);
+        if(mesh != null) mesh.outputTo(emitter);
     }
 
     public List<BakedQuad> getItemQuads(ItemStack stack) {
