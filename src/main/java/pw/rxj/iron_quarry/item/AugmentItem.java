@@ -2,7 +2,6 @@ package pw.rxj.iron_quarry.item;
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.item.tooltip.TooltipType;
@@ -191,7 +190,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         }
     }
     public boolean isTooltipExtended(ItemStack stack) {
-        return Screen.hasShiftDown() || this.getType(stack).isEmpty() || ZItemTags.AUGMENT_CAPACITY_ENHANCERS.equals(this.getSmithingPreviewAdditionTag(stack));
+        return MinecraftClient.getInstance().isShiftPressed() || this.getType(stack).isEmpty() || ZItemTags.AUGMENT_CAPACITY_ENHANCERS.equals(this.getSmithingPreviewAdditionTag(stack));
     }
 
     @Override
@@ -293,7 +292,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
         if(augmentStack == null) {
             templateItem.cdamage(template, 1, null, null);
-            templateItem.triggerBreakEventIfNeeded(template, player.getPos(), player.getWorld());
+            templateItem.triggerBreakEventIfNeeded(template, player.getEntityPos(), player.getEntityWorld());
             inputInv.setStack(0, template);
 
             base.decrement(1);
@@ -305,7 +304,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             Inventory outcome = this.getSmithingOutcome(template, base, addition);
 
             ItemStack outcomeTemplate = outcome.getStack(0);
-            templateItem.triggerBreakEventIfNeeded(outcomeTemplate, player.getPos(), player.getWorld());
+            templateItem.triggerBreakEventIfNeeded(outcomeTemplate, player.getEntityPos(), player.getEntityWorld());
 
             inputInv.setStack(0, outcomeTemplate);
             inputInv.setStack(1, outcome.getStack(1));

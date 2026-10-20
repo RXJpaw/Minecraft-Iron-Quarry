@@ -42,7 +42,7 @@ public class PacketQuarryBlockBreak extends BooleanBlockPosStatePacket {
         BlockState blockState = payload.blockState;
 
         Vec3d blockPosVec = RenderUtil.vec3dFrom(blockPos);
-        if(client.player.getPos().distanceTo(blockPosVec) > BLOCK_BREAKING_CONFIG.getDistance()) return;
+        if(client.player.getEntityPos().distanceTo(blockPosVec) > BLOCK_BREAKING_CONFIG.getDistance()) return;
         
         if (!blockState.isAir() && blockState.getFluidState().isEmpty()) {
             BlockSoundGroup blockSoundGroup = blockState.getSoundGroup();

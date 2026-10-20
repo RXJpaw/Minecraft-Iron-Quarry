@@ -7,20 +7,24 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.item.ItemModelManager;
 import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.item.ItemRenderState;
+import net.minecraft.client.render.item.model.BasicItemModel;
 import net.minecraft.client.render.item.model.ItemModel;
+import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.render.model.Baker;
 import net.minecraft.client.render.model.ModelSettings;
 import net.minecraft.client.render.model.ResolvableModel;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.util.HeldItemContext;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.util.ZUtil;
+
+import java.util.List;
 
 @Environment(EnvType.CLIENT)
 public record QuarryItemModel(QuarryModel model, ModelSettings settings) implements ItemModel {
@@ -28,7 +32,7 @@ public record QuarryItemModel(QuarryModel model, ModelSettings settings) impleme
     private static final Identifier BLOCK_PARENT = Identifier.ofVanilla("block/block");
 
     @Override
-    public void update(ItemRenderState state, ItemStack stack, ItemModelManager resolver, ItemDisplayContext displayContext, @Nullable ClientWorld world, @Nullable LivingEntity user, int seed) {
+    public void update(ItemRenderState state, ItemStack stack, ItemModelManager resolver, ItemDisplayContext displayContext, @Nullable ClientWorld world, @Nullable HeldItemContext heldItemContext, int seed) {
         state.addModelKey(this);
         if(ZUtil.getBlockOrItem(stack) instanceof QuarryBlock quarryBlock) {
             state.addModelKey(quarryBlock.getMachineConfiguration(stack).write());
@@ -38,7 +42,9 @@ public record QuarryItemModel(QuarryModel model, ModelSettings settings) impleme
 
         layer.setRenderLayer(RenderLayers.getItemLayer(stack));
         this.settings.addSettings(layer, displayContext);
-        this.model.emitItemQuads(layer.emitter(), stack);
+        List<BakedQuad> quads = this.model.getItemQuads(stack);
+        layer.getQuads().addAll(quads);
+        layer.setVertices(() -> BasicItemModel.bakeQuads(quads));
     }
 
     public record Unbaked(Identifier block) implements ItemModel.Unbaked {

@@ -4,7 +4,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -30,6 +29,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.screen.sync.ItemStackHash;
 import pw.rxj.iron_quarry.data.BlueprintPositionComponent;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.interfaces.*;
@@ -126,7 +126,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         };
 
         if(this.expandInDirection(stack, player, direction, amount)) {
-            ZNetwork.sendToServer(PacketBlueprintExpand.bake(direction, (byte) amount));
+            ZNetwork.sendToServer(PacketBlueprintExpand.bake(direction, (byte) amount, ItemStackHash.fromItemStack(stack, player.networkHandler.getComponentHasher())));
 
             return true;
         }
@@ -134,10 +134,10 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         return false;
     }
     public boolean expandInDirection(ItemStack stack, PlayerEntity player, Direction direction, int amount) {
-        World playerWorld = player.getWorld();
+        World playerWorld = player.getEntityWorld();
 
         RegistryKey<World> world = this.getWorldRegistryKey(stack).orElseGet(playerWorld::getRegistryKey);
-        if(!world.equals(player.getWorld().getRegistryKey())) return false;
+        if(!world.equals(player.getEntityWorld().getRegistryKey())) return false;
 
         BlockPos firstPos = this.getFirstPos(stack).orElseGet(player::getBlockPos);
         BlockPos secondPos = this.getSecondPos(stack).orElseGet(player::getBlockPos);
@@ -243,7 +243,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
             } else {
                 textConsumer.accept(ReadableString.space());
 
-                if(Screen.hasShiftDown()) {
+                if(MinecraftClient.getInstance().isShiftPressed()) {
                     GameOptions gameOptions = minecraftClient.options;
 
                     Text KEY_INTERACT = ReadableString.textFrom(gameOptions.useKey);

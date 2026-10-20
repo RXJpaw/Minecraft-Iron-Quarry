@@ -25,6 +25,7 @@ import pw.rxj.iron_quarry.types.IoState;
 import pw.rxj.iron_quarry.util.MachineConfiguration;
 import pw.rxj.iron_quarry.util.ZUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -70,11 +71,15 @@ public class QuarryModel implements BlockStateModel {
         }
     }
 
-    public void emitItemQuads(QuadEmitter emitter, ItemStack stack) {
+    public List<BakedQuad> getItemQuads(ItemStack stack) {
+        List<BakedQuad> quads = new ArrayList<>();
+
         if(ZUtil.getBlockOrItem(stack) instanceof QuarryBlock quarryBlock) {
             Mesh mesh = this.getMesh(Direction.NORTH, quarryBlock.getMachineConfiguration(stack));
-            if(mesh != null) mesh.outputTo(emitter);
+            if(mesh != null) mesh.forEach(quad -> quads.add(quad.toBakedQuad(QUARRY_SPRITE)));
         }
+
+        return quads;
     }
 
     @Override

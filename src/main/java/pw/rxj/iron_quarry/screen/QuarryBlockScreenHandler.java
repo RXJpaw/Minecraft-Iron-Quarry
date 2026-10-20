@@ -39,7 +39,7 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
 
         this.quarryBlock = (QuarryBlock) data.getBlock();
         this.blockPos = data.getBlockPos();
-        this.world = playerInventory.player.getWorld();
+        this.world = playerInventory.player.getEntityWorld();
     }
 
     //This constructor gets called from the BlockEntity on the server without calling the other constructor first, the server knows the inventory of the container
@@ -50,7 +50,7 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
 
         this.quarryBlock = quarryBlock;
         this.blockPos = BlockPos.ORIGIN;
-        this.world = playerInventory.player.getWorld();
+        this.world = playerInventory.player.getEntityWorld();
 
         checkSize(machineUpgradesInventory, 6);
         checkSize(blueprintInventory, 1);

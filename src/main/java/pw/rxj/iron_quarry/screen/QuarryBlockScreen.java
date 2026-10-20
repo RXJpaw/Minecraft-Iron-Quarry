@@ -1,6 +1,7 @@
 package pw.rxj.iron_quarry.screen;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.item.tooltip.TooltipType;
@@ -318,7 +319,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     }
 
     @Override
-    protected boolean isClickOutsideBounds(double mouseX, double mouseY, int left, int top, int button) {
+    protected boolean isClickOutsideBounds(double mouseX, double mouseY, int left, int top) {
         if(IoConfig.isMouseOver() || AugmentsConfig.isMouseOver()) return false;
 
         int offsetX = 0;
@@ -334,7 +335,11 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        double mouseX = click.x();
+        double mouseY = click.y();
+        int button = click.button();
+
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
         if(minecraftClient.world == null) return false;
 
@@ -346,7 +351,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
 
         if(this.client == null) return false;
         if(this.client.interactionManager == null) return false;
-        if(minecraftClient.cameraEntity == null) return false;
+        if(minecraftClient.getCameraEntity() == null) return false;
 
         if(IoConfig.isUsed()) {
             IO_OPTIONS.forEach(ioOption -> {
@@ -360,7 +365,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                 TrackableZone ioButton = TrackableZone.bake(ioButtonZone, (int) mouseX, (int) mouseY);
 
                 if(ioButton.isMouseOver()) {
-                    minecraftClient.cameraEntity.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.2F, 1.0F);
+                    minecraftClient.getCameraEntity().playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.2F, 1.0F);
 
                     Optional<Byte> id = QuarryBlockScreenHandler.Buttons.toByte(0, ioOption.frontFace().getId(), button);
                     if(id.isEmpty()) return;
@@ -370,7 +375,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             });
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override

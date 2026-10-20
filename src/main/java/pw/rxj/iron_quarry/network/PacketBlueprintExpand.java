@@ -6,23 +6,25 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.sync.ItemStackHash;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Direction;
 import oshi.util.tuples.Pair;
 import pw.rxj.iron_quarry.item.BlueprintItem;
-import pw.rxj.iron_quarry.network.packet.DirectionBytePacket;
+import pw.rxj.iron_quarry.network.packet.DirectionByteHashPacket;
 import pw.rxj.iron_quarry.util.ReadableString;
 import pw.rxj.iron_quarry.util.ZUtil;
 
-public class PacketBlueprintExpand extends DirectionBytePacket {
+public class PacketBlueprintExpand extends DirectionByteHashPacket {
     public static final PacketCodec<RegistryByteBuf, PacketBlueprintExpand> PACKET_CODEC = PacketCodec.of(PacketBlueprintExpand::write, PacketBlueprintExpand::new);
     public static final CustomPayload.Id<PacketBlueprintExpand> PACKET_ID = register("packet_blueprint_expand", PACKET_CODEC);
 
     public static Pair<Integer, Integer> ALLOWED_DISTANCE = new Pair<>(-16, 16);
 
-    private PacketBlueprintExpand(Direction direction, byte data) {
-        super(direction, data);
+    private PacketBlueprintExpand(Direction direction, byte data, ItemStackHash hash) {
+        super(direction, data, hash);
     }
     private PacketBlueprintExpand(RegistryByteBuf buf) {
         super(buf);
@@ -33,7 +35,7 @@ public class PacketBlueprintExpand extends DirectionBytePacket {
         return PACKET_ID;
     }
 
-    protected boolean checkPacket(ServerPlayerEntity player, DirectionBytePacket packet) {
+    protected boolean checkPacket(ServerPlayerEntity player, DirectionByteHashPacket packet) {
         if(packet.data < ALLOWED_DISTANCE.getA() || packet.data > ALLOWED_DISTANCE.getB()) {
             player.networkHandler.disconnect(ReadableString.translatable("kick_reason.iron_quarry.packet_blueprint_position_set.disallowed_distance", ALLOWED_DISTANCE.getA(), ALLOWED_DISTANCE.getB()));
             return false;
@@ -43,7 +45,7 @@ public class PacketBlueprintExpand extends DirectionBytePacket {
     }
 
     @Override
-    protected void receiveFromClient(DirectionBytePacket payload, MinecraftServer server, ServerPlayerEntity player, PacketSender responseSender) {
+    protected void receiveFromClient(DirectionByteHashPacket payload, MinecraftServer server, ServerPlayerEntity player, PacketSender responseSender) {
         if(!this.checkPacket(player, payload)) return;
 
         PlayerInventory playerInventory = player.getInventory();
@@ -53,10 +55,13 @@ public class PacketBlueprintExpand extends DirectionBytePacket {
             if(blueprintItem.isSealed(holdingStack)) return;
 
             blueprintItem.expandInDirection(holdingStack, player, payload.direction, payload.data);
+
+            ScreenHandler screenHandler = player.currentScreenHandler;
+            screenHandler.getSlotIndex(playerInventory, playerInventory.getSelectedSlot()).ifPresent(slot -> screenHandler.setReceivedHash(slot, payload.hash));
         }
     }
 
-    public static PacketBlueprintExpand bake(Direction direction, byte distance) {
-        return new PacketBlueprintExpand(direction, distance);
+    public static PacketBlueprintExpand bake(Direction direction, byte distance, ItemStackHash hash) {
+        return new PacketBlueprintExpand(direction, distance, hash);
     }
 }

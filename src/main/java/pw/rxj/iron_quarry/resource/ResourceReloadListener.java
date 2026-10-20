@@ -1,7 +1,6 @@
 package pw.rxj.iron_quarry.resource;
 
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.MissingSprite;
 import net.minecraft.client.texture.NativeImageBackedTexture;
@@ -24,8 +23,8 @@ public class ResourceReloadListener implements ResourceReloader {
     private static final List<Identifier> resourceIdList = new ArrayList<>();
 
     @Override
-    public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager resourceManager, Executor prepareExecutor, Executor applyExecutor) {
-        return reloadResources(synchronizer, resourceManager, prepareExecutor, applyExecutor);
+    public CompletableFuture<Void> reload(Store store, Executor prepareExecutor, Synchronizer synchronizer, Executor applyExecutor) {
+        return reloadResources(synchronizer, store.getResourceManager(), prepareExecutor, applyExecutor);
     }
 
     public static CompletableFuture<Void> reloadResources(Synchronizer synchronizer, ResourceManager resourceManager, Executor prepareExecutor, Executor applyExecutor) {
@@ -60,15 +59,6 @@ public class ResourceReloadListener implements ResourceReloader {
         resourceIdList.add(resourceId);
     }
     public static void register() {
-        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new IdentifiableResourceReloadListener() {
-            @Override
-            public Identifier getFabricId() {
-                return ResourceReloadListener.ID;
-            }
-            @Override
-            public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager resourceManager, Executor prepareExecutor, Executor applyExecutor) {
-                return ResourceReloadListener.reloadResources(synchronizer, resourceManager, prepareExecutor, applyExecutor);
-            }
-        });
+        ResourceLoader.get(ResourceType.CLIENT_RESOURCES).registerReloader(ID, new ResourceReloadListener());
     }
 }

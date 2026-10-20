@@ -5,8 +5,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.render.item.property.numeric.NumericProperty;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.HeldItemContext;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
@@ -18,9 +18,9 @@ public record HandledModelPredicateProperty() implements NumericProperty {
     public static final MapCodec<HandledModelPredicateProperty> CODEC = MapCodec.unit(new HandledModelPredicateProperty());
 
     @Override
-    public float getValue(ItemStack stack, @Nullable ClientWorld world, @Nullable LivingEntity holder, int seed) {
+    public float getValue(ItemStack stack, @Nullable ClientWorld world, @Nullable HeldItemContext context, int seed) {
         if(stack.getItem() instanceof IModelPredicateProvider modelPredicateProvider) {
-            return modelPredicateProvider.getModelPredicate(stack, world, holder, seed);
+            return modelPredicateProvider.getModelPredicate(stack, world, context == null ? null : context.getEntity(), seed);
         }
 
         return 0.0F;

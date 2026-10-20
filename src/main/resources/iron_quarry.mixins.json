@@ -21,7 +21,8 @@
         "MouseScrollMixin",
         "TooltipComponentMixin",
         "TooltipDataMixin",
-        "TooltipRenderMixin"
+        "TooltipRenderMixin",
+        "WorldRendererMixin"
     ],
     "injectors": {
         "defaultRequire": 1

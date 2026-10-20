@@ -9,7 +9,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.client.render.BlockRenderLayer;
@@ -135,7 +134,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
 
     @Override
     public Optional<TooltipData> getTooltipData(ItemStack stack) {
-        return Screen.hasShiftDown() ? Optional.of(TooltipQuarryInventoryData.from(
+        return MinecraftClient.getInstance().isShiftPressed() ? Optional.of(TooltipQuarryInventoryData.from(
                 this.getBlueprintStack(stack),
                 this.getDrillStack(stack),
                 this.getAugmentInventory(stack),
@@ -150,7 +149,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         float energy_usage = this.baseConsumption * machineUpgradesUtil.getInefficiency();
         float operations = (20.0F / this.ticksPerOperation) * machineUpgradesUtil.getSpeedMultiplier();
 
-        SupplicableAlt<?> HasShiftDown = SupplicableAlt.when(Screen.hasShiftDown());
+        SupplicableAlt<?> HasShiftDown = SupplicableAlt.when(MinecraftClient.getInstance().isShiftPressed());
 
         SupplicableAlt<String> PER_TYPE = HasShiftDown.<String>copy()
                 .then(() -> "per_operation")
@@ -290,7 +289,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof QuarryBlockEntity) {
-            if (!world.isClient && player.isCreative()) {
+            if (!world.isClient() && player.isCreative()) {
                 ItemStack itemStack = new ItemStack(this);
                 itemStack.applyComponentsFrom(blockEntity.createComponentMap());
 

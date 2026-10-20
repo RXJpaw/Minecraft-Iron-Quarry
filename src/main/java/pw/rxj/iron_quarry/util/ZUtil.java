@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.inventory.ContainerLock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemConvertible;
@@ -44,7 +44,7 @@ public class ZUtil {
     }
 
     public static String expandableFixedFloat(float input) {
-        if(Screen.hasShiftDown()) return ReadableString.getDecimalFormatter("#,##0.00").format(input);
+        if(MinecraftClient.getInstance().isShiftPressed()) return ReadableString.getDecimalFormatter("#,##0.00").format(input);
 
         float inputAbs = Math.abs(input);
         String inputSign = input >= 0 ? "" : "-";
@@ -58,7 +58,7 @@ public class ZUtil {
         return ReadableString.cIntFrom(input);
     }
     public static <T extends Number> String expandableFixedInt(T number) {
-        if(Screen.hasShiftDown()) return ReadableString.intFrom(number);
+        if(MinecraftClient.getInstance().isShiftPressed()) return ReadableString.intFrom(number);
 
         return ReadableString.cIntFrom(number);
     }

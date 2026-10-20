@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.item;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.item.tooltip.TooltipType;
@@ -59,7 +59,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     public Text getName(ItemStack stack) {
         long timestamp = this.getCachedTimestamp(stack);
 
-        if(Screen.hasShiftDown() && timestamp > 0) {
+        if(MinecraftClient.getInstance().isShiftPressed() && timestamp > 0) {
             ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
 
             if(!quarryBlockStack.isEmpty()) {
@@ -109,7 +109,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
         long timestamp = this.getCachedTimestamp(stack);
 
-        if(Screen.hasShiftDown() && timestamp > 0) {
+        if(MinecraftClient.getInstance().isShiftPressed() && timestamp > 0) {
             if(ZUtil.getBlockOrItem(quarryBlockStack) instanceof QuarryBlock quarryBlock) {
                 quarryBlock.appendTooltip(quarryBlockStack, context, textConsumer, options);
             } else {

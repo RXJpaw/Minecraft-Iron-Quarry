@@ -1,7 +1,5 @@
 package pw.rxj.iron_quarry.render;
 
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -24,6 +22,7 @@ import oshi.util.tuples.Quartet;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.event.InGameHudRenderCallback;
+import pw.rxj.iron_quarry.event.WorldRenderCallback;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
@@ -45,7 +44,7 @@ public class BlueprintPreviewRenderer {
     }
     private static final List<ScreenPosData> screenPosList = new ArrayList<>();
 
-    private static void renderInWorld(WorldRenderContext context) {
+    private static void renderInWorld(WorldRenderCallback.Context context) {
         screenPosList.clear();
 
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
@@ -209,7 +208,7 @@ public class BlueprintPreviewRenderer {
     public static void register() {
         ResourceReloadListener.include(BLUEPRINT_POSITIONS_TEXTURE);
 
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(BlueprintPreviewRenderer::renderInWorld);
+        WorldRenderCallback.AFTER_TRANSLUCENT.register(BlueprintPreviewRenderer::renderInWorld);
         InGameHudRenderCallback.START.register(BlueprintPreviewRenderer::renderOnScreen);
     }
 }

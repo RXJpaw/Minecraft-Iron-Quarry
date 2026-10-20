@@ -13,7 +13,7 @@ import net.minecraft.util.math.ChunkPos;
 import java.util.*;
 
 public class ChunkLoadingManager {
-    private static final ChunkTicketType QUARRY_EXPRESS = Registry.register(Registries.TICKET_TYPE, Identifier.of("iron_quarry", "quarry_express"), new ChunkTicketType(20L, false, ChunkTicketType.Use.LOADING));
+    private static final ChunkTicketType QUARRY_EXPRESS = Registry.register(Registries.TICKET_TYPE, Identifier.of("iron_quarry", "quarry_express"), new ChunkTicketType(20L, ChunkTicketType.FOR_LOADING));
     private static final List<Ticket> LOADED_CHUNKS = new ArrayList<>();
     private static boolean initialized = false;
 
