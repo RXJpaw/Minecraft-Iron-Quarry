@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.factory;
 
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
-import net.minecraft.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootPool;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.resource.config.server.ChestLootingAugmentConfig;
 
@@ -11,9 +11,9 @@ public class ZLootTables {
         Main.LOGGER.info("Registering loot tables..");
 
         LootTableEvents.MODIFY.register((registryKey, builder, lootTableSource, registries) -> {
-            LootPool.Builder poolBuilder = CHEST_LOOTING_AUGMENT_CONFIG.getLootPoolBuilder(registryKey.getValue());
+            LootPool.Builder poolBuilder = CHEST_LOOTING_AUGMENT_CONFIG.getLootPoolBuilder(registryKey.identifier());
 
-            if(poolBuilder != null) builder.pool(poolBuilder);
+            if(poolBuilder != null) builder.withPool(poolBuilder);
         });
     }
 }

@@ -1,16 +1,16 @@
 package pw.rxj.iron_quarry.network;
 
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.sync.ItemStackHash;
+import net.minecraft.core.Direction;
+import net.minecraft.network.HashedStack;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.network.packet.DirectionByteHashPacket;
@@ -18,26 +18,26 @@ import pw.rxj.iron_quarry.util.ReadableString;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 public class PacketBlueprintExpand extends DirectionByteHashPacket {
-    public static final PacketCodec<RegistryByteBuf, PacketBlueprintExpand> PACKET_CODEC = PacketCodec.of(PacketBlueprintExpand::write, PacketBlueprintExpand::new);
-    public static final CustomPayload.Id<PacketBlueprintExpand> PACKET_ID = register("packet_blueprint_expand", PACKET_CODEC);
+    public static final StreamCodec<RegistryFriendlyByteBuf, PacketBlueprintExpand> PACKET_CODEC = StreamCodec.ofMember(PacketBlueprintExpand::write, PacketBlueprintExpand::new);
+    public static final CustomPacketPayload.Type<PacketBlueprintExpand> PACKET_ID = register("packet_blueprint_expand", PACKET_CODEC);
 
     public static Pair<Integer, Integer> ALLOWED_DISTANCE = new Pair<>(-16, 16);
 
-    private PacketBlueprintExpand(Direction direction, byte data, ItemStackHash hash) {
+    private PacketBlueprintExpand(Direction direction, byte data, HashedStack hash) {
         super(direction, data, hash);
     }
-    private PacketBlueprintExpand(RegistryByteBuf buf) {
+    private PacketBlueprintExpand(RegistryFriendlyByteBuf buf) {
         super(buf);
     }
 
     @Override
-    public Id<PacketBlueprintExpand> getId() {
+    public Type<PacketBlueprintExpand> type() {
         return PACKET_ID;
     }
 
-    protected boolean checkPacket(ServerPlayerEntity player, DirectionByteHashPacket packet) {
+    protected boolean checkPacket(ServerPlayer player, DirectionByteHashPacket packet) {
         if(packet.data < ALLOWED_DISTANCE.getA() || packet.data > ALLOWED_DISTANCE.getB()) {
-            player.networkHandler.disconnect(ReadableString.translatable("kick_reason.iron_quarry.packet_blueprint_position_set.disallowed_distance", ALLOWED_DISTANCE.getA(), ALLOWED_DISTANCE.getB()));
+            player.connection.disconnect(ReadableString.translatable("kick_reason.iron_quarry.packet_blueprint_position_set.disallowed_distance", ALLOWED_DISTANCE.getA(), ALLOWED_DISTANCE.getB()));
             return false;
         }
 
@@ -45,23 +45,23 @@ public class PacketBlueprintExpand extends DirectionByteHashPacket {
     }
 
     @Override
-    protected void receiveFromClient(DirectionByteHashPacket payload, MinecraftServer server, ServerPlayerEntity player, PacketSender responseSender) {
+    protected void receiveFromClient(DirectionByteHashPacket payload, MinecraftServer server, ServerPlayer player, PacketSender responseSender) {
         if(!this.checkPacket(player, payload)) return;
 
-        PlayerInventory playerInventory = player.getInventory();
-        ItemStack holdingStack = playerInventory.getSelectedStack();
+        Inventory playerInventory = player.getInventory();
+        ItemStack holdingStack = playerInventory.getSelectedItem();
 
         if(ZUtil.getBlockOrItem(holdingStack) instanceof BlueprintItem blueprintItem) {
             if(blueprintItem.isSealed(holdingStack)) return;
 
             blueprintItem.expandInDirection(holdingStack, player, payload.direction, payload.data);
 
-            ScreenHandler screenHandler = player.currentScreenHandler;
-            screenHandler.getSlotIndex(playerInventory, playerInventory.getSelectedSlot()).ifPresent(slot -> screenHandler.setReceivedHash(slot, payload.hash));
+            AbstractContainerMenu screenHandler = player.containerMenu;
+            screenHandler.findSlot(playerInventory, playerInventory.getSelectedSlot()).ifPresent(slot -> screenHandler.setRemoteSlotUnsafe(slot, payload.hash));
         }
     }
 
-    public static PacketBlueprintExpand bake(Direction direction, byte distance, ItemStackHash hash) {
+    public static PacketBlueprintExpand bake(Direction direction, byte distance, HashedStack hash) {
         return new PacketBlueprintExpand(direction, distance, hash);
     }
 }

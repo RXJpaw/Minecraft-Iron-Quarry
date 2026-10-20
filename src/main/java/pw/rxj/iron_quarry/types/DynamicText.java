@@ -1,11 +1,11 @@
 package pw.rxj.iron_quarry.types;
 
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
 import pw.rxj.iron_quarry.util.ColorGradient;
 
 import java.awt.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 
 public enum DynamicText {
     EMPTY(0, "empty"),
@@ -32,44 +32,44 @@ public enum DynamicText {
     public boolean isEmpty() { return this.equals(DynamicText.EMPTY); }
     public boolean isPresent() { return !this.isEmpty(); }
 
-    public MutableText getText(Text text) {
+    public MutableComponent getText(Component text) {
         return this.getText(text, 0);
     }
 
-    private static MutableText gradient(Text text, int offset, Color fromColor, Color toColor) {
+    private static MutableComponent gradient(Component text, int offset, Color fromColor, Color toColor) {
         long time = System.currentTimeMillis() / 50L;
         String string = text.getString();
 
-        MutableText name = Text.empty();
+        MutableComponent name = Component.empty();
         ColorGradient gradient = new ColorGradient(fromColor, toColor);
 
         for (int i = 0; i < string.length(); i++) {
             double progress = (time - i - offset) % 45.0;
             Style style = Style.EMPTY.withColor(gradient.getColor((float) progress / 22.5F).getRGB());
 
-            name.append(Text.literal(String.valueOf(string.charAt(i))).setStyle(style));
+            name.append(Component.literal(String.valueOf(string.charAt(i))).setStyle(style));
         }
 
         return name;
     }
-    private static MutableText hue(Text text, int offset, float saturation) {
+    private static MutableComponent hue(Component text, int offset, float saturation) {
         long time = System.currentTimeMillis() / 50L;
         String string = text.getString();
 
-        MutableText name = Text.empty();
+        MutableComponent name = Component.empty();
 
         for (int i = 0; i < string.length(); i++) {
             double hue = 1.0/90.0 * (time - i - offset);
             Style style = Style.EMPTY.withColor(Color.HSBtoRGB((float) (hue % 360), saturation, 1.0F));
 
-            name.append(Text.literal(String.valueOf(string.charAt(i))).setStyle(style));
+            name.append(Component.literal(String.valueOf(string.charAt(i))).setStyle(style));
         }
 
         return name;
     }
 
 
-    public MutableText getText(Text text, int offset) {
+    public MutableComponent getText(Component text, int offset) {
         switch (this) {
             case EMPTY -> {
                 return text.copy();

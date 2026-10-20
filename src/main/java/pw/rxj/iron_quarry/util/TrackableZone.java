@@ -1,7 +1,5 @@
 package pw.rxj.iron_quarry.util;
 
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.text.Text;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,6 +9,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.inventory.Slot;
 
 public class TrackableZone {
     public static class Zone {
@@ -40,7 +40,7 @@ public class TrackableZone {
     private float ticks;
 
     public @NotNull Zone zone = Zone.empty();
-    private @NotNull Supplier<List<Text>> textSupplier = ArrayList::new;
+    private @NotNull Supplier<List<Component>> textSupplier = ArrayList::new;
     private @NotNull Supplier<Integer> intSupplier = () -> 0;
 
     private int mouseX;
@@ -114,13 +114,13 @@ public class TrackableZone {
 
         return this;
     }
-    public void supplyLine(Supplier<Text> supplier) {
+    public void supplyLine(Supplier<Component> supplier) {
         this.textSupplier = () -> Collections.singletonList(supplier.get());
     }
-    public void supplyText(Supplier<List<Text>> supplier) {
+    public void supplyText(Supplier<List<Component>> supplier) {
         this.textSupplier = supplier;
     }
-    public List<Text> getSuppliedText() {
+    public List<Component> getSuppliedText() {
         return this.textSupplier.get();
     }
 

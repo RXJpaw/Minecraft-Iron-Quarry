@@ -1,28 +1,28 @@
 package pw.rxj.iron_quarry.network.packet;
 
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.screen.sync.ItemStackHash;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.network.HashedStack;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import pw.rxj.iron_quarry.network.ComplexPayloadHandler;
 
 public class DirectionByteHashPacket extends ComplexPayloadHandler<DirectionByteHashPacket> {
     public final Direction direction;
     public final byte data;
-    public final ItemStackHash hash;
+    public final HashedStack hash;
 
-    protected DirectionByteHashPacket(Direction direction, byte data, ItemStackHash hash) {
+    protected DirectionByteHashPacket(Direction direction, byte data, HashedStack hash) {
         this.direction = direction;
         this.data = data;
         this.hash = hash;
     }
-    protected DirectionByteHashPacket(RegistryByteBuf buf) {
-        this.direction = Direction.byIndex(buf.readByte());
+    protected DirectionByteHashPacket(RegistryFriendlyByteBuf buf) {
+        this.direction = Direction.from3DDataValue(buf.readByte());
         this.data = buf.readByte();
-        this.hash = ItemStackHash.PACKET_CODEC.decode(buf);
+        this.hash = HashedStack.STREAM_CODEC.decode(buf);
     }
-    public void write(RegistryByteBuf buf) {
-        buf.writeByte(direction.getIndex());
+    public void write(RegistryFriendlyByteBuf buf) {
+        buf.writeByte(direction.get3DDataValue());
         buf.writeByte(data);
-        ItemStackHash.PACKET_CODEC.encode(buf, hash);
+        HashedStack.STREAM_CODEC.encode(buf, hash);
     }
 }

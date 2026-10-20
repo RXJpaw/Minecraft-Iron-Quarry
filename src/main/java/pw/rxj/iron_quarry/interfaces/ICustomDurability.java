@@ -1,15 +1,15 @@
 package pw.rxj.iron_quarry.interfaces;
 
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.data.ZComponents;
 
@@ -30,9 +30,9 @@ public interface ICustomDurability {
         return this.getMaxCDamage() - this.getCDamage(stack);
     }
 
-    default boolean cdamage(ItemStack stack, int amount, @Nullable ServerWorld world, @Nullable ServerPlayerEntity player) {
+    default boolean cdamage(ItemStack stack, int amount, @Nullable ServerLevel world, @Nullable ServerPlayer player) {
         if (amount > 0 && world != null) {
-            amount = EnchantmentHelper.getItemDamage(world, stack, amount);
+            amount = EnchantmentHelper.processDurabilityChange(world, stack, amount);
             if (amount <= 0) {
                 return false;
             }
@@ -43,24 +43,24 @@ public interface ICustomDurability {
         return i >= this.getMaxCDamage();
     }
 
-    default void triggerBreakEventIfNeeded(ItemStack stack, Vec3d breakPos, World breakWorld) {
+    default void triggerBreakEventIfNeeded(ItemStack stack, Vec3 breakPos, Level breakWorld) {
         if(this.getCDurability(stack) > 0) return;
 
-        if(breakWorld.isClient()) {
+        if(breakWorld.isClientSide()) {
             stack.setCount(0);
             return;
         }
 
-        this.triggerBreakEvent(stack, breakPos, (ServerWorld) breakWorld);
+        this.triggerBreakEvent(stack, breakPos, (ServerLevel) breakWorld);
     }
 
-    default void triggerBreakEvent(ItemStack stack, Vec3d breakPos, ServerWorld breakWorld) {
-        double x = breakPos.getX();
-        double y = breakPos.getY();
-        double z = breakPos.getZ();
+    default void triggerBreakEvent(ItemStack stack, Vec3 breakPos, ServerLevel breakWorld) {
+        double x = breakPos.x();
+        double y = breakPos.y();
+        double z = breakPos.z();
 
-        PlaySoundS2CPacket soundPacket = new PlaySoundS2CPacket(SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.BLOCKS, x, y, z, 1.0F, 1.0F, breakWorld.getSeed());
-        breakWorld.getServer().getPlayerManager().sendToAround(null, x, y, z, 64.0, breakWorld.getRegistryKey(), soundPacket);
+        ClientboundSoundPacket soundPacket = new ClientboundSoundPacket(SoundEvents.ITEM_BREAK, SoundSource.BLOCKS, x, y, z, 1.0F, 1.0F, breakWorld.getSeed());
+        breakWorld.getServer().getPlayerList().broadcast(null, x, y, z, 64.0, breakWorld.dimension(), soundPacket);
 
         stack.setCount(0);
     }
@@ -70,6 +70,6 @@ public interface ICustomDurability {
     }
     default int getCItemBarColor(ItemStack stack) {
         float f = Math.max(0.0F, (float)this.getCDurability(stack) / (float)this.getMaxCDamage());
-        return MathHelper.hsvToRgb(f / 3.0F, 1.0F, 1.0F);
+        return Mth.hsvToRgb(f / 3.0F, 1.0F, 1.0F);
     }
 }

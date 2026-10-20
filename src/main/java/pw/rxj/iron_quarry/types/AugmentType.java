@@ -2,10 +2,6 @@ package pw.rxj.iron_quarry.types;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.util.StringIdentifiable;
-import net.minecraft.util.function.ValueLists;
 import org.jetbrains.annotations.NotNull;
 import pw.rxj.iron_quarry.item.AugmentItem;
 import pw.rxj.iron_quarry.resource.config.server.AugmentStatsConfig;
@@ -15,17 +11,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.IntFunction;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
 
-public enum AugmentType implements StringIdentifiable {
+public enum AugmentType implements StringRepresentable {
     EMPTY(0, "empty", "energy", 1, 0, 0.0F, false),
     SPEED(1, "speed", "energy", 1000, 1500, 10.0F/6.0F, false),
     FORTUNE(2, "fortune", "energy", 1500, 200, 10.0F, false),
     SILK_TOUCH(3, "silk_touch", "speed", 0, 0, 2.0F, false),
     CHEST_LOOTING(4, "chest_looting", "time", 0, 0, 0.0F, false);
 
-    public static final Codec<AugmentType> CODEC = StringIdentifiable.createBasicCodec(AugmentType::values);
-    public static final IntFunction<AugmentType> ID_TO_VALUE = ValueLists.<AugmentType>createIndexToValueFunction((value) -> value.id, values(), ValueLists.OutOfBoundsHandling.ZERO);
-    public static final PacketCodec<ByteBuf, AugmentType> PACKET_CODEC = PacketCodecs.indexed(ID_TO_VALUE, (value) -> value.id);
+    public static final Codec<AugmentType> CODEC = StringRepresentable.fromValues(AugmentType::values);
+    public static final IntFunction<AugmentType> ID_TO_VALUE = ByIdMap.<AugmentType>continuous((value) -> value.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+    public static final StreamCodec<ByteBuf, AugmentType> PACKET_CODEC = ByteBufCodecs.idMapper(ID_TO_VALUE, (value) -> value.id);
 
     private final int id;
     private final String name;
@@ -135,7 +135,7 @@ public enum AugmentType implements StringIdentifiable {
     }
 
     @Override
-    public String asString() {
+    public String getSerializedName() {
         return this.getName();
     }
 }

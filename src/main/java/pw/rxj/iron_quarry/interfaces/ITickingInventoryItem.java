@@ -1,9 +1,9 @@
 package pw.rxj.iron_quarry.interfaces;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 public interface ITickingInventoryItem {
-    void tick(ServerPlayerEntity playerEntity, ServerWorld world, ItemStack stack);
+    void tick(ServerPlayer playerEntity, ServerLevel world, ItemStack stack);
 }

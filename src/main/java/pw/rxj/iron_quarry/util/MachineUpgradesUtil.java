@@ -1,14 +1,14 @@
 package pw.rxj.iron_quarry.util;
 
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
 import pw.rxj.iron_quarry.item.AugmentItem;
 import pw.rxj.iron_quarry.item.DrillItem;
 import pw.rxj.iron_quarry.types.AugmentType;
 
 import java.util.List;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantments;
 
 public class MachineUpgradesUtil {
     public static final float FORTUNE_LIMIT = 3.0F;
@@ -22,9 +22,9 @@ public class MachineUpgradesUtil {
     private float inefficiency = 1;
     private float slowness = 1;
 
-    private MachineUpgradesUtil(Inventory inventory){
-        for (int i = 0; i < inventory.size(); i++) {
-            ItemStack stack = inventory.getStack(i);
+    private MachineUpgradesUtil(Container inventory){
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack stack = inventory.getItem(i);
 
             if (stack.getItem() instanceof AugmentItem augmentItem) {
                 AugmentType augmentType = augmentItem.getType(stack);
@@ -60,11 +60,11 @@ public class MachineUpgradesUtil {
         }
     }
 
-    public static MachineUpgradesUtil from(Inventory inventory) {
+    public static MachineUpgradesUtil from(Container inventory) {
         return new MachineUpgradesUtil(inventory);
     }
     public static MachineUpgradesUtil from(List<ItemStack> stacks) {
-        return from(new SimpleInventory(stacks.toArray(new ItemStack[0])));
+        return from(new SimpleContainer(stacks.toArray(new ItemStack[0])));
     }
 
     public boolean hasSilkTouch() { return this.hasSilkTouch; }

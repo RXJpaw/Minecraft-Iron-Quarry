@@ -7,37 +7,37 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.LootableContainerBlockEntity;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.ComponentsAccess;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.screen.ScreenHandler;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.data.QuarryBlockScreenData;
@@ -65,9 +65,9 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     }
 
     private Block getBlock() {
-        if(this.world == null) return null;
+        if(this.level == null) return null;
 
-        return this.world.getBlockState(this.pos).getBlock();
+        return this.level.getBlockState(this.worldPosition).getBlock();
     }
 
     public QuarryBlock getQuarryBlock(){
@@ -81,29 +81,29 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         }
     }
 
-    public boolean canPlayerUse(PlayerEntity player) {
-        if (this.world != null && this.world.getBlockEntity(this.pos) != this) {
+    public boolean canPlayerUse(Player player) {
+        if (this.level != null && this.level.getBlockEntity(this.worldPosition) != this) {
             return false;
         } else {
-            return player.squaredDistanceTo((double)this.pos.getX() + 0.5, (double)this.pos.getY() + 0.5, (double)this.pos.getZ() + 0.5) <= 64.0;
+            return player.distanceToSqr((double)this.worldPosition.getX() + 0.5, (double)this.worldPosition.getY() + 0.5, (double)this.worldPosition.getZ() + 0.5) <= 64.0;
         }
     }
 
     @Override
-    public void markRemoved() {
-        if(world == null) return;
-        if(world.isClient()) return;
+    public void setRemoved() {
+        if(level == null) return;
+        if(level.isClientSide()) return;
 
-        ChunkLoadingManager.removeTickets((ServerWorld) this.world, this.pos);
+        ChunkLoadingManager.removeTickets((ServerLevel) this.level, this.worldPosition);
 
-        super.markRemoved();
+        super.setRemoved();
     }
 
     //Machine Configuration
     public MachineConfiguration Configuration = new MachineConfiguration() {
         @Override
         public void markDirty() {
-            QuarryBlockEntity.this.markDirty();
+            QuarryBlockEntity.this.setChanged();
         }
 
         @Override
@@ -127,7 +127,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     public final ComplexEnergyContainer EnergyContainer = new ComplexEnergyContainer() {
         @Override
         public void onFinalCommit() {
-            QuarryBlockEntity.this.markDirty();
+            QuarryBlockEntity.this.setChanged();
             QuarryBlockEntity.this.updateListeners();
         }
 
@@ -155,21 +155,21 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     }
 
     public void attemptCharge() {
-        if(world == null) return;
-        if(world.isClient()) return;
+        if(level == null) return;
+        if(level.isClientSide()) return;
 
         long chargeEnergy = Math.min(EnergyContainer.getFreeSpace(), EnergyContainer.getMaxInsert(null));
         if(chargeEnergy <= 0) return;
 
-        ItemStack batteryStack = BatteryInputInventory.getStack(0);
+        ItemStack batteryStack = BatteryInputInventory.getItem(0);
         if(batteryStack.isEmpty()) return;
 
         EnergyStorage energyStorage = ContainerItemContext.ofSingleSlot(InventoryStorage.of(BatteryInputInventory, null).getSlot(0)).find(EnergyStorage.ITEM);
 
         if(energyStorage != null && energyStorage.getAmount() > 0) {
             EnergyStorageUtil.move(energyStorage, EnergyContainer.getSideStorage(null), Long.MAX_VALUE, null);
-        } else if(OutputInventory.canInsert(batteryStack)) {
-            OutputInventory.addStack(BatteryInputInventory.removeStack(0));
+        } else if(OutputInventory.canAddItem(batteryStack)) {
+            OutputInventory.addItem(BatteryInputInventory.removeItemNoUpdate(0));
         }
 
 
@@ -184,8 +184,8 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
 
     public List<ItemStack> getMachineUpgradeStacks() {
         List<ItemStack> stacks = new ArrayList<>();
-        stacks.addAll(MachineUpgradesInventory.heldStacks);
-        stacks.addAll(DrillInventory.heldStacks);
+        stacks.addAll(MachineUpgradesInventory.items);
+        stacks.addAll(DrillInventory.items);
 
         return stacks;
 
@@ -194,10 +194,10 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     public InventoryStorage getItemSideConfiguration(Direction direction){
         if(direction == null) return null;
 
-        Face face = Face.from(direction, this.getCachedState().get(QuarryBlock.FACING));
+        Face face = Face.from(direction, this.getBlockState().getValue(QuarryBlock.FACING));
         Object object = this.Configuration.getLinkedIo(face);
 
-        if(object instanceof Inventory inventory) {
+        if(object instanceof Container inventory) {
             return InventoryStorage.of(inventory, null);
         }
 
@@ -209,21 +209,21 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             if(!this.Configuration.getIoState(face).equals(ioState)) continue;
 
             Object object = this.Configuration.getLinkedIo(face);
-            if(!(object instanceof Inventory inventory)) continue;
+            if(!(object instanceof Container inventory)) continue;
 
-            Direction direction = face.toDirection(this.getCachedState().get(QuarryBlock.FACING));
+            Direction direction = face.toDirection(this.getBlockState().getValue(QuarryBlock.FACING));
             if(direction == null) return;
 
             Transaction transaction = Transaction.openOuter();
 
-            Storage<ItemVariant> itemStorage = ItemStorage.SIDED.find(this.world, this.pos.add(direction.getVector()), direction.getOpposite());
+            Storage<ItemVariant> itemStorage = ItemStorage.SIDED.find(this.level, this.worldPosition.offset(direction.getUnitVec3i()), direction.getOpposite());
             if(itemStorage != null) {
-                for (int i = 0; i < inventory.size(); i++) {
-                    ItemStack itemStack = inventory.getStack(i);
+                for (int i = 0; i < inventory.getContainerSize(); i++) {
+                    ItemStack itemStack = inventory.getItem(i);
                     if(itemStack.isEmpty()) continue;
 
                     long insertedCount = itemStorage.insert(ItemVariant.of(itemStack), itemStack.getCount(), transaction);
-                    inventory.removeStack(i, (int) insertedCount);
+                    inventory.removeItem(i, (int) insertedCount);
 
                 }
             }
@@ -239,13 +239,13 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     private int drillHash = 0;
     private int cooldown = 0;
 
-    public static void tick(World thisWorld, BlockPos thisPos, BlockState thisBlockState, QuarryBlockEntity thisBlockEntity) {
+    public static void tick(Level thisWorld, BlockPos thisPos, BlockState thisBlockState, QuarryBlockEntity thisBlockEntity) {
         if(thisWorld == null) return;
-        if(thisWorld.isClient()) return;
+        if(thisWorld.isClientSide()) return;
 
-        Random random = thisWorld.random;
+        RandomSource random = thisWorld.random;
 
-        ServerWorld thisServerWorld = (ServerWorld) thisWorld;
+        ServerLevel thisServerWorld = (ServerLevel) thisWorld;
         MinecraftServer minecraftServer = thisServerWorld.getServer();
 
         QuarryBlock thisBlock = thisBlockEntity.getQuarryBlock();
@@ -254,9 +254,9 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         thisBlockEntity.attemptCharge();
         thisBlockEntity.attemptPushIo(IoState.ORANGE);
 
-        ItemStack blueprintStack = thisBlockEntity.BlueprintInventory.getStack(0);
+        ItemStack blueprintStack = thisBlockEntity.BlueprintInventory.getItem(0);
         int blueprintHash = blueprintStack.hashCode();
-        ItemStack drillStack = thisBlockEntity.DrillInventory.getStack(0);
+        ItemStack drillStack = thisBlockEntity.DrillInventory.getItem(0);
         int drillHash = drillStack.hashCode();
 
         if(thisBlockEntity.blueprintHash != blueprintHash || thisBlockEntity.drillHash != drillHash) {
@@ -283,8 +283,8 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack).orElse(null);
         if(secondPos == null) return;
 
-        RegistryKey<World> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack).orElse(null);
-        ServerWorld serverWorldToBreak = minecraftServer.getWorld(worldRegistryKey);
+        ResourceKey<Level> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack).orElse(null);
+        ServerLevel serverWorldToBreak = minecraftServer.getLevel(worldRegistryKey);
         if(serverWorldToBreak == null) return;
 
         MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(thisBlockEntity.getMachineUpgradeStacks());
@@ -334,7 +334,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
                 ChunkLoadingManager.addTicket(serverWorldToBreak, chunkPosToLoad, thisServerWorld, thisPos);
             }
 
-            WorldChunk worldChunk = serverWorldToBreak.getChunkManager().getWorldChunk(chunkPos.x, chunkPos.z);
+            LevelChunk worldChunk = serverWorldToBreak.getChunkSource().getChunkNow(chunkPos.x, chunkPos.z);
             if(worldChunk == null) return;
 
             thisBlockEntity.currentChunk = chunkPos;
@@ -387,26 +387,26 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     private boolean canDrill(BlockActress blockActress, MachineUpgradesUtil upgradesUtil) {
         return this.canDrill(() -> blockActress.blockEntity, blockActress.blockState, upgradesUtil);
     }
-    private boolean canDrill(WorldChunk worldChunk, BlockState blockState, BlockPos blockPos, MachineUpgradesUtil upgradesUtil) {
+    private boolean canDrill(LevelChunk worldChunk, BlockState blockState, BlockPos blockPos, MachineUpgradesUtil upgradesUtil) {
         return this.canDrill(() -> ZUtil.getBlockEntity(worldChunk, blockState, blockPos), blockState, upgradesUtil);
     }
     //The block hardness check will render any chest looting augment useless.
     private boolean canDrill(Supplier<BlockEntity> blockEntitySupplier, BlockState blockState, MachineUpgradesUtil upgradesUtil) {
         if(blockState.isAir()) return false;
         Block block = blockState.getBlock();
-        if(block.getHardness() < 0) return false;
+        if(block.defaultDestroyTime() < 0) return false;
         BlockEntity blockEntity = blockEntitySupplier.get();
         if(blockEntity == null) return true;
 
         if(upgradesUtil.hasChestLooting()) {
-            LootableContainerBlockEntity lootableContainer = ZUtil.getUnlockedLootableContainer(blockEntity);
+            RandomizableContainerBlockEntity lootableContainer = ZUtil.getUnlockedLootableContainer(blockEntity);
             return lootableContainer != null && !lootableContainer.isEmpty();
         }
 
         return false;
     }
 
-    private List<BlockPosState> drillQueue(int threads, QuarryBlock quarryBlock, BlockState quarryBlockState, BlockPos quarryPos, QuarryBlockEntity quarryBlockEntity, ServerWorld serverWorldToBreak,
+    private List<BlockPosState> drillQueue(int threads, QuarryBlock quarryBlock, BlockState quarryBlockState, BlockPos quarryPos, QuarryBlockEntity quarryBlockEntity, ServerLevel serverWorldToBreak,
                                            ItemStack drillStack, DrillItem drillItem, MachineUpgradesUtil upgradesUtil) {
         List<BlockPosState> drillResults = new ArrayList<>();
 
@@ -435,17 +435,17 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             //handle special block entities
             if(this.canDrill(blockActress, upgradesUtil)) {
                 //will only work if canDrill conditions are met! like if the container is not empty
-                if(blockActress.blockEntity instanceof LootableContainerBlockEntity lootableContainer) {
-                    for (int slot = 0; slot < lootableContainer.size(); slot++) {
-                        ItemStack stack = lootableContainer.getStack(slot).copy();
+                if(blockActress.blockEntity instanceof RandomizableContainerBlockEntity lootableContainer) {
+                    for (int slot = 0; slot < lootableContainer.getContainerSize(); slot++) {
+                        ItemStack stack = lootableContainer.getItem(slot).copy();
                         if(stack.isEmpty()) continue;
                         stack.setCount(1);
 
-                        if(OutputInventory.canInsert(stack)) {
+                        if(OutputInventory.canAddItem(stack)) {
                             long energyConsumption = quarryBlock.getEnergyConsumption(upgradesUtil);
                             if(EnergyContainer.getStored() < energyConsumption) return drillResults;
 
-                            OutputInventory.addStack(lootableContainer.removeStack(slot, 1));
+                            OutputInventory.addItem(lootableContainer.removeItem(slot, 1));
                             EnergyContainer.useEnergy(energyConsumption);
 
                             break;
@@ -470,10 +470,10 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             ItemStack mockPickaxe = drillItem.getToolStack().copy();
 
             if(upgradesUtil.hasSilkTouch()) {
-                mockPickaxe.addEnchantment(ZUtil.getEnchantmentEntry(serverWorldToBreak.getRegistryManager(), Enchantments.SILK_TOUCH), 1);
+                mockPickaxe.enchant(ZUtil.getEnchantmentEntry(serverWorldToBreak.registryAccess(), Enchantments.SILK_TOUCH), 1);
             } else {
                 int fortuneLevel = FortuneUtil.fromProbability(upgradesUtil.getFortuneMultiplier());
-                if(fortuneLevel > 0) mockPickaxe.addEnchantment(ZUtil.getEnchantmentEntry(serverWorldToBreak.getRegistryManager(), Enchantments.FORTUNE), fortuneLevel);
+                if(fortuneLevel > 0) mockPickaxe.enchant(ZUtil.getEnchantmentEntry(serverWorldToBreak.registryAccess(), Enchantments.FORTUNE), fortuneLevel);
             }
 
             //only drop item if required mining level is present
@@ -481,7 +481,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
                 List<ItemStack> droppedStacks = blockActress.getDroppedStacks(quarryBlockState, quarryPos, mockPickaxe);
 
                 if(OutputInventory.canInsertAll(droppedStacks)) {
-                    droppedStacks.forEach(OutputInventory::addStack);
+                    droppedStacks.forEach(OutputInventory::addItem);
                 } else {
                     return drillResults;
                 }
@@ -494,7 +494,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             blockActress.setBlockState(Blocks.AIR);
 
             boolean drillBroke = drillItem.cdamage(drillStack, 1, serverWorldToBreak, null);
-            if(drillBroke) drillItem.triggerBreakEvent(drillStack, quarryPos.toCenterPos(), serverWorldToBreak);
+            if(drillBroke) drillItem.triggerBreakEvent(drillStack, quarryPos.getCenter(), serverWorldToBreak);
 
             MiningQueue.remove(miningQueueIndex);
             drillResults.add(blockPosState);
@@ -504,7 +504,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
     }
 
     @Override
-    protected void readComponents(ComponentsAccess components) {
+    protected void applyImplicitComponents(DataComponentGetter components) {
         EnergyContainer.read(components.getOrDefault(EnergyImpl.ENERGY_COMPONENT, 0L));
 
         OutputInventory.read(components.get(QuarryInventory.Output.COMPONENT));
@@ -516,94 +516,94 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         Configuration.read(components.get(MachineConfiguration.COMPONENT));
     }
     @Override
-    protected void addComponents(ComponentMap.Builder componentMapBuilder) {
-        componentMapBuilder.add(EnergyImpl.ENERGY_COMPONENT, EnergyContainer.getStored());
+    protected void collectImplicitComponents(DataComponentMap.Builder componentMapBuilder) {
+        componentMapBuilder.set(EnergyImpl.ENERGY_COMPONENT, EnergyContainer.getStored());
 
-        componentMapBuilder.add(QuarryInventory.Output.COMPONENT, OutputInventory);
-        componentMapBuilder.add(QuarryInventory.BatteryInput.COMPONENT, BatteryInputInventory);
-        componentMapBuilder.add(QuarryInventory.Blueprint.COMPONENT, BlueprintInventory);
-        componentMapBuilder.add(QuarryInventory.Drill.COMPONENT, DrillInventory);
-        componentMapBuilder.add(QuarryInventory.MachineUpgrades.COMPONENT, MachineUpgradesInventory);
+        componentMapBuilder.set(QuarryInventory.Output.COMPONENT, OutputInventory);
+        componentMapBuilder.set(QuarryInventory.BatteryInput.COMPONENT, BatteryInputInventory);
+        componentMapBuilder.set(QuarryInventory.Blueprint.COMPONENT, BlueprintInventory);
+        componentMapBuilder.set(QuarryInventory.Drill.COMPONENT, DrillInventory);
+        componentMapBuilder.set(QuarryInventory.MachineUpgrades.COMPONENT, MachineUpgradesInventory);
 
-        componentMapBuilder.add(MachineConfiguration.COMPONENT, Configuration);
+        componentMapBuilder.set(MachineConfiguration.COMPONENT, Configuration);
     }
     @Override
-    public void removeFromCopiedStackData(WriteView view) {
-        view.remove("rxj.pw/Energy");
-        view.remove("rxj.pw/Storage");
-        view.remove("rxj.pw/Config");
+    public void removeComponentsFromTag(ValueOutput view) {
+        view.discard("rxj.pw/Energy");
+        view.discard("rxj.pw/Storage");
+        view.discard("rxj.pw/Config");
     }
 
     //NBT Handling
     @Override
-    public void readData(ReadView view) {
+    public void loadAdditional(ValueInput view) {
         //Energy
-        NbtCompound Energy = view.read("rxj.pw/Energy", NbtCompound.CODEC).orElseGet(NbtCompound::new);
+        CompoundTag Energy = view.read("rxj.pw/Energy", CompoundTag.CODEC).orElseGet(CompoundTag::new);
         EnergyContainer.read(Energy);
 
         //Storage
-        ReadView Storage = view.getReadView("rxj.pw/Storage");
+        ValueInput Storage = view.childOrEmpty("rxj.pw/Storage");
 
-        OutputInventory.read(Storage.getReadView("OutputInventory"));
-        BatteryInputInventory.read(Storage.getReadView("BatteryInputInventory"));
-        BlueprintInventory.read(Storage.getReadView("BlueprintInventory"));
-        DrillInventory.read(Storage.getReadView("DrillInventory"));
-        MachineUpgradesInventory.read(Storage.getReadView("MachineUpgradesInventory"));
+        OutputInventory.read(Storage.childOrEmpty("OutputInventory"));
+        BatteryInputInventory.read(Storage.childOrEmpty("BatteryInputInventory"));
+        BlueprintInventory.read(Storage.childOrEmpty("BlueprintInventory"));
+        DrillInventory.read(Storage.childOrEmpty("DrillInventory"));
+        MachineUpgradesInventory.read(Storage.childOrEmpty("MachineUpgradesInventory"));
 
         //Config
-        NbtCompound Config = view.read("rxj.pw/Config", NbtCompound.CODEC).orElseGet(NbtCompound::new);
+        CompoundTag Config = view.read("rxj.pw/Config", CompoundTag.CODEC).orElseGet(CompoundTag::new);
         Configuration.read(Config);
     }
     @Override
-    public void writeData(WriteView view) {
+    public void saveAdditional(ValueOutput view) {
         //Energy
-        NbtCompound Energy = EnergyContainer.write();
-        view.put("rxj.pw/Energy", NbtCompound.CODEC, Energy);
+        CompoundTag Energy = EnergyContainer.write();
+        view.store("rxj.pw/Energy", CompoundTag.CODEC, Energy);
 
         //Storage
-        WriteView Storage = view.get("rxj.pw/Storage");
+        ValueOutput Storage = view.child("rxj.pw/Storage");
 
-        OutputInventory.write(Storage.get("OutputInventory"));
-        BatteryInputInventory.write(Storage.get("BatteryInputInventory"));
-        BlueprintInventory.write(Storage.get("BlueprintInventory"));
-        DrillInventory.write(Storage.get("DrillInventory"));
-        MachineUpgradesInventory.write(Storage.get("MachineUpgradesInventory"));
+        OutputInventory.write(Storage.child("OutputInventory"));
+        BatteryInputInventory.write(Storage.child("BatteryInputInventory"));
+        BlueprintInventory.write(Storage.child("BlueprintInventory"));
+        DrillInventory.write(Storage.child("DrillInventory"));
+        MachineUpgradesInventory.write(Storage.child("MachineUpgradesInventory"));
 
         //Config
-        NbtCompound Config = Configuration.write();
-        view.put("rxj.pw/Config", NbtCompound.CODEC, Config);
+        CompoundTag Config = Configuration.write();
+        view.store("rxj.pw/Config", CompoundTag.CODEC, Config);
     }
 
     @Nullable
     @Override
-    public Packet<ClientPlayPacketListener> toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(this);
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
     @Override
-    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-        return createNbt(registryLookup);
+    public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
+        return saveWithoutMetadata(registryLookup);
     }
 
     public void updateListeners(){
-        if(world == null) return;
+        if(level == null) return;
 
-        world.updateListeners(this.pos, this.getCachedState(), this.getCachedState(), Block.NOTIFY_LISTENERS);
+        level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), Block.UPDATE_CLIENTS);
     }
 
     //Screen Handler
     @Nullable
     @Override
-    public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+    public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
         return new QuarryBlockScreenHandler(syncId, playerInventory, OutputInventory, BatteryInputInventory, MachineUpgradesInventory, BlueprintInventory, DrillInventory, EnergyContainer, Configuration, this.getQuarryBlock());
     }
 
     @Override
-    public Text getDisplayName() {
-        return Text.translatable(this.getCachedState().getBlock().getTranslationKey());
+    public Component getDisplayName() {
+        return Component.translatable(this.getBlockState().getBlock().getDescriptionId());
     }
 
     @Override
-    public QuarryBlockScreenData getScreenOpeningData(ServerPlayerEntity player) {
-        return QuarryBlockScreenData.of(this.getQuarryBlock(), pos);
+    public QuarryBlockScreenData getScreenOpeningData(ServerPlayer player) {
+        return QuarryBlockScreenData.of(this.getQuarryBlock(), worldPosition);
     }
 }

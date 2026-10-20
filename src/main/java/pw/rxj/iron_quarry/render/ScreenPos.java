@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.render;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.Window;
+import com.mojang.blaze3d.platform.Window;
+import net.minecraft.client.Minecraft;
 import org.joml.Vector4f;
 
 public class ScreenPos {
@@ -37,11 +37,11 @@ public class ScreenPos {
     }
 
     public double distanceToCenter() {
-        MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        Minecraft minecraftClient = Minecraft.getInstance();
         Window window = minecraftClient.getWindow();
 
-        float x = window.getScaledWidth() / 2.0F;
-        float y = window.getScaledHeight() / 2.0F;
+        float x = window.getGuiScaledWidth() / 2.0F;
+        float y = window.getGuiScaledHeight() / 2.0F;
 
         return this.distanceTo(ScreenPos.from(x, y, 1.0F));
     }

@@ -1,18 +1,10 @@
 package pw.rxj.iron_quarry.util;
 
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import pw.rxj.iron_quarry.Global;
 import pw.rxj.iron_quarry.render.Cuboid;
 import pw.rxj.iron_quarry.types.DynamicText;
-
+import com.mojang.blaze3d.platform.InputConstants;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -20,9 +12,16 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.Vec3;
 
 public class ReadableString {
-    public static Text ERROR = Text.of("<error>");
+    public static Component ERROR = Component.nullToEmpty("<error>");
 
     public static DecimalFormat getDecimalFormatter(String pattern) {
         return new DecimalFormat(pattern, DecimalFormatSymbols.getInstance(Locale.ROOT));
@@ -52,8 +51,8 @@ public class ReadableString {
             return String.format("%s", number);
     }
 
-    public static MutableText space() {
-        return Text.literal(" ");
+    public static MutableComponent space() {
+        return Component.literal(" ");
     }
 
     public static Optional<String> from(BlockPos blockPos) {
@@ -61,8 +60,8 @@ public class ReadableString {
 
         return String.format("%s, %s, %s", blockPos.getX(), blockPos.getY(), blockPos.getZ()).describeConstable();
     }
-    public static Optional<Text> textFrom(BlockPos blockPos) {
-        return from(blockPos).map(Text::of);
+    public static Optional<Component> textFrom(BlockPos blockPos) {
+        return from(blockPos).map(Component::nullToEmpty);
     }
 
     public static Optional<String> from(Identifier identifier) {
@@ -77,63 +76,63 @@ public class ReadableString {
 
         return readablePath.toString().describeConstable();
     }
-    public static Optional<Text> textFrom(Identifier identifier) {
-        return from(identifier).map(Text::of);
+    public static Optional<Component> textFrom(Identifier identifier) {
+        return from(identifier).map(Component::nullToEmpty);
     }
 
     public static Optional<String> from(Cuboid cuboid) {
         if(cuboid == null) return Optional.empty();
 
-        Vec3d abs = cuboid.fullblock().abs();
+        Vec3 abs = cuboid.fullblock().abs();
 
         return String.format("%s × %s × %s", (int) abs.x, (int) abs.y, (int) abs.z).describeConstable();
     }
-    public static Optional<Text> textFrom(Cuboid cuboid) {
-        return from(cuboid).map(Text::of);
+    public static Optional<Component> textFrom(Cuboid cuboid) {
+        return from(cuboid).map(Component::nullToEmpty);
     }
 
-    public static Text textFrom(@NotNull KeyBinding keyBinding) {
-        InputUtil.Type type = keyBinding.boundKey.getCategory();
-        int code = keyBinding.boundKey.getCode();
+    public static Component textFrom(@NotNull KeyMapping keyBinding) {
+        InputConstants.Type type = keyBinding.key.getType();
+        int code = keyBinding.key.getValue();
 
-        if(type.equals(InputUtil.Type.MOUSE)) {
+        if(type.equals(InputConstants.Type.MOUSE)) {
             return switch (code) {
-                case 0 -> Text.translatable("short_key.mouse.c.0");
-                case 1 -> Text.translatable("short_key.mouse.c.1");
-                case 2 -> Text.translatable("short_key.mouse.c.2");
+                case 0 -> Component.translatable("short_key.mouse.c.0");
+                case 1 -> Component.translatable("short_key.mouse.c.1");
+                case 2 -> Component.translatable("short_key.mouse.c.2");
 
-                default -> keyBinding.getBoundKeyLocalizedText();
+                default -> keyBinding.getTranslatedKeyMessage();
             };
         } else {
-            return keyBinding.getBoundKeyLocalizedText();
+            return keyBinding.getTranslatedKeyMessage();
         }
     }
 
-    public static MutableText toTimeAgo(long timestamp) {
+    public static MutableComponent toTimeAgo(long timestamp) {
         long seconds = (System.currentTimeMillis() - timestamp) / 1000;
 
         if(seconds < 10) {
-            return Text.translatable("time.unit.c.a_moment");
+            return Component.translatable("time.unit.c.a_moment");
         } else if (seconds < 60) {
-            return Text.translatable("time.unit.c.second.plural", seconds);
+            return Component.translatable("time.unit.c.second.plural", seconds);
         } else if (seconds < 120) {
-            return Text.translatable("time.unit.c.minute.singular", seconds / 60);
+            return Component.translatable("time.unit.c.minute.singular", seconds / 60);
         } else if (seconds < 3_600) {
-            return Text.translatable("time.unit.c.minute.plural", seconds / 60);
+            return Component.translatable("time.unit.c.minute.plural", seconds / 60);
         } else if (seconds < 7_200) {
-            return Text.translatable("time.unit.c.hour.singular", seconds / 3_600);
+            return Component.translatable("time.unit.c.hour.singular", seconds / 3_600);
         } else if (seconds < 86_400) {
-            return Text.translatable("time.unit.c.hour.plural", seconds / 3_600);
+            return Component.translatable("time.unit.c.hour.plural", seconds / 3_600);
         } else if (seconds < 172_800) {
-            return Text.translatable("time.unit.c.day.singular", seconds / 86_400);
+            return Component.translatable("time.unit.c.day.singular", seconds / 86_400);
         } else {
-            return Text.translatable("time.unit.c.day.plural", seconds / 86_400);
+            return Component.translatable("time.unit.c.day.plural", seconds / 86_400);
         }
     }
 
-    public static MutableText translatable(String key, Object... args) {
-        MutableText translation = Text.translatable(key, args);
-        MutableText parsed = Text.empty();
+    public static MutableComponent translatable(String key, Object... args) {
+        MutableComponent translation = Component.translatable(key, args);
+        MutableComponent parsed = Component.empty();
 
         String string = translation.getString();
         Pattern pattern = Pattern.compile("(.*?)§\\{(.*?) (.*?)\\}");
@@ -156,9 +155,9 @@ public class ReadableString {
             if(modifier instanceof Integer rgb) {
                 Style style = Style.EMPTY.withColor(rgb);
 
-                parsed.append(Text.literal(text).setStyle(style));
+                parsed.append(Component.literal(text).setStyle(style));
             } else if(modifier instanceof DynamicText dynamicText) {
-                MutableText dynamicResult = dynamicText.getText(Text.literal(text), textOffset);
+                MutableComponent dynamicResult = dynamicText.getText(Component.literal(text), textOffset);
 
                 parsed.append(dynamicResult);
             }

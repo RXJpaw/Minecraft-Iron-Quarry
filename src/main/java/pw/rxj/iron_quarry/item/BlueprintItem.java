@@ -3,33 +3,39 @@ package pw.rxj.iron_quarry.item;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.type.TooltipDisplayComponent;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.recipe.input.SmithingRecipeInput;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.*;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.*;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Vec3i;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.HashedStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.SmithingRecipeInput;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.screen.sync.ItemStackHash;
 import pw.rxj.iron_quarry.data.BlueprintPositionComponent;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.interfaces.*;
@@ -51,7 +57,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmithing, IHandledGrinding, IHandledItemEntity, IHandledMainHandScrolling, IAlwaysRenderItemName, IHandledKeyedAction, IModifyItemGroupEntries {
-    public BlueprintItem(Settings settings) {
+    public BlueprintItem(Properties settings) {
         super(settings);
     }
 
@@ -63,10 +69,10 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     }
 
     @Override
-    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, RegistryWrapper.WrapperLookup registryLookup) {
+    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, HolderLookup.Provider registryLookup) {
         ItemStack output = handler.getResultStack();
         if(BlueprintItem.isNotOf(output)) return ItemStack.EMPTY;
-        ItemStack base = input.getStackInSlot(1).copy();
+        ItemStack base = input.getItem(1).copy();
 
         if(this.isSealed(base)) return ItemStack.EMPTY;
         if(this.getFirstPos(base).isEmpty()) return ItemStack.EMPTY;
@@ -74,13 +80,13 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
 
         this.setSealed(base, true);
 
-        return base.copyComponentsToNewStack(output.getItem(), output.getCount());
+        return base.transmuteCopy(output.getItem(), output.getCount());
     }
     @Override
     public ItemStack getSmithingOutputPreview(Optional<Ingredient> base, Optional<Ingredient> addition, @Nullable TagKey<Item> additionTag, ItemStack output) {
         ItemStack preview = output.copy();
 
-        if(Ingredient.matches(addition, Items.AMETHYST_SHARD.getDefaultStack())) {
+        if(Ingredient.testOptionalIngredient(addition, Items.AMETHYST_SHARD.getDefaultInstance())) {
             this.setSealed(preview, true);
 
             return preview;
@@ -108,16 +114,16 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
 
     @Override
     public void handleItemEntity(ItemEntity itemEntity) {
-        if(this.isSealed(itemEntity.getStack())) itemEntity.setInvulnerable(true);
+        if(this.isSealed(itemEntity.getItem())) itemEntity.setInvulnerable(true);
     }
 
     @Override
     @Environment(EnvType.CLIENT)
-    public boolean handleMainHandScrolling(ClientPlayerEntity player, ItemStack stack, ScrollDirection scrollDirection) {
-        if(!MinecraftClient.getInstance().options.sneakKey.isPressed() || this.isSealed(stack)) return false;
+    public boolean handleMainHandScrolling(LocalPlayer player, ItemStack stack, ScrollDirection scrollDirection) {
+        if(!Minecraft.getInstance().options.keyShift.isDown() || this.isSealed(stack)) return false;
 
-        Direction direction = ZUtil.getFacingDirection(player.getYaw(), player.getPitch());
-        int multiplier = MinecraftClient.getInstance().options.sprintKey.isPressed() ? 16 : 1;
+        Direction direction = ZUtil.getFacingDirection(player.getYRot(), player.getXRot());
+        int multiplier = Minecraft.getInstance().options.keySprint.isDown() ? 16 : 1;
 
         int amount = switch(scrollDirection) {
             case FORWARDS -> multiplier;
@@ -126,21 +132,21 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         };
 
         if(this.expandInDirection(stack, player, direction, amount)) {
-            ZNetwork.sendToServer(PacketBlueprintExpand.bake(direction, (byte) amount, ItemStackHash.fromItemStack(stack, player.networkHandler.getComponentHasher())));
+            ZNetwork.sendToServer(PacketBlueprintExpand.bake(direction, (byte) amount, HashedStack.create(stack, player.connection.decoratedHashOpsGenenerator())));
 
             return true;
         }
 
         return false;
     }
-    public boolean expandInDirection(ItemStack stack, PlayerEntity player, Direction direction, int amount) {
-        World playerWorld = player.getEntityWorld();
+    public boolean expandInDirection(ItemStack stack, Player player, Direction direction, int amount) {
+        Level playerWorld = player.level();
 
-        RegistryKey<World> world = this.getWorldRegistryKey(stack).orElseGet(playerWorld::getRegistryKey);
-        if(!world.equals(player.getEntityWorld().getRegistryKey())) return false;
+        ResourceKey<Level> world = this.getWorldRegistryKey(stack).orElseGet(playerWorld::dimension);
+        if(!world.equals(player.level().dimension())) return false;
 
-        BlockPos firstPos = this.getFirstPos(stack).orElseGet(player::getBlockPos);
-        BlockPos secondPos = this.getSecondPos(stack).orElseGet(player::getBlockPos);
+        BlockPos firstPos = this.getFirstPos(stack).orElseGet(player::blockPosition);
+        BlockPos secondPos = this.getSecondPos(stack).orElseGet(player::blockPosition);
 
         final boolean first;
         final Vec3i vector;
@@ -176,9 +182,9 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         }
 
         if(first) {
-            firstPos = firstPos.add(vector);
+            firstPos = firstPos.offset(vector);
         } else {
-            secondPos = secondPos.add(vector);
+            secondPos = secondPos.offset(vector);
         }
 
         this.setFirstPos(stack, playerWorld, firstPos);
@@ -188,32 +194,32 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     }
 
     @Override
-    public boolean isItemBarVisible(ItemStack stack) {
+    public boolean isBarVisible(ItemStack stack) {
         return this.isSealed(stack) & this.getMinedChunks(stack) > 0;
     }
     @Override
-    public int getItemBarColor(ItemStack stack) {
+    public int getBarColor(ItemStack stack) {
         return 0x5980DF;
     }
     @Override
-    public int getItemBarStep(ItemStack stack) {
+    public int getBarWidth(ItemStack stack) {
         return (int) Math.ceil(((double) this.getMinedChunks(stack) / this.getMineableChunks(stack)) * 13.0);
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType options) {
-        RegistryKey<World> worldKey = this.getWorldRegistryKey(stack).orElse(null);
-        Identifier worldId = worldKey != null ? worldKey.getValue() : null;
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay displayComponent, Consumer<Component> textConsumer, TooltipFlag options) {
+        ResourceKey<Level> worldKey = this.getWorldRegistryKey(stack).orElse(null);
+        Identifier worldId = worldKey != null ? worldKey.identifier() : null;
 
         BlockPos firstPos = this.getFirstPos(stack).orElse(null);
         BlockPos secondPos = this.getSecondPos(stack).orElse(null);
         boolean isSealed = this.isSealed(stack);
 
-        MutableText LORE_EMPTY = ReadableString.translatable("item.iron_quarry.blueprint.lore.empty");
+        MutableComponent LORE_EMPTY = ReadableString.translatable("item.iron_quarry.blueprint.lore.empty");
 
-        MutableText LORE_WORLD = ReadableString.translatable("item.iron_quarry.blueprint.lore.world", ReadableString.textFrom(worldId).orElse(LORE_EMPTY));
-        MutableText LORE_FIRST_POS = ReadableString.translatable("item.iron_quarry.blueprint.lore.first_pos", ReadableString.textFrom(firstPos).orElse(LORE_EMPTY));
-        MutableText LORE_SECOND_POS = ReadableString.translatable("item.iron_quarry.blueprint.lore.second_pos", ReadableString.textFrom(secondPos).orElse(LORE_EMPTY));
+        MutableComponent LORE_WORLD = ReadableString.translatable("item.iron_quarry.blueprint.lore.world", ReadableString.textFrom(worldId).orElse(LORE_EMPTY));
+        MutableComponent LORE_FIRST_POS = ReadableString.translatable("item.iron_quarry.blueprint.lore.first_pos", ReadableString.textFrom(firstPos).orElse(LORE_EMPTY));
+        MutableComponent LORE_SECOND_POS = ReadableString.translatable("item.iron_quarry.blueprint.lore.second_pos", ReadableString.textFrom(secondPos).orElse(LORE_EMPTY));
 
         textConsumer.accept(LORE_WORLD);
         textConsumer.accept(LORE_FIRST_POS);
@@ -224,38 +230,38 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
             long mineable = this.getMineableChunks(stack);
             float percentage = mineable > 0 ? (float) mined / mineable : 0;
 
-            MutableText LORE_MINED = ReadableString.translatable("item.iron_quarry.blueprint.lore.mined", mined, mineable, ZUtil.expandableFixedFloat(percentage * 100));
+            MutableComponent LORE_MINED = ReadableString.translatable("item.iron_quarry.blueprint.lore.mined", mined, mineable, ZUtil.expandableFixedFloat(percentage * 100));
 
             textConsumer.accept(ReadableString.space());
             textConsumer.accept(LORE_MINED);
             if(this.allChunksMined(stack)) {
-                MutableText LORE_COMPLETED = ReadableString.translatable("item.iron_quarry.blueprint.lore.completed");
+                MutableComponent LORE_COMPLETED = ReadableString.translatable("item.iron_quarry.blueprint.lore.completed");
                 textConsumer.accept(LORE_COMPLETED);
             }
         } else {
-            MinecraftClient minecraftClient = MinecraftClient.getInstance();
+            Minecraft minecraftClient = Minecraft.getInstance();
 
-            if(minecraftClient.currentScreen instanceof QuarryBlockScreen) {
-                MutableText LORE_SEAL_FIRST = ReadableString.translatable("item.iron_quarry.blueprint.lore.seal_first");
+            if(minecraftClient.screen instanceof QuarryBlockScreen) {
+                MutableComponent LORE_SEAL_FIRST = ReadableString.translatable("item.iron_quarry.blueprint.lore.seal_first");
 
                 textConsumer.accept(ReadableString.space());
                 textConsumer.accept(LORE_SEAL_FIRST);
             } else {
                 textConsumer.accept(ReadableString.space());
 
-                if(MinecraftClient.getInstance().isShiftPressed()) {
-                    GameOptions gameOptions = minecraftClient.options;
+                if(Minecraft.getInstance().hasShiftDown()) {
+                    Options gameOptions = minecraftClient.options;
 
-                    Text KEY_INTERACT = ReadableString.textFrom(gameOptions.useKey);
-                    Text KEY_ATTACK = ReadableString.textFrom(gameOptions.attackKey);
-                    Text KEY_SPRINT = ReadableString.textFrom(gameOptions.sprintKey);
-                    Text KEY_SNEAK = ReadableString.textFrom(gameOptions.sneakKey);
+                    Component KEY_INTERACT = ReadableString.textFrom(gameOptions.keyUse);
+                    Component KEY_ATTACK = ReadableString.textFrom(gameOptions.keyAttack);
+                    Component KEY_SPRINT = ReadableString.textFrom(gameOptions.keySprint);
+                    Component KEY_SNEAK = ReadableString.textFrom(gameOptions.keyShift);
 
-                    MutableText LORE_MANUAL_0 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.0", KEY_ATTACK, KEY_INTERACT);
-                    MutableText LORE_MANUAL_1 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.1", KEY_SNEAK);
-                    MutableText LORE_MANUAL_2 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.2");
-                    MutableText LORE_MANUAL_3 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.3", KEY_SPRINT);
-                    MutableText LORE_MANUAL_4 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.4");
+                    MutableComponent LORE_MANUAL_0 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.0", KEY_ATTACK, KEY_INTERACT);
+                    MutableComponent LORE_MANUAL_1 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.1", KEY_SNEAK);
+                    MutableComponent LORE_MANUAL_2 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.2");
+                    MutableComponent LORE_MANUAL_3 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.3", KEY_SPRINT);
+                    MutableComponent LORE_MANUAL_4 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.4");
 
                     textConsumer.accept(LORE_MANUAL_0);
                     textConsumer.accept(ReadableString.space());
@@ -264,7 +270,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
                     textConsumer.accept(LORE_MANUAL_3);
                     textConsumer.accept(LORE_MANUAL_4);
                 } else {
-                    MutableText LORE_INSTRUCTIONS = ReadableString.translatable("item.iron_quarry.lore.instructions");
+                    MutableComponent LORE_INSTRUCTIONS = ReadableString.translatable("item.iron_quarry.lore.instructions");
 
                     textConsumer.accept(LORE_INSTRUCTIONS);
                 }
@@ -273,21 +279,21 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     }
 
     @Override
-    public Text getName(ItemStack stack) {
+    public Component getName(ItemStack stack) {
         String translationKey = "item.iron_quarry.blueprint";
         if(this.isSealed(stack)) translationKey += ".sealed";
 
-        MutableText itemName = Text.translatable(translationKey);
+        MutableComponent itemName = Component.translatable(translationKey);
 
         Optional<BlockPos> firstPos = this.getFirstPos(stack);
         Optional<BlockPos> secondPos = this.getSecondPos(stack);
 
         if(firstPos.isEmpty() || secondPos.isEmpty()) {
-            itemName.append(" ").append(Text.translatable("item.iron_quarry.blueprint.unbound"));
+            itemName.append(" ").append(Component.translatable("item.iron_quarry.blueprint.unbound"));
         } else if(this.allChunksMined(stack)) {
-            itemName.append(" ").append(Text.translatable("item.iron_quarry.blueprint.completed"));
+            itemName.append(" ").append(Component.translatable("item.iron_quarry.blueprint.completed"));
         } else {
-            Text cuboidSize = ReadableString.textFrom(Cuboid.from(firstPos.get(), secondPos.get())).orElse(ReadableString.ERROR);
+            Component cuboidSize = ReadableString.textFrom(Cuboid.from(firstPos.get(), secondPos.get())).orElse(ReadableString.ERROR);
 
             itemName.append(" (").append(cuboidSize).append(")");
         }
@@ -299,57 +305,57 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         return !this.isSealed(stack) && this.getFirstPos(stack).isPresent() && this.getSecondPos(stack).isPresent() && !this.allChunksMined(stack);
     }
 
-    public boolean hasGlint(ItemStack stack) {
+    public boolean isFoil(ItemStack stack) {
         return this.isSealed(stack);
     }
 
     public void setSealed(ItemStack stack, boolean sealed){
         stack.set(ZComponents.BLUEPRINT_SEALED, sealed);
-        stack.set(DataComponentTypes.RARITY, sealed ? Rarity.EPIC : Rarity.UNCOMMON);
+        stack.set(DataComponents.RARITY, sealed ? Rarity.EPIC : Rarity.UNCOMMON);
     }
     public boolean isSealed(ItemStack stack){
         return stack.getOrDefault(ZComponents.BLUEPRINT_SEALED, false);
     }
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        PlayerEntity player = context.getPlayer();
-        if(player == null) return ActionResult.FAIL;
+    public InteractionResult useOn(UseOnContext context) {
+        Player player = context.getPlayer();
+        if(player == null) return InteractionResult.FAIL;
 
-        if(!context.getHand().equals(Hand.MAIN_HAND)) return ActionResult.PASS;
-        if(player.isCreative() && MinecraftClient.getInstance().options.sneakKey.isPressed()) return ActionResult.PASS;
+        if(!context.getHand().equals(InteractionHand.MAIN_HAND)) return InteractionResult.PASS;
+        if(player.isCreative() && Minecraft.getInstance().options.keyShift.isDown()) return InteractionResult.PASS;
 
-        ItemStack stack = context.getStack();
-        if(this.isSealed(stack)) return ActionResult.FAIL;
+        ItemStack stack = context.getItemInHand();
+        if(this.isSealed(stack)) return InteractionResult.FAIL;
 
-        BlockPos targetedPos = context.getBlockPos();
-        this.setSecondPos(stack, context.getWorld(), targetedPos);
-        Text secondPosText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
+        BlockPos targetedPos = context.getClickedPos();
+        this.setSecondPos(stack, context.getLevel(), targetedPos);
+        Component secondPosText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
 
-        player.sendMessage(ReadableString.translatable("item.iron_quarry.blueprint.overlay.second_pos_set", secondPosText), true);
+        player.displayClientMessage(ReadableString.translatable("item.iron_quarry.blueprint.overlay.second_pos_set", secondPosText), true);
 
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
     @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack stack = user.getStackInHand(hand);
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        ItemStack stack = user.getItemInHand(hand);
 //        Main.LOGGER.info(user.shouldCancelInteraction());
-        if(!world.isClient()) return ActionResult.FAIL;
-        if(!hand.equals(Hand.MAIN_HAND) || !user.isCreative()) return ActionResult.FAIL;
+        if(!world.isClientSide()) return InteractionResult.FAIL;
+        if(!hand.equals(InteractionHand.MAIN_HAND) || !user.isCreative()) return InteractionResult.FAIL;
 
-        if(MinecraftClient.getInstance().options.sneakKey.isPressed()) {
-            ZNetwork.sendToServer(PacketKeyedAction.bake("key.sneak", hand, ActionGoal.USE, BlockHitResult.createMissed(Vec3d.ZERO, Direction.UP, BlockPos.ORIGIN)));
-            return ActionResult.CONSUME;
+        if(Minecraft.getInstance().options.keyShift.isDown()) {
+            ZNetwork.sendToServer(PacketKeyedAction.bake("key.sneak", hand, ActionGoal.USE, BlockHitResult.miss(Vec3.ZERO, Direction.UP, BlockPos.ZERO)));
+            return InteractionResult.CONSUME;
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
     @Override
-    public void keyedUse(String keyName, ItemUsageContext context) {
+    public void keyedUse(String keyName, UseOnContext context) {
         if(!keyName.equals("key.sneak")) return;
 
-        ItemStack stack = context.getStack();
-        PlayerEntity player = context.getPlayer();
+        ItemStack stack = context.getItemInHand();
+        Player player = context.getPlayer();
 
         if(player != null && player.isCreative()) {
             this.setSealed(stack, !this.isSealed(stack));
@@ -357,26 +363,26 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         }
     }
     @Override
-    public ActionResult attackOnBlock(PlayerEntity player, World world, Hand hand, BlockPos targetedPos, Direction direction) {
-        if(!hand.equals(Hand.MAIN_HAND)) return ActionResult.PASS;
+    public InteractionResult attackOnBlock(Player player, Level world, InteractionHand hand, BlockPos targetedPos, Direction direction) {
+        if(!hand.equals(InteractionHand.MAIN_HAND)) return InteractionResult.PASS;
 
-        ItemStack stack = player.getStackInHand(hand);
-        if(this.isSealed(stack)) return ActionResult.FAIL;
+        ItemStack stack = player.getItemInHand(hand);
+        if(this.isSealed(stack)) return InteractionResult.FAIL;
 
         this.setFirstPos(stack, world, targetedPos);
 
-        Text firstPosText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
+        Component firstPosText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
 
-        player.sendMessage(ReadableString.translatable("item.iron_quarry.blueprint.overlay.first_pos_set", firstPosText), true);
+        player.displayClientMessage(ReadableString.translatable("item.iron_quarry.blueprint.overlay.first_pos_set", firstPosText), true);
 
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
-    public void setWorld(ItemStack stack, World world) {
-        this.setWorld(stack, world.getRegistryKey());
+    public void setWorld(ItemStack stack, Level world) {
+        this.setWorld(stack, world.dimension());
     }
-    public void setWorld(ItemStack stack, RegistryKey<World> newWorldKey) {
-        RegistryKey<World> oldWorldKey = this.getWorldRegistryKey(stack).orElse(null);
+    public void setWorld(ItemStack stack, ResourceKey<Level> newWorldKey) {
+        ResourceKey<Level> oldWorldKey = this.getWorldRegistryKey(stack).orElse(null);
         if(ZUtil.equals(oldWorldKey, newWorldKey)) return;
 
         this.resetPositions(stack);
@@ -384,20 +390,20 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         stack.set(ZComponents.BLUEPRINT_WORLD, newWorldKey);
 
     }
-    public Optional<RegistryKey<World>> getWorldRegistryKey(ItemStack stack) {
+    public Optional<ResourceKey<Level>> getWorldRegistryKey(ItemStack stack) {
         return Optional.ofNullable(stack.get(ZComponents.BLUEPRINT_WORLD));
     }
 
     public void resetPositions(ItemStack stack) {
         stack.remove(ZComponents.BLUEPRINT_POSITION);
     }
-    public void setFirstPos(ItemStack stack, @Nullable World world, BlockPos blockPos) {
+    public void setFirstPos(ItemStack stack, @Nullable Level world, BlockPos blockPos) {
         this.setPosition(DualPosition.FIRST, stack, world, blockPos);
     }
-    public void setSecondPos(ItemStack stack, @Nullable World world, BlockPos blockPos) {
+    public void setSecondPos(ItemStack stack, @Nullable Level world, BlockPos blockPos) {
         this.setPosition(DualPosition.SECOND, stack, world, blockPos);
     }
-    private void setPosition(DualPosition position, ItemStack stack, @Nullable World world, BlockPos blockPos) {
+    private void setPosition(DualPosition position, ItemStack stack, @Nullable Level world, BlockPos blockPos) {
         if(world != null) {
             this.setWorld(stack, world);
             blockPos = ZUtil.limitInsideWorldBounds(blockPos, world);
@@ -502,15 +508,15 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
 
     @Override
     public void onModifyItemGroupEntry(FabricItemGroupEntries entries) {
-        entries.add(this);
+        entries.accept(this);
 
         ItemStack stack = new ItemStack(this);
 
-        this.setWorld(stack,  World.OVERWORLD);
+        this.setWorld(stack,  Level.OVERWORLD);
         this.setFirstPos(stack, null, new BlockPos(10000, 64, 10000));
         this.setSecondPos(stack, null, new BlockPos(-10000, -64, -10000));
         this.setSealed(stack, true);
 
-        entries.add(stack);
+        entries.accept(stack);
     }
 }

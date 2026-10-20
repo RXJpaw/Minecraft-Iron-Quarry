@@ -12,19 +12,19 @@ import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.util.TriState;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.FormattedMessageFactory;
@@ -71,9 +71,9 @@ public class Main implements ModInitializer {
 	);
 	public static final ConfigHandler CONFIG = ConfigHandler.bake(FabricLoader.getInstance().getConfigDir().resolve(MOD_ID));
 
-	public static final ScreenHandlerType<QuarryBlockScreenHandler> QUARRY_BLOCK_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(QuarryBlockScreenHandler::new, QuarryBlockScreenData.PACKET_CODEC);
+	public static final MenuType<QuarryBlockScreenHandler> QUARRY_BLOCK_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(QuarryBlockScreenHandler::new, QuarryBlockScreenData.PACKET_CODEC);
 
-	public static final RegistryKey<ItemGroup> ITEM_GROUP = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier.of(MOD_ID, "universal"));
+	public static final ResourceKey<CreativeModeTab> ITEM_GROUP = ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(MOD_ID, "universal"));
 
 
 	@Override
@@ -92,10 +92,10 @@ public class Main implements ModInitializer {
 		GameLifecycleCallback.IMMINENT_FIRST_RELOAD.register(ZLootTables::register);
 
 		AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
-			if(ZUtil.getBlockOrItem(player.getStackInHand(hand)) instanceof IBlockAttackable itemStack) {
+			if(ZUtil.getBlockOrItem(player.getItemInHand(hand)) instanceof IBlockAttackable itemStack) {
 				return itemStack.attackOnBlock(player, world, hand, pos, direction);
 			} else {
-				return ActionResult.PASS;
+				return InteractionResult.PASS;
 			}
 		});
 
@@ -103,13 +103,13 @@ public class Main implements ModInitializer {
 			if(world.getBlockState(hitResult.getBlockPos()).getBlock() instanceof IHandledUseBlock block) {
 				return block.useOnBlock(player, world, hand, hitResult);
 			} else {
-				return ActionResult.PASS;
+				return InteractionResult.PASS;
 			}
 		});
 
 		EnchantmentEvents.ALLOW_ENCHANTING.register((enchantment, target, enchantingContext) -> {
 			if(ZUtil.getBlockOrItem(target) instanceof ICustomEnchantabilityProvider enchantabilityProvider) {
-				return enchantabilityProvider.getViableEnchantments(target).stream().anyMatch(enchantment::matchesKey) ? TriState.TRUE : TriState.FALSE;
+				return enchantabilityProvider.getViableEnchantments(target).stream().anyMatch(enchantment::is) ? TriState.TRUE : TriState.FALSE;
 			}
 
 			return TriState.DEFAULT;
@@ -117,18 +117,18 @@ public class Main implements ModInitializer {
 
 		ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
 			if(entity instanceof ItemEntity itemEntity) {
-				if(ZUtil.getBlockOrItem(itemEntity.getStack()) instanceof IHandledItemEntity handledItemEntity) {
+				if(ZUtil.getBlockOrItem(itemEntity.getItem()) instanceof IHandledItemEntity handledItemEntity) {
 					handledItemEntity.handleItemEntity(itemEntity);
 				}
 			}
 		});
 
 		ServerTickEvents.START_WORLD_TICK.register(world -> {
-			for (ServerPlayerEntity player : world.getPlayers()) {
-				PlayerInventory inventory = player.getInventory();
+			for (ServerPlayer player : world.players()) {
+				Inventory inventory = player.getInventory();
 
-				for (int slot = 0; slot < inventory.size(); slot++) {
-					ItemStack stack = inventory.getStack(slot);
+				for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+					ItemStack stack = inventory.getItem(slot);
 
 					if(ZUtil.getBlockOrItem(stack) instanceof ITickingInventoryItem tickingInventoryItem) {
 						tickingInventoryItem.tick(player, world, stack);
@@ -140,13 +140,13 @@ public class Main implements ModInitializer {
 		EnergyStorage.SIDED.registerForBlockEntity(QuarryBlockEntity::getEnergySideConfiguration, ZBlockEntities.QUARRY_BLOCK_ENTITY);
 		ItemStorage.SIDED.registerForBlockEntity(QuarryBlockEntity::getItemSideConfiguration, ZBlockEntities.QUARRY_BLOCK_ENTITY);
 
-		Registry.register(Registries.SCREEN_HANDLER, Identifier.of(MOD_ID, "quarry_block_screen_handler"), QUARRY_BLOCK_SCREEN_HANDLER);
+		Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(MOD_ID, "quarry_block_screen_handler"), QUARRY_BLOCK_SCREEN_HANDLER);
 
-		Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(MOD_ID, "handled_smithing_recipe"), HandledSmithingRecipe.SERIALIZER);
+		Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "handled_smithing_recipe"), HandledSmithingRecipe.SERIALIZER);
 
-		Registry.register(Registries.ITEM_GROUP, ITEM_GROUP, FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.iron_quarry.universal"))
-				.icon(() -> ZBlocks.NETHERITE_QUARRY.getBlockItem().getDefaultStack())
+		Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, ITEM_GROUP, FabricItemGroup.builder()
+				.title(Component.translatable("itemGroup.iron_quarry.universal"))
+				.icon(() -> ZBlocks.NETHERITE_QUARRY.getBlockItem().getDefaultInstance())
 				.build());
 
 		ZNetwork.registerServer();

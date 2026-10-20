@@ -1,20 +1,5 @@
 package pw.rxj.iron_quarry.screen;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import org.joml.Matrix3x2fStack;
 import pw.rxj.iron_quarry.Global;
 import pw.rxj.iron_quarry.Main;
@@ -31,14 +16,28 @@ import pw.rxj.iron_quarry.util.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 
-public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
+public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreenHandler> {
     //A path to the gui texture. In this example we use the texture from the dispenser
-    public static final Identifier BACKGROUND_TEXTURE = Identifier.of(Main.MOD_ID, "textures/gui/quarry_block_interface.png");
-    public static final Identifier BACKGROUND_IO_OVERLAY = Identifier.of(Main.MOD_ID, "textures/gui/quarry_block_io_overlay.png");
-    public static final Identifier OPTIONS_TEXTURE = Identifier.of(Main.MOD_ID, "textures/gui/options.png");
-    public static final Identifier OPTIONS_CONFIGURATION_TEXTURE = Identifier.of(Main.MOD_ID, "textures/gui/options_configuration.png");
-    public static final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = Identifier.of(Main.MOD_ID, "textures/gui/augmentation_configuration.png");
+    public static final Identifier INVENTORY_LOCATION = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/quarry_block_interface.png");
+    public static final Identifier BACKGROUND_IO_OVERLAY = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/quarry_block_io_overlay.png");
+    public static final Identifier OPTIONS_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/options.png");
+    public static final Identifier OPTIONS_CONFIGURATION_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/options_configuration.png");
+    public static final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/augmentation_configuration.png");
 
     private final TrackableZone InfoDisplay = TrackableZone.empty();
     private final TrackableZone EnergyDisplay = TrackableZone.empty();
@@ -72,29 +71,29 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     private final ManagedSlot DRILL_SLOT;
     private final ManagedSlot BATTERY_SLOT;
 
-    private void drawLockedSlot(DrawContext context, Slot slot, int width, int height) {
+    private void drawLockedSlot(GuiGraphics context, Slot slot, int width, int height) {
         if(width < 0) Main.LOGGER.warn("Tried to drawLockedSlot with width < 0 ({})", width);
         if(width > 18) Main.LOGGER.warn("Tried to drawLockedSlot with width > 18 ({})", width);
         if(height < 0) Main.LOGGER.warn("Tried to drawLockedSlot with height < 0 ({})", height);
         if(height > 18) Main.LOGGER.warn("Tried to drawLockedSlot with height > 18 ({})", height);
 
-        RenderUtil.drawTexture(context, AUGMENTATION_CONFIGURATION_TEXTURE, this.x + slot.x - 1, this.y + slot.y - 1, 100, 0, width, height);
+        RenderUtil.drawTexture(context, AUGMENTATION_CONFIGURATION_TEXTURE, this.leftPos + slot.x - 1, this.topPos + slot.y - 1, 100, 0, width, height);
     }
 
-    public QuarryBlockScreen(QuarryBlockScreenHandler handler, PlayerInventory inventory, Text title) {
+    public QuarryBlockScreen(QuarryBlockScreenHandler handler, Inventory inventory, Component title) {
         super(handler, inventory, title);
 
         this.expandableMenuWidth = Compat.REI_LOADED ? 0 : 100;
         this.realBackgroundWidth = 176;
         this.realBackgroundHeight = 226;
 
-        this.backgroundWidth = this.realBackgroundWidth + this.expandableMenuWidth;
-        this.backgroundHeight = this.realBackgroundHeight;
+        this.imageWidth = this.realBackgroundWidth + this.expandableMenuWidth;
+        this.imageHeight = this.realBackgroundHeight;
 
-        this.titleY = 6;
-        this.titleX = 8;
-        this.playerInventoryTitleY = 132;
-        this.playerInventoryTitleX = 8;
+        this.titleLabelY = 6;
+        this.titleLabelX = 8;
+        this.inventoryLabelY = 132;
+        this.inventoryLabelX = 8;
 
         blockPos = handler.getBlockPos();
 
@@ -105,37 +104,37 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     }
 
     @Override
-    protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
-        MinecraftClient minecraftClient = MinecraftClient.getInstance();
-        if(minecraftClient.world == null) return;
+    protected void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
+        Minecraft minecraftClient = Minecraft.getInstance();
+        if(minecraftClient.level == null) return;
 
-        QuarryBlockEntity blockEntity = handler.getQuarryBlockEntity();
+        QuarryBlockEntity blockEntity = menu.getQuarryBlockEntity();
         if(blockEntity == null) return;
 
         QuarryBlock block = blockEntity.getQuarryBlock();
         if(block == null) return;
 
         ItemStack stack = new ItemStack(block);
-        stack.applyComponentsFrom(blockEntity.createComponentMap());
+        stack.applyComponents(blockEntity.collectComponents());
 
         ComplexEnergyContainer EnergyContainer = blockEntity.EnergyContainer;
         MachineConfiguration MachineConfiguration = blockEntity.Configuration;
         MachineUpgradesUtil machineUpgradesUtil = MachineUpgradesUtil.from(block.getMachineUpgradeStacks(stack));
 
-        int backgroundX = this.x;
-        int backgroundY = this.y;
+        int backgroundX = this.leftPos;
+        int backgroundY = this.topPos;
 
-        RenderUtil.drawTexture(context, BACKGROUND_TEXTURE, backgroundX, backgroundY, 0, 0, this.realBackgroundWidth, this.realBackgroundHeight);
+        RenderUtil.drawTexture(context, INVENTORY_LOCATION, backgroundX, backgroundY, 0, 0, this.realBackgroundWidth, this.realBackgroundHeight);
 
         //Energy-Fill-% rendering
         if(EnergyContainer.getStored() > 0) {
             int chargedPixels = Math.max(0, Math.min(40, (int) (EnergyContainer.getFillPercent() * 40)));
-            RenderUtil.drawTexture(context, BACKGROUND_TEXTURE, backgroundX + 10, backgroundY + 58 - chargedPixels, 179, 57 - chargedPixels, 12, chargedPixels);
+            RenderUtil.drawTexture(context, INVENTORY_LOCATION, backgroundX + 10, backgroundY + 58 - chargedPixels, 179, 57 - chargedPixels, 12, chargedPixels);
         }
 
         //Battery Slot rendering
-        if(!BATTERY_SLOT.hasStack()){
-            RenderUtil.drawTexture(context, BACKGROUND_TEXTURE, backgroundX + 11, backgroundY + 64, 180, 60, 10, 14);
+        if(!BATTERY_SLOT.hasItem()){
+            RenderUtil.drawTexture(context, INVENTORY_LOCATION, backgroundX + 11, backgroundY + 64, 180, 60, 10, 14);
         }
 
         //Energy-Fill-% tooltip
@@ -146,23 +145,23 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
         ).setStyle(Style.EMPTY.withColor(Global.RGB_RF_PURPLE)));
 
         //Info tooltip
-        InfoDisplay.consume(TrackableZone.Zone.from(backgroundX + titleX + this.textRenderer.getWidth(this.title) - 1, backgroundY + titleY/2, 13, 13), mouseX, mouseY);
+        InfoDisplay.consume(TrackableZone.Zone.from(backgroundX + titleLabelX + this.font.width(this.title) - 1, backgroundY + titleLabelY/2, 13, 13), mouseX, mouseY);
         InfoDisplay.supplyText(() -> {
-            List<Text> tooltip = new ArrayList<>();
+            List<Component> tooltip = new ArrayList<>();
 
             tooltip.add(ReadableString.translatable("screen.iron_quarry.quarry_block.title.info_display"));
-            block.appendTooltip(stack, Item.TooltipContext.create(minecraftClient.world), tooltip::add, TooltipType.BASIC);
+            block.appendTooltip(stack, Item.TooltipContext.of(minecraftClient.level), tooltip::add, TooltipFlag.NORMAL);
 
             int conflictAmount = machineUpgradesUtil.getConflictAmount();
 
             return tooltip.subList(0, conflictAmount > 0 ? 5 + conflictAmount : 4);
         });
 
-        RenderUtil.drawTexture(context, BACKGROUND_TEXTURE, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, 179, 5, 3, 9);
+        RenderUtil.drawTexture(context, INVENTORY_LOCATION, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, 179, 5, 3, 9);
         if(machineUpgradesUtil.getConflictAmount() > 0) {
             double alpha = Math.sin(System.currentTimeMillis() / 100.0) + 0.5;
 
-            RenderUtil.drawTexture(context, BACKGROUND_TEXTURE, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, 182, 5, 3, 9, 256, 256, RenderUtil.whiteWithAlpha(alpha));
+            RenderUtil.drawTexture(context, INVENTORY_LOCATION, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, 182, 5, 3, 9, 256, 256, RenderUtil.whiteWithAlpha(alpha));
         }
 
         //Augmentation Configuration
@@ -181,7 +180,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             RenderUtil.drawTexture(context, AUGMENTATION_CONFIGURATION_TEXTURE, augmentsMenuX, augmentsMenuY, 0, 0, augmentsMenuWidth, augmentsMenuHeight);
 
             RenderUtil.runScissored(context, augmentsMenuX, augmentsMenuY, augmentsMenuWidth, augmentsMenuHeight, () -> {
-                context.drawTextWithShadow(this.textRenderer, ReadableString.translatable("screen.iron_quarry.quarry_block.title.augmentation"), augmentsMenuX + 20, augmentsMenuY + 7, 0xFFFFFFFF);
+                context.drawString(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.title.augmentation"), augmentsMenuX + 20, augmentsMenuY + 7, 0xFFFFFFFF);
             });
 
             for (ManagedSlot slot: AUGMENT_SLOTS) {
@@ -225,7 +224,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                 RenderUtil.drawTexture(context, BACKGROUND_IO_OVERLAY, backgroundX, backgroundY, 0, 0, this.realBackgroundWidth, this.realBackgroundHeight, 256, 256, overlayColor);
 
                 //Battery Slot rendering
-                if(!BATTERY_SLOT.hasStack()){
+                if(!BATTERY_SLOT.hasItem()){
                     RenderUtil.drawTexture(context, BACKGROUND_IO_OVERLAY, backgroundX + 11, backgroundY + 64, 180, 60, 10, 14, 256, 256, overlayColor);
                 }
             }
@@ -233,7 +232,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
             RenderUtil.drawTexture(context, OPTIONS_CONFIGURATION_TEXTURE, ioConfigX, ioConfigY, 0, 0, ioConfigWidth, ioConfigHeight);
 
             RenderUtil.runScissored(context, ioConfigX, ioConfigY, ioConfigWidth, ioConfigHeight, () -> {
-                context.drawTextWithShadow(this.textRenderer, ReadableString.translatable("screen.iron_quarry.quarry_block.title.configuration"), ioConfigX + 20, ioConfigY + 7, 0xFFFFFFFF);
+                context.drawString(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.title.configuration"), ioConfigX + 20, ioConfigY + 7, 0xFFFFFFFF);
             });
 
             IO_OPTIONS.forEach(ioOption -> {
@@ -270,14 +269,14 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     }
 
     @Override
-    protected void drawSlot(DrawContext context, Slot slot, int mouseX, int mouseY) {
+    protected void renderSlot(GuiGraphics context, Slot slot, int mouseX, int mouseY) {
         if(AUGMENT_SLOTS.contains((ManagedSlot) slot)) {
             TrackableZone.Zone zone = AugmentsConfig.zone;
-            RenderUtil.runScissored(context, zone.x - this.x, zone.y - this.y, zone.width, zone.height, () -> {
-                super.drawSlot(context, slot, mouseX, mouseY);
+            RenderUtil.runScissored(context, zone.x - this.leftPos, zone.y - this.topPos, zone.width, zone.height, () -> {
+                super.renderSlot(context, slot, mouseX, mouseY);
             });
         } else {
-            super.drawSlot(context, slot, mouseX, mouseY);
+            super.renderSlot(context, slot, mouseX, mouseY);
         }
     }
 
@@ -286,29 +285,29 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     }
 
     @Override
-    protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
-        super.drawForeground(context, mouseX, mouseY);
+    protected void renderLabels(GuiGraphics context, int mouseX, int mouseY) {
+        super.renderLabels(context, mouseX, mouseY);
 
-        if(!this.handler.getCursorStack().isEmpty()) return;
+        if(!this.menu.getCarried().isEmpty()) return;
 
-        Matrix3x2fStack matrices = context.getMatrices();
+        Matrix3x2fStack matrices = context.pose();
         matrices.pushMatrix();
-        matrices.translate(-this.x, -this.y);
+        matrices.translate(-this.leftPos, -this.topPos);
 
         if(EnergyDisplay.isMouseOver(mouseX, mouseY)) {
-            context.drawTooltip(this.textRenderer, EnergyDisplay.getSuppliedText(), mouseX, mouseY);
+            context.setComponentTooltipForNextFrame(this.font, EnergyDisplay.getSuppliedText(), mouseX, mouseY);
         } else if(InfoDisplay.isMouseOver(mouseX, mouseY)) {
-            context.drawTooltip(this.textRenderer, InfoDisplay.getSuppliedText(), mouseX, mouseY);
-        } else if(BLUEPRINT_SLOT.getStack().isEmpty() && TrackableZone.isMouseOver(BLUEPRINT_SLOT, this.x, this.y, mouseX, mouseY)) {
-            context.drawTooltip(this.textRenderer, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.blueprint_info"), mouseX, mouseY);
-        } else if(DRILL_SLOT.getStack().isEmpty() && TrackableZone.isMouseOver(DRILL_SLOT, this.x, this.y, mouseX, mouseY)) {
-            context.drawTooltip(this.textRenderer, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.drill_info"), mouseX, mouseY);
-        } else if(BATTERY_SLOT.getStack().isEmpty() && TrackableZone.isMouseOver(BATTERY_SLOT, this.x, this.y, mouseX, mouseY)) {
-            context.drawTooltip(this.textRenderer, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.battery_info"), mouseX, mouseY);
+            context.setComponentTooltipForNextFrame(this.font, InfoDisplay.getSuppliedText(), mouseX, mouseY);
+        } else if(BLUEPRINT_SLOT.getItem().isEmpty() && TrackableZone.isMouseOver(BLUEPRINT_SLOT, this.leftPos, this.topPos, mouseX, mouseY)) {
+            context.setTooltipForNextFrame(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.blueprint_info"), mouseX, mouseY);
+        } else if(DRILL_SLOT.getItem().isEmpty() && TrackableZone.isMouseOver(DRILL_SLOT, this.leftPos, this.topPos, mouseX, mouseY)) {
+            context.setTooltipForNextFrame(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.drill_info"), mouseX, mouseY);
+        } else if(BATTERY_SLOT.getItem().isEmpty() && TrackableZone.isMouseOver(BATTERY_SLOT, this.leftPos, this.topPos, mouseX, mouseY)) {
+            context.setTooltipForNextFrame(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.battery_info"), mouseX, mouseY);
         } else if(AugmentsConfig.isMouseOver()) {
             for (ManagedSlot slot : AUGMENT_SLOTS) {
-                if(slot.isLocked() && TrackableZone.isMouseOver(slot, this.x, this.y, mouseX, mouseY)) {
-                    context.drawTooltip(this.textRenderer, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.locked_augment_slot"), mouseX, mouseY);
+                if(slot.isLocked() && TrackableZone.isMouseOver(slot, this.leftPos, this.topPos, mouseX, mouseY)) {
+                    context.setTooltipForNextFrame(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.locked_augment_slot"), mouseX, mouseY);
 
                     break;
                 }
@@ -319,7 +318,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     }
 
     @Override
-    protected boolean isClickOutsideBounds(double mouseX, double mouseY, int left, int top) {
+    protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top) {
         if(IoConfig.isMouseOver() || AugmentsConfig.isMouseOver()) return false;
 
         int offsetX = 0;
@@ -335,22 +334,22 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         double mouseX = click.x();
         double mouseY = click.y();
         int button = click.button();
 
-        MinecraftClient minecraftClient = MinecraftClient.getInstance();
-        if(minecraftClient.world == null) return false;
+        Minecraft minecraftClient = Minecraft.getInstance();
+        if(minecraftClient.level == null) return false;
 
-        QuarryBlockEntity blockEntity = handler.getQuarryBlockEntity();
+        QuarryBlockEntity blockEntity = menu.getQuarryBlockEntity();
         if(blockEntity == null) return false;
 
         QuarryBlock block = blockEntity.getQuarryBlock();
         if(block == null) return false;
 
-        if(this.client == null) return false;
-        if(this.client.interactionManager == null) return false;
+        if(this.minecraft == null) return false;
+        if(this.minecraft.gameMode == null) return false;
         if(minecraftClient.getCameraEntity() == null) return false;
 
         if(IoConfig.isUsed()) {
@@ -370,7 +369,7 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
                     Optional<Byte> id = QuarryBlockScreenHandler.Buttons.toByte(0, ioOption.frontFace().getId(), button);
                     if(id.isEmpty()) return;
 
-                    this.client.interactionManager.clickButton(handler.syncId, id.get());
+                    this.minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id.get());
                 }
             });
         }
@@ -379,19 +378,19 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-        drawMouseoverTooltip(context, mouseX, mouseY);
+        renderTooltip(context, mouseX, mouseY);
     }
 
     @Override
     protected void init() {
         super.init();
-        this.x = (this.width - this.realBackgroundWidth) / 2;
-        this.y = (this.height - this.realBackgroundHeight) / 2;
+        this.leftPos = (this.width - this.realBackgroundWidth) / 2;
+        this.topPos = (this.height - this.realBackgroundHeight) / 2;
     }
 
-    public static void drawIoHighlight(DrawContext context, int x, int y) {
+    public static void drawIoHighlight(GuiGraphics context, int x, int y) {
         context.fillGradient(x, y, x + 16, y + 16, 1612718112, 1612718112);
     }
 }

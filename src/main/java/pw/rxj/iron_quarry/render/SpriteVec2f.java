@@ -1,10 +1,10 @@
 package pw.rxj.iron_quarry.render;
 
-import net.minecraft.util.math.Vec3d;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.phys.Vec3;
 
 public class SpriteVec2f {
     public final Vector3f from;
@@ -18,7 +18,7 @@ public class SpriteVec2f {
     public static SpriteVec2f from(Vector3f from, Vector3f to) {
         return new SpriteVec2f(from, to);
     }
-    public static SpriteVec2f from(Vec3d from, Vec3d to) {
+    public static SpriteVec2f from(Vec3 from, Vec3 to) {
         return from(new Vector3f(from.toVector3f()), new Vector3f(to.toVector3f()));
     }
 
@@ -71,14 +71,14 @@ public class SpriteVec2f {
     public List<SpriteVec2f> split(int parts) {
         List<SpriteVec2f> list = new ArrayList<>();
 
-        Vec3d from = new Vec3d(this.from);
-        Vec3d to = new Vec3d(this.to);
+        Vec3 from = new Vec3(this.from);
+        Vec3 to = new Vec3(this.to);
 
-        Vec3d abs = to.subtract(from);
-        Vec3d part = new Vec3d(abs.getX() / parts, abs.getY() / parts, abs.getZ() / parts);
+        Vec3 abs = to.subtract(from);
+        Vec3 part = new Vec3(abs.x() / parts, abs.y() / parts, abs.z() / parts);
 
         for (int i = 0; i < parts; i++) {
-            list.add(SpriteVec2f.from(from.add(part.multiply(i)), from.add(part.multiply(i + 1))));
+            list.add(SpriteVec2f.from(from.add(part.scale(i)), from.add(part.scale(i + 1))));
         }
 
         return list;
@@ -92,12 +92,12 @@ public class SpriteVec2f {
     }
 
     public boolean isOutsideRange(double range) {
-        return RenderUtil.isOutsideRange(new Vec3d(this.from), range) &&
-               RenderUtil.isOutsideRange(new Vec3d(this.to), range);
+        return RenderUtil.isOutsideRange(new Vec3(this.from), range) &&
+               RenderUtil.isOutsideRange(new Vec3(this.to), range);
     }
     public boolean isOutsideCuboid(Cuboid cuboid) {
-         return cuboid.isOutside(new Vec3d(this.from)) &&
-                cuboid.isOutside(new Vec3d(this.to));
+         return cuboid.isOutside(new Vec3(this.from)) &&
+                cuboid.isOutside(new Vec3(this.to));
     }
 
     @Override

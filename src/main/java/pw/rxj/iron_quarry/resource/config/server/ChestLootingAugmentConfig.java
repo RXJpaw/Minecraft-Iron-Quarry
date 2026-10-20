@@ -2,11 +2,11 @@ package pw.rxj.iron_quarry.resource.config.server;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import net.minecraft.loot.LootPool;
-import net.minecraft.loot.condition.RandomChanceLootCondition;
-import net.minecraft.loot.entry.ItemEntry;
-import net.minecraft.loot.provider.number.UniformLootNumberProvider;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
+import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
@@ -71,10 +71,10 @@ public class ChestLootingAugmentConfig {
             if(optionalEntry.isEmpty()) return null;
             Entry entry = optionalEntry.get();
 
-            return LootPool.builder()
-                    .rolls(UniformLootNumberProvider.create(entry.rollsMin, entry.rollsMax))
-                    .conditionally(RandomChanceLootCondition.builder(entry.chance))
-                    .with(ItemEntry.builder(ZItems.CHEST_LOOTING_AUGMENT));
+            return LootPool.lootPool()
+                    .setRolls(UniformGenerator.between(entry.rollsMin, entry.rollsMax))
+                    .when(LootItemRandomChanceCondition.randomChance(entry.chance))
+                    .add(LootItem.lootTableItem(ZItems.CHEST_LOOTING_AUGMENT));
         }
     }
 }

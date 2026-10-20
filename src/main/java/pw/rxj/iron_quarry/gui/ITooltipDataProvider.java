@@ -1,10 +1,9 @@
 package pw.rxj.iron_quarry.gui;
 
-import net.minecraft.item.tooltip.TooltipData;
-import net.minecraft.item.ItemStack;
-
 import java.util.Optional;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.ItemStack;
 
 public interface ITooltipDataProvider {
-    Optional<TooltipData> getTooltipData(ItemStack stack);
+    Optional<TooltipComponent> getTooltipImage(ItemStack stack);
 }

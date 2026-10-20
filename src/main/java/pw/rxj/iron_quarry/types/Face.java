@@ -1,8 +1,7 @@
 package pw.rxj.iron_quarry.types;
 
-import net.minecraft.util.math.Direction;
-
 import java.util.List;
+import net.minecraft.core.Direction;
 
 public enum Face {
     BOTTOM(0, 1, "bottom"),
@@ -37,10 +36,10 @@ public enum Face {
     public Direction toDirection(Direction frontDirection) {
         switch (this) {
             case RIGHT -> {
-                return frontDirection.rotateYClockwise();
+                return frontDirection.getClockWise();
             }
             case LEFT -> {
-                return frontDirection.rotateYCounterclockwise();
+                return frontDirection.getCounterClockWise();
             }
             case BACK -> {
                 return frontDirection.getOpposite();
@@ -75,11 +74,11 @@ public enum Face {
     public static Face from(Direction direction, Direction frontDirection) {
         if(frontDirection.equals(direction)) {
             return Face.FRONT;
-        } else if (frontDirection.rotateYClockwise().equals(direction)) {
+        } else if (frontDirection.getClockWise().equals(direction)) {
             return Face.RIGHT;
         } else if (frontDirection.getOpposite().equals(direction)){
             return Face.BACK;
-        } else if(frontDirection.rotateYCounterclockwise().equals(direction)){
+        } else if(frontDirection.getCounterClockWise().equals(direction)){
             return Face.LEFT;
         } else if(direction.equals(Direction.DOWN)){
             return Face.BOTTOM;

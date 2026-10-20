@@ -1,10 +1,10 @@
 package pw.rxj.iron_quarry.event;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import org.joml.Matrix4f;
 
 public interface WorldRenderCallback {
@@ -18,5 +18,5 @@ public interface WorldRenderCallback {
         void afterTranslucent(Context context);
     }
 
-    record Context(Camera camera, MatrixStack matrixStack, Matrix4f positionMatrix, Matrix4f projectionMatrix, RenderTickCounter tickCounter) { }
+    record Context(Camera camera, PoseStack matrixStack, Matrix4f positionMatrix, Matrix4f projectionMatrix, DeltaTracker tickCounter) { }
 }

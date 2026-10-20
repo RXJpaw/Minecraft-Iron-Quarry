@@ -1,22 +1,22 @@
 package pw.rxj.iron_quarry.util;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
-public class ComplexInventory extends SimpleInventory {
+public class ComplexInventory extends SimpleContainer {
     public ComplexInventory(int size){
         super(size);
     }
@@ -27,17 +27,17 @@ public class ComplexInventory extends SimpleInventory {
     @Override
     public boolean equals(Object o) {
         if(this == o) return true;
-        if(!(o instanceof ComplexInventory other) || other.size() != this.size()) return false;
+        if(!(o instanceof ComplexInventory other) || other.getContainerSize() != this.getContainerSize()) return false;
 
-        for (int i = 0; i < this.size(); i++) {
-            if(!ItemStack.areEqual(this.getStack(i), other.getStack(i))) return false;
+        for (int i = 0; i < this.getContainerSize(); i++) {
+            if(!ItemStack.matches(this.getItem(i), other.getItem(i))) return false;
         }
 
         return true;
     }
     @Override
     public int hashCode() {
-        return ItemStack.listHashCode(this.getHeldStacks());
+        return ItemStack.hashStackList(this.getItems());
     }
 
     public boolean canInsertAll(List<ItemStack> stacks) {
@@ -47,13 +47,13 @@ public class ComplexInventory extends SimpleInventory {
         if(stacks.length == 0) {
             return true;
         } else if(stacks.length == 1) {
-            return this.canInsert(stacks[0]);
+            return this.canAddItem(stacks[0]);
         } else {
-            SimpleInventory clone = this.copy();
+            SimpleContainer clone = this.copy();
 
             for (ItemStack stack : stacks) {
-                if(clone.canInsert(stack)) {
-                    clone.addStack(stack);
+                if(clone.canAddItem(stack)) {
+                    clone.addItem(stack);
                 } else {
                     return false;
                 }
@@ -63,27 +63,27 @@ public class ComplexInventory extends SimpleInventory {
         }
     }
     @Override
-    public boolean canInsert(ItemStack stack) {
-        return this.isValid(0, stack) && super.canInsert(stack);
+    public boolean canAddItem(ItemStack stack) {
+        return this.canPlaceItem(0, stack) && super.canAddItem(stack);
     }
 
     @Override
-    public boolean isValid(int slot, ItemStack stack) {
-        return super.isValid(slot, stack);
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        return super.canPlaceItem(slot, stack);
     }
 
     protected ComplexInventory copy() {
-        ComplexInventory clone = ComplexInventory.ofSize(this.size());
+        ComplexInventory clone = ComplexInventory.ofSize(this.getContainerSize());
 
-        for (int i = 0; i < clone.size(); i++) {
-            clone.setStack(i, this.getStack(i).copy());
+        for (int i = 0; i < clone.getContainerSize(); i++) {
+            clone.setItem(i, this.getItem(i).copy());
         }
 
         return clone;
     }
 
     public int occupiedSlots() {
-        java.util.Iterator<ItemStack> stacks = this.heldStacks.iterator();
+        java.util.Iterator<ItemStack> stacks = this.items.iterator();
         int occupiedSlots = 0;
 
         for (int i = 0; stacks.hasNext(); i++) {
@@ -95,57 +95,57 @@ public class ComplexInventory extends SimpleInventory {
         return occupiedSlots;
     }
 
-    public void write(WriteView view){
-        Inventories.writeData(view, this.heldStacks);
+    public void write(ValueOutput view){
+        ContainerHelper.saveAllItems(view, this.items);
     }
-    public void read(ReadView view){
-        this.clear();
+    public void read(ValueInput view){
+        this.clearContent();
 
-        Inventories.readData(view, this.heldStacks);
+        ContainerHelper.loadAllItems(view, this.items);
     }
 
     //components
 
-    public static final Codec<ComplexInventory> CODEC = ContainerComponent.Slot.CODEC.sizeLimitedListOf(256).xmap(ComplexInventory::fromSlots, ComplexInventory::collectSlots);
-    public static final PacketCodec<RegistryByteBuf, ComplexInventory> PACKET_CODEC = ItemStack.OPTIONAL_PACKET_CODEC.collect(PacketCodecs.toList(256)).xmap(ComplexInventory::new, (component) -> component.heldStacks);
+    public static final Codec<ComplexInventory> CODEC = ItemContainerContents.Slot.CODEC.sizeLimitedListOf(256).xmap(ComplexInventory::fromSlots, ComplexInventory::collectSlots);
+    public static final StreamCodec<RegistryFriendlyByteBuf, ComplexInventory> PACKET_CODEC = ItemStack.OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.list(256)).map(ComplexInventory::new, (component) -> component.items);
 
     private ComplexInventory(List<ItemStack> stacks) {
         this(stacks.size());
 
         for(int slot = 0; slot < stacks.size(); ++slot) {
-            this.heldStacks.set(slot, stacks.get(slot));
+            this.items.set(slot, stacks.get(slot));
         }
     }
     public void read(@Nullable ComplexInventory inventory){
         if(inventory == null) return;
 
-        this.clear();
+        this.clearContent();
 
-        for (int slot = 0; slot < inventory.size(); slot++) {
-            this.heldStacks.set(slot, inventory.getStack(slot));
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            this.items.set(slot, inventory.getItem(slot));
         }
     }
-    private List<ContainerComponent.Slot> collectSlots() {
-        List<ContainerComponent.Slot> list = new ArrayList<>();
+    private List<ItemContainerContents.Slot> collectSlots() {
+        List<ItemContainerContents.Slot> list = new ArrayList<>();
 
-        for(int i = 0; i < this.heldStacks.size(); ++i) {
-            ItemStack itemStack = this.heldStacks.get(i);
+        for(int i = 0; i < this.items.size(); ++i) {
+            ItemStack itemStack = this.items.get(i);
             if (!itemStack.isEmpty()) {
-                list.add(new ContainerComponent.Slot(i, itemStack));
+                list.add(new ItemContainerContents.Slot(i, itemStack));
             }
         }
 
         return list;
     }
-    private static ComplexInventory fromSlots(List<ContainerComponent.Slot> slots) {
-        OptionalInt optionalInt = slots.stream().mapToInt(ContainerComponent.Slot::index).max();
+    private static ComplexInventory fromSlots(List<ItemContainerContents.Slot> slots) {
+        OptionalInt optionalInt = slots.stream().mapToInt(ItemContainerContents.Slot::index).max();
         if (optionalInt.isEmpty()) {
             return ComplexInventory.ofSize(0);
         } else {
             ComplexInventory inventory = ComplexInventory.ofSize(optionalInt.getAsInt() + 1);
 
-            for(ContainerComponent.Slot slot : slots) {
-                inventory.heldStacks.set(slot.index(), slot.item());
+            for(ItemContainerContents.Slot slot : slots) {
+                inventory.items.set(slot.index(), slot.item());
             }
 
             return inventory;

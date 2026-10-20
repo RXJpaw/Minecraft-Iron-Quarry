@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.network.packet;
 
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.phys.BlockHitResult;
 import pw.rxj.iron_quarry.network.ComplexPayloadHandler;
 
 public class StringByteByteBlockHitResultPacket extends ComplexPayloadHandler<StringByteByteBlockHitResultPacket> {
@@ -17,14 +17,14 @@ public class StringByteByteBlockHitResultPacket extends ComplexPayloadHandler<St
         this.byte1 = byte1;
         this.hitResult = hitResult;
     }
-    protected StringByteByteBlockHitResultPacket(RegistryByteBuf buf) {
-        this.string = buf.readString();
+    protected StringByteByteBlockHitResultPacket(RegistryFriendlyByteBuf buf) {
+        this.string = buf.readUtf();
         this.byte0 = buf.readByte();
         this.byte1 = buf.readByte();
         this.hitResult = buf.readBlockHitResult();
     }
-    public void write(RegistryByteBuf buf) {
-        buf.writeString(string);
+    public void write(RegistryFriendlyByteBuf buf) {
+        buf.writeUtf(string);
         buf.writeByte(byte0);
         buf.writeByte(byte1);
         buf.writeBlockHitResult(hitResult);

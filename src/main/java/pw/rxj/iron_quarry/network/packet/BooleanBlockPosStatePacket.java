@@ -1,9 +1,9 @@
 package pw.rxj.iron_quarry.network.packet;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import pw.rxj.iron_quarry.network.ComplexPayloadHandler;
 
 public class BooleanBlockPosStatePacket extends ComplexPayloadHandler<BooleanBlockPosStatePacket> {
@@ -16,14 +16,14 @@ public class BooleanBlockPosStatePacket extends ComplexPayloadHandler<BooleanBlo
         this.blockPos = blockPos;
         this.blockState = blockState;
     }
-    protected BooleanBlockPosStatePacket(RegistryByteBuf buf) {
+    protected BooleanBlockPosStatePacket(RegistryFriendlyByteBuf buf) {
         this.bool = buf.readBoolean();
         this.blockPos = buf.readBlockPos();
-        this.blockState = Block.getStateFromRawId(buf.readInt());
+        this.blockState = Block.stateById(buf.readInt());
     }
-    public void write(RegistryByteBuf buf) {
+    public void write(RegistryFriendlyByteBuf buf) {
         buf.writeBoolean(bool);
         buf.writeBlockPos(blockPos);
-        buf.writeInt(Block.getRawIdFromState(blockState));
+        buf.writeInt(Block.getId(blockState));
     }
 }

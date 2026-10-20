@@ -2,34 +2,34 @@ package pw.rxj.iron_quarry.network;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.network.packet.ByteArrayPacket;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 
 public class PacketServerConfigApply extends ByteArrayPacket {
-    public static final PacketCodec<RegistryByteBuf, PacketServerConfigApply> PACKET_CODEC = PacketCodec.of(PacketServerConfigApply::write, PacketServerConfigApply::new);
-    public static final CustomPayload.Id<PacketServerConfigApply> PACKET_ID = register("server_config_apply", PACKET_CODEC);
+    public static final StreamCodec<RegistryFriendlyByteBuf, PacketServerConfigApply> PACKET_CODEC = StreamCodec.ofMember(PacketServerConfigApply::write, PacketServerConfigApply::new);
+    public static final CustomPacketPayload.Type<PacketServerConfigApply> PACKET_ID = register("server_config_apply", PACKET_CODEC);
 
     private PacketServerConfigApply(byte[] bytes) {
         super(bytes);
     }
-    public PacketServerConfigApply(RegistryByteBuf buf) {
+    public PacketServerConfigApply(RegistryFriendlyByteBuf buf) {
         super(buf);
     }
 
     @Override
-    public Id<PacketServerConfigApply> getId() {
+    public Type<PacketServerConfigApply> type() {
         return PACKET_ID;
     }
 
     @Override
-    protected void receiveFromServer(ByteArrayPacket payload, MinecraftClient client, ClientPlayerEntity player, PacketSender responseSender) {
-        String address = client.getCurrentServerEntry() == null ? "unknown address/integrated server" : client.getCurrentServerEntry().address;
+    protected void receiveFromServer(ByteArrayPacket payload, Minecraft client, LocalPlayer player, PacketSender responseSender) {
+        String address = client.getCurrentServer() == null ? "unknown address/integrated server" : client.getCurrentServer().ip;
 
         Main.CONFIG.readByteArray(EnvType.SERVER, payload.bytes);
         Main.CONFIG.applyServerChanges();

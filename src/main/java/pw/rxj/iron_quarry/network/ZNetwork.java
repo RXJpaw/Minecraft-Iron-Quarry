@@ -2,12 +2,12 @@ package pw.rxj.iron_quarry.network;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.util.ZUtil;
 
@@ -16,7 +16,7 @@ import java.util.function.Function;
 
 @SuppressWarnings({"rawtypes"})
 public class ZNetwork {
-    private static final List<CustomPayload.Id<? extends ComplexPayloadHandler>> packetList = List.of(
+    private static final List<CustomPacketPayload.Type<? extends ComplexPayloadHandler>> packetList = List.of(
             PacketServerConfigApply.PACKET_ID,
             PacketQuarryBlockBreak.PACKET_ID,
             PacketBlueprintExpand.PACKET_ID,
@@ -38,29 +38,29 @@ public class ZNetwork {
         });
     }
 
-    public static void sendToAround(ServerWorld serverWorld, BlockPos pos, double maxDistance, Function<ServerPlayerEntity, @Nullable CustomPayload> bufFunc) {
+    public static void sendToAround(ServerLevel serverWorld, BlockPos pos, double maxDistance, Function<ServerPlayer, @Nullable CustomPacketPayload> bufFunc) {
         sendToAround(serverWorld, ZUtil.toVec3d(pos), maxDistance, bufFunc);
     }
-    public static void sendToAround(ServerWorld serverWorld, Vec3d pos, double maxDistance, Function<ServerPlayerEntity, @Nullable CustomPayload> bufFunc) {
-        for (ServerPlayerEntity player : serverWorld.getPlayers()) {
-            double blockPosToPlayerDistance = pos.distanceTo(player.getEyePos());
+    public static void sendToAround(ServerLevel serverWorld, Vec3 pos, double maxDistance, Function<ServerPlayer, @Nullable CustomPacketPayload> bufFunc) {
+        for (ServerPlayer player : serverWorld.players()) {
+            double blockPosToPlayerDistance = pos.distanceTo(player.getEyePosition());
             if(blockPosToPlayerDistance > maxDistance) continue;
 
-            CustomPayload payload = bufFunc.apply(player);
+            CustomPacketPayload payload = bufFunc.apply(player);
             if(payload == null) continue;
 
             sendToPlayer(player, payload);
         }
     }
 
-    public static void sendToPlayer(ServerPlayerEntity player, CustomPayload payload) {
+    public static void sendToPlayer(ServerPlayer player, CustomPacketPayload payload) {
         ServerPlayNetworking.send(player, payload);
     }
 
-    public static void sendToServer(@Nullable CustomPayload payload) {
+    public static void sendToServer(@Nullable CustomPacketPayload payload) {
         if(payload == null) return;
 
-        MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        Minecraft minecraftClient = Minecraft.getInstance();
         if(minecraftClient.player == null) return;
 
         ClientPlayNetworking.send(payload);

@@ -1,6 +1,6 @@
 package pw.rxj.iron_quarry.interfaces;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 public interface IHandledGrinding {
     default boolean isGrindable(ItemStack stack) {

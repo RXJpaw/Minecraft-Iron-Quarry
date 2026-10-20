@@ -12,7 +12,7 @@ import pw.rxj.iron_quarry.event.GameLifecycleCallback;
 
 @Mixin(MinecraftServer.class)
 public abstract class BootstrapServerMixin {
-    @Inject(method="runServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;setupServer()Z", shift = At.Shift.BEFORE))
+    @Inject(method="runServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;initServer()Z", shift = At.Shift.BEFORE))
     private void runServer(CallbackInfo ci) {
         if (FabricLoader.getInstance().getEnvironmentType() != EnvType.SERVER) return;
 

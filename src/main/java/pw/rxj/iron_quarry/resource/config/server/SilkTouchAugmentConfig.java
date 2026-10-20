@@ -2,12 +2,12 @@ package pw.rxj.iron_quarry.resource.config.server;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.village.VillagerProfession;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 
@@ -45,7 +45,7 @@ public class SilkTouchAugmentConfig {
             return !this.server.silkTouchAugment.villagerProfession.equals("minecraft:none");
         }
         public VillagerProfession getVillagerProfession() {
-            Optional<VillagerProfession> villagerProfession = Registries.VILLAGER_PROFESSION.getOptionalValue(Identifier.tryParse(this.server.silkTouchAugment.villagerProfession));
+            Optional<VillagerProfession> villagerProfession = BuiltInRegistries.VILLAGER_PROFESSION.getOptional(Identifier.tryParse(this.server.silkTouchAugment.villagerProfession));
             if(villagerProfession.isEmpty()) throw new Error("Invalid villager profession: " + this.server.silkTouchAugment.villagerProfession);
 
             return villagerProfession.get();
@@ -61,17 +61,17 @@ public class SilkTouchAugmentConfig {
             return this.server.silkTouchAugment.wanderingVillagerLevel;
         }
 
-        public ItemStack getRandomizedBase(Random random) {
-            Optional<Item> baseItem = Registries.ITEM.getOptionalValue(Identifier.tryParse(this.server.silkTouchAugment.price.base));
+        public ItemStack getRandomizedBase(RandomSource random) {
+            Optional<Item> baseItem = BuiltInRegistries.ITEM.getOptional(Identifier.tryParse(this.server.silkTouchAugment.price.base));
             if(baseItem.isEmpty()) throw new Error("Invalid price base: " + this.server.silkTouchAugment.price.base);
 
-            return new ItemStack(baseItem.get(), random.nextBetween(this.server.silkTouchAugment.price.baseLow, this.server.silkTouchAugment.price.baseHigh));
+            return new ItemStack(baseItem.get(), random.nextIntBetweenInclusive(this.server.silkTouchAugment.price.baseLow, this.server.silkTouchAugment.price.baseHigh));
         }
-        public ItemStack getRandomizedAddition(Random random) {
-            Optional<Item> additionItem = Registries.ITEM.getOptionalValue(Identifier.tryParse(this.server.silkTouchAugment.price.addition));
+        public ItemStack getRandomizedAddition(RandomSource random) {
+            Optional<Item> additionItem = BuiltInRegistries.ITEM.getOptional(Identifier.tryParse(this.server.silkTouchAugment.price.addition));
             if(additionItem.isEmpty()) throw new Error("Invalid price addition: " + this.server.silkTouchAugment.price.addition);
 
-            return new ItemStack(additionItem.get(), random.nextBetween(this.server.silkTouchAugment.price.additionLow, this.server.silkTouchAugment.price.additionHigh));
+            return new ItemStack(additionItem.get(), random.nextIntBetweenInclusive(this.server.silkTouchAugment.price.additionLow, this.server.silkTouchAugment.price.additionHigh));
         }
     }
 }

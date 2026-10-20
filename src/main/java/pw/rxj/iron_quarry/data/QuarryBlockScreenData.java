@@ -1,11 +1,11 @@
 package pw.rxj.iron_quarry.data;
 
 import lombok.Getter;
-import net.minecraft.block.Block;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.level.block.Block;
 
 @Getter
 public class QuarryBlockScreenData {
@@ -20,16 +20,16 @@ public class QuarryBlockScreenData {
         return new QuarryBlockScreenData(block, blockPos);
     }
 
-    private static QuarryBlockScreenData read(RegistryByteBuf buf) {
+    private static QuarryBlockScreenData read(RegistryFriendlyByteBuf buf) {
         return of(
-                Registries.BLOCK.get(buf.readIdentifier()),
+                BuiltInRegistries.BLOCK.getValue(buf.readIdentifier()),
                 buf.readBlockPos()
         );
     }
-    private void write(RegistryByteBuf buf) {
-        buf.writeIdentifier(Registries.BLOCK.getId(this.block));
+    private void write(RegistryFriendlyByteBuf buf) {
+        buf.writeIdentifier(BuiltInRegistries.BLOCK.getKey(this.block));
         buf.writeBlockPos(this.blockPos);
     }
 
-    public static PacketCodec<RegistryByteBuf, QuarryBlockScreenData> PACKET_CODEC = PacketCodec.of(QuarryBlockScreenData::write, QuarryBlockScreenData::read);
+    public static StreamCodec<RegistryFriendlyByteBuf, QuarryBlockScreenData> PACKET_CODEC = StreamCodec.ofMember(QuarryBlockScreenData::write, QuarryBlockScreenData::read);
 }

@@ -1,63 +1,62 @@
 package pw.rxj.iron_quarry.util;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.client.option.SimpleOption;
-import net.minecraft.text.Text;
-
 import java.util.Arrays;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import net.minecraft.client.OptionInstance;
+import net.minecraft.network.chat.Component;
 
 public class ComplexOption {
     private ComplexOption() { }
 
 
-    public static SimpleOption<String> rotatingOptionFrom(String key, boolean autoTooltip, Class<? extends Enum<?>> clazz, String defaultValue, Consumer<String> write) {
+    public static OptionInstance<String> rotatingOptionFrom(String key, boolean autoTooltip, Class<? extends Enum<?>> clazz, String defaultValue, Consumer<String> write) {
         return rotatingOptionFrom(
                 key,
-                autoTooltip ? SimpleOption.constantTooltip(ReadableString.translatable(key + ".tooltip")) : SimpleOption.emptyTooltip(),
+                autoTooltip ? OptionInstance.cachedConstantTooltip(ReadableString.translatable(key + ".tooltip")) : OptionInstance.noTooltip(),
                 clazz.isEnum() ? Arrays.stream(clazz.getEnumConstants()).map(anEnum -> anEnum.toString().toLowerCase()).toList() : List.of(),
                 defaultValue,
                 write
         );
     }
-    public static SimpleOption<String> rotatingOptionFrom(String key, SimpleOption.TooltipFactory<String> tooltipFactory, List<String> optionList, String defaultValue, Consumer<String> write) {
-        return new SimpleOption<>(
+    public static OptionInstance<String> rotatingOptionFrom(String key, OptionInstance.TooltipSupplier<String> tooltipFactory, List<String> optionList, String defaultValue, Consumer<String> write) {
+        return new OptionInstance<>(
                 key,
                 tooltipFactory,
-                (optionText, value) -> Text.translatable(key + "." + value),
-                new SimpleOption.LazyCyclingCallbacks<>(() -> optionList, Optional::of, Codec.STRING),
+                (optionText, value) -> Component.translatable(key + "." + value),
+                new OptionInstance.LazyEnum<>(() -> optionList, Optional::of, Codec.STRING),
                 defaultValue,
                 write
         );
     }
 
-    public static SimpleOption<Integer> sliderOptionFrom(String key, ValueFormatter<Integer> valueDivider, boolean autoTooltip, int min, int max, int defaultValue, Consumer<Integer> write) {
+    public static OptionInstance<Integer> sliderOptionFrom(String key, ValueFormatter<Integer> valueDivider, boolean autoTooltip, int min, int max, int defaultValue, Consumer<Integer> write) {
         return sliderOptionFrom(
                 key,
                 valueDivider,
-                autoTooltip ? SimpleOption.constantTooltip(ReadableString.translatable(key + ".tooltip")) : SimpleOption.emptyTooltip(),
+                autoTooltip ? OptionInstance.cachedConstantTooltip(ReadableString.translatable(key + ".tooltip")) : OptionInstance.noTooltip(),
                 min, max,
                 defaultValue,
                 write
         );
     }
-    public static SimpleOption<Integer> sliderOptionFrom(String key, ValueFormatter<Integer> valueDivider, SimpleOption.TooltipFactory<Integer> tooltipFactory, int min, int max, int defaultValue, Consumer<Integer> write) {
-        return new SimpleOption<>(
+    public static OptionInstance<Integer> sliderOptionFrom(String key, ValueFormatter<Integer> valueDivider, OptionInstance.TooltipSupplier<Integer> tooltipFactory, int min, int max, int defaultValue, Consumer<Integer> write) {
+        return new OptionInstance<>(
                 key,
                 tooltipFactory,
                 valueDivider.apply(key),
-                new SimpleOption.ValidatingIntSliderCallbacks(min, max),
+                new OptionInstance.IntRange(min, max),
                 Codec.intRange(min, max),
                 defaultValue,
                 write
         );
     }
 
-    public static <T> SimpleOption.TooltipFactory<T> emptyTooltip() {
+    public static <T> OptionInstance.TooltipSupplier<T> emptyTooltip() {
         return (client) -> null;
     }
 
@@ -75,5 +74,5 @@ public class ComplexOption {
         });
     }
 
-    public interface ValueFormatter<T extends Number> extends Function<String, SimpleOption.ValueTextGetter<T>> { }
+    public interface ValueFormatter<T extends Number> extends Function<String, OptionInstance.CaptionBasedToString<T>> { }
 }

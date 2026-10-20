@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.resource.config.client;
 
+import com.mojang.blaze3d.platform.Window;
 import lombok.EqualsAndHashCode;
-import net.minecraft.client.util.Window;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 import pw.rxj.iron_quarry.types.AbsAlignment;
@@ -42,7 +42,7 @@ public class QuarryMonitorOverlayConfig {
         public int getComputedWindowX(Window window, int width) {
             return switch (this.getAlignment()) {
                 case TOP_LEFT, BOTTOM_LEFT -> this.getX();
-                case TOP_RIGHT, BOTTOM_RIGHT -> window.getScaledWidth() - width - this.getX();
+                case TOP_RIGHT, BOTTOM_RIGHT -> window.getGuiScaledWidth() - width - this.getX();
                 default -> 0;
             };
         }
@@ -56,7 +56,7 @@ public class QuarryMonitorOverlayConfig {
         public int getComputedWindowY(Window window, int height) {
             return switch (this.getAlignment()) {
                 case TOP_LEFT, TOP_RIGHT -> this.getY();
-                case BOTTOM_LEFT, BOTTOM_RIGHT -> window.getScaledHeight() - height - this.getY();
+                case BOTTOM_LEFT, BOTTOM_RIGHT -> window.getGuiScaledHeight() - height - this.getY();
                 default -> 0;
             };
         }

@@ -3,8 +3,7 @@ package pw.rxj.iron_quarry;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.screen.ingame.HandledScreens;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.screens.MenuScreens;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.block.ZBlocks;
 import pw.rxj.iron_quarry.model.ZModels;
@@ -30,7 +29,7 @@ public class Client implements ClientModInitializer {
         ResourceReloadListener.register();
         ZModels.register();
 
-        HandledScreens.register(Main.QUARRY_BLOCK_SCREEN_HANDLER, QuarryBlockScreen::new);
+        MenuScreens.register(Main.QUARRY_BLOCK_SCREEN_HANDLER, QuarryBlockScreen::new);
 
         ZNetwork.registerClient();
     }

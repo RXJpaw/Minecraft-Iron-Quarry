@@ -1,83 +1,83 @@
 package pw.rxj.iron_quarry.render;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 
 public class Cuboid {
     private boolean fullblockAdjusted = false;
 
-    public final Vec3d lowPos;
-    public final Vec3d highPos;
+    public final Vec3 lowPos;
+    public final Vec3 highPos;
 
-    private Cuboid(Vec3d pos1, Vec3d pos2, boolean process) {
+    private Cuboid(Vec3 pos1, Vec3 pos2, boolean process) {
         if(process) {
-            this.lowPos = new Vec3d(
-                    Math.min(pos1.getX(), pos2.getX()),
-                    Math.min(pos1.getY(), pos2.getY()),
-                    Math.min(pos1.getZ(), pos2.getZ())
+            this.lowPos = new Vec3(
+                    Math.min(pos1.x(), pos2.x()),
+                    Math.min(pos1.y(), pos2.y()),
+                    Math.min(pos1.z(), pos2.z())
             );
-            this.highPos = new Vec3d(
-                    Math.max(pos1.getX(), pos2.getX()),
-                    Math.max(pos1.getY(), pos2.getY()),
-                    Math.max(pos1.getZ(), pos2.getZ())
+            this.highPos = new Vec3(
+                    Math.max(pos1.x(), pos2.x()),
+                    Math.max(pos1.y(), pos2.y()),
+                    Math.max(pos1.z(), pos2.z())
             );
         } else {
             this.lowPos = pos1;
             this.highPos = pos2;
         }
     }
-    public static Cuboid from(Vec3d pos1, Vec3d pos2) {
+    public static Cuboid from(Vec3 pos1, Vec3 pos2) {
         return new Cuboid(pos1, pos2, true);
     }
-    private static Cuboid fromProcessed(Vec3d lowPos, Vec3d highPos) {
+    private static Cuboid fromProcessed(Vec3 lowPos, Vec3 highPos) {
         return new Cuboid(lowPos, highPos, false);
     }
     public static Cuboid from(double allSame1, double allSame2) {
-        Vec3d pos1 = new Vec3d(allSame1, allSame1, allSame1);
-        Vec3d pos2 = new Vec3d(allSame2, allSame2, allSame2);
+        Vec3 pos1 = new Vec3(allSame1, allSame1, allSame1);
+        Vec3 pos2 = new Vec3(allSame2, allSame2, allSame2);
 
         return from(pos1, pos2);
     }
     public static Cuboid from(BlockPos blockPos1, BlockPos blockPos2) {
-        Vec3d pos1 = new Vec3d(blockPos1.getX(), blockPos1.getY(), blockPos1.getZ());
-        Vec3d pos2 = new Vec3d(blockPos2.getX(), blockPos2.getY(), blockPos2.getZ());
+        Vec3 pos1 = new Vec3(blockPos1.getX(), blockPos1.getY(), blockPos1.getZ());
+        Vec3 pos2 = new Vec3(blockPos2.getX(), blockPos2.getY(), blockPos2.getZ());
 
         return from(pos1, pos2);
     }
 
     public Cuboid subtract(double allSame) {
-        return this.subtract(new Vec3d(allSame, allSame, allSame));
+        return this.subtract(new Vec3(allSame, allSame, allSame));
     }
-    public Cuboid subtract(Vec3d vector) {
+    public Cuboid subtract(Vec3 vector) {
         return Cuboid.fromProcessed(this.lowPos.subtract(vector), this.highPos.subtract(vector));
     }
     public Cuboid add(double allSame) {
-        return this.add(new Vec3d(allSame, allSame, allSame));
+        return this.add(new Vec3(allSame, allSame, allSame));
     }
-    public Cuboid add(Vec3d vector) {
+    public Cuboid add(Vec3 vector) {
         return Cuboid.fromProcessed(this.lowPos.add(vector), this.highPos.add(vector));
     }
     public Cuboid inflate(double offset) {
-        return this.inflate(new Vec3d(offset, offset, offset));
+        return this.inflate(new Vec3(offset, offset, offset));
     }
-    public Cuboid inflate(Vec3d offset) {
+    public Cuboid inflate(Vec3 offset) {
         return Cuboid.fromProcessed(this.lowPos.subtract(offset), this.highPos.add(offset));
     }
     public Cuboid deflate(double offset) {
-        return this.deflate(new Vec3d(offset, offset, offset));
+        return this.deflate(new Vec3(offset, offset, offset));
     }
-    public Cuboid deflate(Vec3d offset) {
+    public Cuboid deflate(Vec3 offset) {
         return Cuboid.fromProcessed(this.lowPos.add(offset), this.highPos.subtract(offset));
     }
 
-    public Vec3d abs() {
+    public Vec3 abs() {
         return this.highPos.subtract(this.lowPos);
     }
 
@@ -99,12 +99,12 @@ public class Cuboid {
     }
 
     public Cuboid limitInside(Cuboid other) {
-        Vec3d lowPos = new Vec3d(
+        Vec3 lowPos = new Vec3(
                 Math.min(Math.max(this.lowPos.x, other.lowPos.x), other.highPos.x),
                 Math.min(Math.max(this.lowPos.y, other.lowPos.y), other.highPos.x),
                 Math.min(Math.max(this.lowPos.z, other.lowPos.z), other.highPos.x)
         );
-        Vec3d highPos = new Vec3d(
+        Vec3 highPos = new Vec3(
                 Math.min(Math.max(this.highPos.x, other.lowPos.x), other.highPos.x),
                 Math.min(Math.max(this.highPos.y, other.lowPos.y), other.highPos.x),
                 Math.min(Math.max(this.highPos.z, other.lowPos.z), other.highPos.x)
@@ -118,19 +118,19 @@ public class Cuboid {
                this.lowPos.y == this.highPos.y ||
                this.lowPos.z == this.highPos.z;
     }
-    public boolean isInside(Vec3d pos) {
+    public boolean isInside(Vec3 pos) {
         return !this.isOutside(pos);
     }
-    public boolean isOutside(Vec3d pos) {
+    public boolean isOutside(Vec3 pos) {
         return pos.x <  this.lowPos.x || pos.y <  this.lowPos.y || pos.z <  this.lowPos.z ||
                pos.x > this.highPos.x || pos.y > this.highPos.y || pos.z > this.highPos.z;
     }
-    public boolean isPointInside(Vec2f flatPos) {
+    public boolean isPointInside(Vec2 flatPos) {
         return flatPos.x >= this.lowPos.x && flatPos.y >= this.lowPos.z && flatPos.x < this.highPos.x && flatPos.y < this.highPos.z;
     }
 
     public List<SpriteVec2f> getLines() {
-        Vec3d abs = this.abs();
+        Vec3 abs = this.abs();
 
         List<SpriteVec2f> lines = new ArrayList<>();
 

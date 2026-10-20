@@ -2,20 +2,19 @@ package pw.rxj.iron_quarry.types;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.util.StringIdentifiable;
-import net.minecraft.util.function.ValueLists;
-
 import java.util.function.IntFunction;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
 
-public enum DualPosition implements StringIdentifiable {
+public enum DualPosition implements StringRepresentable {
     FIRST(0, "first_position"),
     SECOND(1, "second_position");
 
-    public static final Codec<DualPosition> CODEC = StringIdentifiable.createBasicCodec(DualPosition::values);
-    public static final IntFunction<DualPosition> ID_TO_VALUE = ValueLists.<DualPosition>createIndexToValueFunction((value) -> value.id, values(), ValueLists.OutOfBoundsHandling.ZERO);
-    public static final PacketCodec<ByteBuf, DualPosition> PACKET_CODEC = PacketCodecs.indexed(ID_TO_VALUE, (value) -> value.id);
+    public static final Codec<DualPosition> CODEC = StringRepresentable.fromValues(DualPosition::values);
+    public static final IntFunction<DualPosition> ID_TO_VALUE = ByIdMap.<DualPosition>continuous((value) -> value.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+    public static final StreamCodec<ByteBuf, DualPosition> PACKET_CODEC = ByteBufCodecs.idMapper(ID_TO_VALUE, (value) -> value.id);
 
     private final int id;
     private final String name;
@@ -34,7 +33,7 @@ public enum DualPosition implements StringIdentifiable {
     }
 
     @Override
-    public String asString() {
+    public String getSerializedName() {
         return this.getName();
     }
 }

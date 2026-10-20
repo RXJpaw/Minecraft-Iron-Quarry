@@ -2,22 +2,21 @@ package pw.rxj.iron_quarry.util;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.server.world.ChunkTicketType;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.world.level.ChunkPos;
 import java.util.*;
 
 public class ChunkLoadingManager {
-    private static final ChunkTicketType QUARRY_EXPRESS = Registry.register(Registries.TICKET_TYPE, Identifier.of("iron_quarry", "quarry_express"), new ChunkTicketType(20L, ChunkTicketType.FOR_LOADING));
+    private static final TicketType QUARRY_EXPRESS = Registry.register(BuiltInRegistries.TICKET_TYPE, Identifier.fromNamespaceAndPath("iron_quarry", "quarry_express"), new TicketType(20L, TicketType.FLAG_LOADING));
     private static final List<Ticket> LOADED_CHUNKS = new ArrayList<>();
     private static boolean initialized = false;
 
-    public static void addTicket(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceBlockPos) {
+    public static void addTicket(ServerLevel loadedWorld, ChunkPos loadedChunkPos, ServerLevel sourceWorld, BlockPos sourceBlockPos) {
         Optional<Ticket> existingCheck = getTicket(loadedWorld, loadedChunkPos, sourceWorld, sourceBlockPos);
         if(existingCheck.isPresent()) return;
 
@@ -28,10 +27,10 @@ public class ChunkLoadingManager {
     private static void addTicket(Ticket ticket) {
         ChunkPos chunkPos = ticket.getLoadedChunkPos();
 
-        ticket.getLoadedWorld().getChunkManager().addTicket(QUARRY_EXPRESS, chunkPos, 0);
+        ticket.getLoadedWorld().getChunkSource().addTicketWithRadius(QUARRY_EXPRESS, chunkPos, 0);
     }
 
-    private static Optional<Ticket> getTicket(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceBlockPos){
+    private static Optional<Ticket> getTicket(ServerLevel loadedWorld, ChunkPos loadedChunkPos, ServerLevel sourceWorld, BlockPos sourceBlockPos){
         return LOADED_CHUNKS.stream()
                 .filter(ticket -> ticket.getLoadedWorld().equals(loadedWorld))
                 .filter(ticket -> ticket.getLoadedChunkPos().equals(loadedChunkPos))
@@ -39,27 +38,27 @@ public class ChunkLoadingManager {
                 .filter(ticket -> ticket.getSourceBlockPos().equals(sourceBlockPos))
                 .findFirst();
     }
-    public static List<Ticket> getTickets(ServerWorld sourceWorld, BlockPos sourceBlockPos){
+    public static List<Ticket> getTickets(ServerLevel sourceWorld, BlockPos sourceBlockPos){
         return LOADED_CHUNKS.stream()
                 .filter(ticket -> ticket.getSourceWorld().equals(sourceWorld))
                 .filter(ticket -> ticket.getSourceBlockPos().equals(sourceBlockPos))
                 .toList();
     }
 
-    public static void removeTicket(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceBlockPos) {
+    public static void removeTicket(ServerLevel loadedWorld, ChunkPos loadedChunkPos, ServerLevel sourceWorld, BlockPos sourceBlockPos) {
         getTicket(loadedWorld, loadedChunkPos, sourceWorld, sourceBlockPos).ifPresent(ChunkLoadingManager::removeTicket);
     }
-    public static void removeTickets(ServerWorld sourceWorld, BlockPos sourceBlockPos) {
+    public static void removeTickets(ServerLevel sourceWorld, BlockPos sourceBlockPos) {
         getTickets(sourceWorld, sourceBlockPos).forEach(ChunkLoadingManager::removeTicket);
     }
     private static void removeTicket(Ticket ticket) {
         ticket.markRemoved();
     }
 
-    public static boolean isTicketEmpty(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceBlockPos) {
+    public static boolean isTicketEmpty(ServerLevel loadedWorld, ChunkPos loadedChunkPos, ServerLevel sourceWorld, BlockPos sourceBlockPos) {
         return getTicket(loadedWorld, loadedChunkPos, sourceWorld, sourceBlockPos).isEmpty();
     }
-    public static boolean isTicketPresent(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceBlockPos) {
+    public static boolean isTicketPresent(ServerLevel loadedWorld, ChunkPos loadedChunkPos, ServerLevel sourceWorld, BlockPos sourceBlockPos) {
         return !isTicketEmpty(loadedWorld, loadedChunkPos, sourceWorld, sourceBlockPos);
     }
 
@@ -77,7 +76,7 @@ public class ChunkLoadingManager {
         if(initialized) return; initialized = true;
 
         ServerTickEvents.START_WORLD_TICK.register(serverWorld -> {
-            if(!LOADED_CHUNKS.isEmpty()) serverWorld.resetIdleTimeout();
+            if(!LOADED_CHUNKS.isEmpty()) serverWorld.resetEmptyTime();
             Iterator<Ticket> iterator = LOADED_CHUNKS.iterator();
 
             while(iterator.hasNext()) {
@@ -96,30 +95,30 @@ public class ChunkLoadingManager {
     }
 
     public static class Ticket {
-        private final ServerWorld loadedWorld;
+        private final ServerLevel loadedWorld;
         private final ChunkPos loadedChunkPos;
-        private final ServerWorld sourceWorld;
+        private final ServerLevel sourceWorld;
         private final BlockPos sourceChunkPos;
         private boolean markedForRemoval = false;
 
-        private Ticket(ServerWorld loadedWorld, ChunkPos loadedChunkPos, ServerWorld sourceWorld, BlockPos sourceChunkPos) {
+        private Ticket(ServerLevel loadedWorld, ChunkPos loadedChunkPos, ServerLevel sourceWorld, BlockPos sourceChunkPos) {
             this.loadedWorld = loadedWorld;
             this.loadedChunkPos = loadedChunkPos;
             this.sourceWorld = sourceWorld;
             this.sourceChunkPos = sourceChunkPos;
         }
 
-        public static Ticket from(ServerWorld serverWorld, ChunkPos chunkPos, ServerWorld sourceWorld, BlockPos sourcePos) {
+        public static Ticket from(ServerLevel serverWorld, ChunkPos chunkPos, ServerLevel sourceWorld, BlockPos sourcePos) {
             return new Ticket(serverWorld, chunkPos, sourceWorld, sourcePos);
         }
 
-        public ServerWorld getLoadedWorld() {
+        public ServerLevel getLoadedWorld() {
             return this.loadedWorld;
         }
         public ChunkPos getLoadedChunkPos() {
             return this.loadedChunkPos;
         }
-        public ServerWorld getSourceWorld() {
+        public ServerLevel getSourceWorld() {
             return this.sourceWorld;
         }
         public BlockPos getSourceBlockPos() {

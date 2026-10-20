@@ -1,26 +1,26 @@
 package pw.rxj.iron_quarry.util;
 
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 public class ManagedSlot extends Slot {
     private boolean isEnabled = true;
     private boolean isLocked = false;
 
-    public ManagedSlot(Inventory inventory, int index, int x, int y) {
+    public ManagedSlot(Container inventory, int index, int x, int y) {
         super(inventory, index, x, y);
     }
 
     @Override
-    public boolean canInsert(ItemStack stack) {
-        boolean isValid = !(inventory instanceof SimpleInventory simpleInventory) || simpleInventory.isValid(0, stack);
+    public boolean mayPlace(ItemStack stack) {
+        boolean isValid = !(container instanceof SimpleContainer simpleInventory) || simpleInventory.canPlaceItem(0, stack);
 
-        return super.canInsert(stack) && !this.isLocked() && isValid;
+        return super.mayPlace(stack) && !this.isLocked() && isValid;
     }
     @Override
-    public boolean isEnabled() {
+    public boolean isActive() {
         return this.isEnabled && !this.isLocked();
     }
     public boolean isLocked() {

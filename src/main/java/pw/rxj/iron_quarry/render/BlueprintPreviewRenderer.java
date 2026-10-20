@@ -1,20 +1,5 @@
 package pw.rxj.iron_quarry.render;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
@@ -27,18 +12,32 @@ import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.util.ItemStackUtil;
-
+import com.mojang.blaze3d.vertex.PoseStack;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 
 
 public class BlueprintPreviewRenderer {
-    public static final Identifier BLUEPRINT_POSITIONS_TEXTURE = Identifier.of(Main.MOD_ID, "textures/gui/blueprint_positions.png");
+    public static final Identifier BLUEPRINT_POSITIONS_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/blueprint_positions.png");
 
-    private static class ScreenPosData extends Quartet<ScreenPos, Double, Vec2f, Float> {
-        public ScreenPosData(ScreenPos screenPos, Double distance, Vec2f texUV, Float alpha) {
+    private static class ScreenPosData extends Quartet<ScreenPos, Double, Vec2, Float> {
+        public ScreenPosData(ScreenPos screenPos, Double distance, Vec2 texUV, Float alpha) {
             super(screenPos, distance, texUV, alpha);
         }
     }
@@ -47,10 +46,10 @@ public class BlueprintPreviewRenderer {
     private static void renderInWorld(WorldRenderCallback.Context context) {
         screenPosList.clear();
 
-        MinecraftClient minecraftClient = MinecraftClient.getInstance();
-        if(minecraftClient.options.hudHidden) return;
-        if(minecraftClient.world == null) return;
-        ClientPlayerEntity player = minecraftClient.player;
+        Minecraft minecraftClient = Minecraft.getInstance();
+        if(minecraftClient.options.hideGui) return;
+        if(minecraftClient.level == null) return;
+        LocalPlayer player = minecraftClient.player;
         if(player == null) return;
 
         AtomicReference<ItemStack> atomicBlueprintStack = new AtomicReference<>();
@@ -75,11 +74,11 @@ public class BlueprintPreviewRenderer {
         if(blueprintStack == null) return;
         final BlueprintItem blueprintItem = (BlueprintItem) blueprintStack.getItem();
 
-        RegistryKey<World> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack).orElse(null);
-        if(!minecraftClient.world.getRegistryKey().equals(worldRegistryKey)) return;
+        ResourceKey<Level> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack).orElse(null);
+        if(!minecraftClient.level.dimension().equals(worldRegistryKey)) return;
 
         Camera camera = context.camera();
-        MatrixStack matrices = context.matrixStack();
+        PoseStack matrices = context.matrixStack();
         if(matrices == null) return;
         Matrix4f positionMatrix = context.positionMatrix();
         Matrix4f projectionMatrix = context.projectionMatrix();
@@ -89,47 +88,47 @@ public class BlueprintPreviewRenderer {
         prepareRenderOnScreen(firstPos, secondPos, camera, positionMatrix, projectionMatrix);
         if(firstPos == null || secondPos == null) return;
 
-        float tickDelta = context.tickCounter().getTickProgress(false);
-        int viewDistance = Math.min(minecraftClient.options.getClampedViewDistance() * 16 * 3, RenderUtil.MAX_VIEW_DISTANCE * 16 * 3);
+        float tickDelta = context.tickCounter().getGameTimeDeltaPartialTick(false);
+        int viewDistance = Math.min(minecraftClient.options.getEffectiveRenderDistance() * 16 * 3, RenderUtil.MAX_VIEW_DISTANCE * 16 * 3);
 
-        Vec3d lerpedPlayerPos = player.getLerpedPos(tickDelta);
+        Vec3 lerpedPlayerPos = player.getPosition(tickDelta);
 
         Cuboid originalCuboid = Cuboid.from(firstPos, secondPos).subtract(lerpedPlayerPos).fullblock();
         Cuboid viewDistanceCuboid = Cuboid.from(viewDistance, -viewDistance);
         Cuboid limitedCuboid = originalCuboid.limitInside(viewDistanceCuboid);
         if(limitedCuboid.isFlat()) return;
 
-        matrices.push();
+        matrices.pushPose();
 
-        Vec3d playerToCameraPos = lerpedPlayerPos.subtract(camera.getCameraPos());
+        Vec3 playerToCameraPos = lerpedPlayerPos.subtract(camera.position());
         matrices.translate(playerToCameraPos.x, playerToCameraPos.y, playerToCameraPos.z);
 
         // WorldRenderEvents.END doesn't call this when the world border is rendered.
         // Resulting in color, transparency and brightness being way off.
         RenderUtil.drawZBufferedCuboid(limitedCuboid.inflate(0.02), matrices, viewDistance, 0.976F, 0.718F, 0.192F, 0.667F);
 
-        matrices.pop();
+        matrices.popPose();
     }
 
     private static void prepareRenderOnScreen(@Nullable BlockPos firstPos, @Nullable BlockPos secondPos, Camera camera, Matrix4f positionMatrix, Matrix4f projectionMatrix) {
         if(firstPos != null) {
-            Vec3d pos1 = RenderUtil.vec3dFrom(firstPos);
+            Vec3 pos1 = RenderUtil.vec3dFrom(firstPos);
 
             screenPosList.add(new ScreenPosData(
                     RenderUtil.worldToScreen(pos1, positionMatrix, projectionMatrix),
-                    pos1.distanceTo(camera.getCameraPos()),
-                    new Vec2f(0, 0),
+                    pos1.distanceTo(camera.position()),
+                    new Vec2(0, 0),
                     1.0F
             ));
         }
 
         if(secondPos != null) {
-            Vec3d pos2 = RenderUtil.vec3dFrom(secondPos);
+            Vec3 pos2 = RenderUtil.vec3dFrom(secondPos);
 
             screenPosList.add(new ScreenPosData(
                     RenderUtil.worldToScreen(pos2, positionMatrix, projectionMatrix),
-                    pos2.distanceTo(camera.getCameraPos()),
-                    new Vec2f(13, 0),
+                    pos2.distanceTo(camera.position()),
+                    new Vec2(13, 0),
                     1.0F
             ));
         }
@@ -155,21 +154,21 @@ public class BlueprintPreviewRenderer {
         }
     }
 
-    private static void renderOnScreen(DrawContext context, double tickDelta) {
-        MinecraftClient minecraftClient = MinecraftClient.getInstance();
-        TextRenderer textRenderer = minecraftClient.textRenderer;
-        Matrix3x2fStack matrices = context.getMatrices();
+    private static void renderOnScreen(GuiGraphics context, double tickDelta) {
+        Minecraft minecraftClient = Minecraft.getInstance();
+        Font textRenderer = minecraftClient.font;
+        Matrix3x2fStack matrices = context.pose();
 
         for (ScreenPosData pair : screenPosList) {
             ScreenPos screenPos = pair.getA();
             if(screenPos.isBehind()) continue;
             double distance = pair.getB();
-            Vec2f texUV = pair.getC();
+            Vec2 texUV = pair.getC();
             float alpha = pair.getD();
 
             float scale = (float) Math.max(1.0, (3.0 / Math.pow(distance, 0.6)));
             //Adjust scale for low resolution displays that default to GUI scale 1.
-            if(minecraftClient.getWindow().getScaleFactor() <= 1) scale *= 1.5F;
+            if(minecraftClient.getWindow().getGuiScale() <= 1) scale *= 1.5F;
 
 
             matrices.pushMatrix();
@@ -188,8 +187,8 @@ public class BlueprintPreviewRenderer {
 
                 matrices.translate(screenPos.x, screenPos.y + 9 * scale);
 
-                MutableText text = Text.literal(String.format("%,.1fm", distance));
-                int width = textRenderer.getWidth(text);
+                MutableComponent text = Component.literal(String.format("%,.1fm", distance));
+                int width = textRenderer.width(text);
                 int height = 8;
                 scale /= 1.5F;
 
@@ -197,7 +196,7 @@ public class BlueprintPreviewRenderer {
                 matrices.translate(1 + width / -2.0F, 0.0F);
 
                 context.fill(-2, -2, width + 1, height + 1, 1409286144);
-                context.drawText(textRenderer, text, 0, 0, new Color(1.0F, 1.0F, 1.0F, alpha).getRGB(), true);
+                context.drawString(textRenderer, text, 0, 0, new Color(1.0F, 1.0F, 1.0F, alpha).getRGB(), true);
 
                 matrices.popMatrix();
             }

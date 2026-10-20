@@ -1,12 +1,12 @@
 package pw.rxj.iron_quarry.interfaces;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 
 public interface IBlockAttackable {
-    ActionResult attackOnBlock(PlayerEntity player, World world, Hand hand, BlockPos pos, Direction direction);
+    InteractionResult attackOnBlock(Player player, Level world, InteractionHand hand, BlockPos pos, Direction direction);
 }

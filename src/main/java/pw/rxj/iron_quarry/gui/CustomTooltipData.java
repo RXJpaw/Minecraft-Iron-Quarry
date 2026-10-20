@@ -1,10 +1,10 @@
 package pw.rxj.iron_quarry.gui;
 
-import net.minecraft.item.tooltip.TooltipData;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
 
-public interface CustomTooltipData extends TooltipData {
-    Text MARKER = Text.literal("[Unimplemented Tooltip-Component]");
+public interface CustomTooltipData extends TooltipComponent {
+    Component MARKER = Component.literal("[Unimplemented Tooltip-Component]");
 
     default Boolean renderAtMarker() {
         return false;

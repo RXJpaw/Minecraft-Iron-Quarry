@@ -1,16 +1,16 @@
 package pw.rxj.iron_quarry.gui;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 import pw.rxj.iron_quarry.render.RenderUtil;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
 import pw.rxj.iron_quarry.util.ComplexInventory;
 
 public class TooltipQuarryInventoryComponent implements CustomTooltipComponent {
     private static final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = QuarryBlockScreen.AUGMENTATION_CONFIGURATION_TEXTURE;
-    private static final Identifier QUARRY_SCREEN_BACKGROUND_TEXTURE = QuarryBlockScreen.BACKGROUND_TEXTURE;
+    private static final Identifier QUARRY_SCREEN_BACKGROUND_TEXTURE = QuarryBlockScreen.INVENTORY_LOCATION;
 
     public final TooltipQuarryInventoryData quarryInventoryData;
     public final ItemStack blueprintStack;
@@ -36,22 +36,22 @@ public class TooltipQuarryInventoryComponent implements CustomTooltipComponent {
     }
 
     @Override
-    public int getHeight(TextRenderer textRenderer) {
+    public int getHeight(Font textRenderer) {
         return 22;
     }
 
     @Override
-    public int getWidth(TextRenderer textRenderer) {
+    public int getWidth(Font textRenderer) {
         return 40 + 108;
     }
 
     @Override
-    public void drawText(DrawContext context, TextRenderer textRenderer, int x, int y) {
+    public void renderText(GuiGraphics context, Font textRenderer, int x, int y) {
 
     }
 
     @Override
-    public void drawItems(TextRenderer textRenderer, int x, int y, int width, int height, DrawContext context) {
+    public void renderImage(Font textRenderer, int x, int y, int width, int height, GuiGraphics context) {
         RenderUtil.drawTexture(context, QUARRY_SCREEN_BACKGROUND_TEXTURE, x, y + 2, 79, 26, 18, 18, 256, 256);
         this.drawItemStack(x, y + 2, this.blueprintStack, textRenderer, context);
 
@@ -72,15 +72,15 @@ public class TooltipQuarryInventoryComponent implements CustomTooltipComponent {
         }
     }
 
-    private void drawItemStack(int x, int y, ItemStack stack, TextRenderer textRenderer, DrawContext context) {
-        context.drawItem(stack, x + 1, y + 1);
-        context.drawStackOverlay(textRenderer, stack, x + 1, y + 1);
+    private void drawItemStack(int x, int y, ItemStack stack, Font textRenderer, GuiGraphics context) {
+        context.renderItem(stack, x + 1, y + 1);
+        context.renderItemDecorations(textRenderer, stack, x + 1, y + 1);
     }
 
-    private void drawAugmentSlot(int x, int y, int index, TextRenderer textRenderer, DrawContext context) {
-        if(index >= this.MachineUpgradesInventory.size()) return;
+    private void drawAugmentSlot(int x, int y, int index, Font textRenderer, GuiGraphics context) {
+        if(index >= this.MachineUpgradesInventory.getContainerSize()) return;
 
-        ItemStack stack = this.MachineUpgradesInventory.getStack(index);
+        ItemStack stack = this.MachineUpgradesInventory.getItem(index);
         this.drawItemStack(x, y, stack, textRenderer, context);
     }
 }

@@ -1,25 +1,25 @@
 package pw.rxj.iron_quarry.util;
 
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.component.type.TooltipDisplayComponent;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.interfaces.IBlockTooltipAppender;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 
-public class BlockEntry<T extends Block> implements ItemConvertible {
+public class BlockEntry<T extends Block> implements ItemLike {
     private final T block;
     private final BlockItem blockItem;
     private final Identifier id;
@@ -30,16 +30,16 @@ public class BlockEntry<T extends Block> implements ItemConvertible {
         this.blockItem = blockItem;
     }
 
-    public static <T extends Block> BlockEntry<T> of(String path, AbstractBlock.Settings blockSettings, Function<AbstractBlock.Settings, T> blockFactory, UnaryOperator<Item.Settings> itemSettings) {
-        Identifier id = Identifier.of(Main.MOD_ID, path);
+    public static <T extends Block> BlockEntry<T> of(String path, BlockBehaviour.Properties blockSettings, Function<BlockBehaviour.Properties, T> blockFactory, UnaryOperator<Item.Properties> itemSettings) {
+        Identifier id = Identifier.fromNamespaceAndPath(Main.MOD_ID, path);
 
-        T block = blockFactory.apply(blockSettings.registryKey(RegistryKey.of(RegistryKeys.BLOCK, id)));
-        BlockItem blockItem = new BlockItem(block, itemSettings.apply(new Item.Settings()
-                .registryKey(RegistryKey.of(RegistryKeys.ITEM, id))
-                .useBlockPrefixedTranslationKey())) {
+        T block = blockFactory.apply(blockSettings.setId(ResourceKey.create(Registries.BLOCK, id)));
+        BlockItem blockItem = new BlockItem(block, itemSettings.apply(new Item.Properties()
+                .setId(ResourceKey.create(Registries.ITEM, id))
+                .useBlockDescriptionPrefix())) {
             @Override
-            public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
-                super.appendTooltip(stack, context, displayComponent, textConsumer, type);
+            public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay displayComponent, Consumer<Component> textConsumer, TooltipFlag type) {
+                super.appendHoverText(stack, context, displayComponent, textConsumer, type);
 
                 if(this.getBlock() instanceof IBlockTooltipAppender tooltipAppender) {
                     tooltipAppender.appendTooltip(stack, context, textConsumer, type);
@@ -49,7 +49,7 @@ public class BlockEntry<T extends Block> implements ItemConvertible {
 
         return new BlockEntry<>(id, block, blockItem);
     }
-    public static <T extends Block> BlockEntry<T> of(String path, AbstractBlock.Settings blockSettings, Function<AbstractBlock.Settings, T> blockFactory) {
+    public static <T extends Block> BlockEntry<T> of(String path, BlockBehaviour.Properties blockSettings, Function<BlockBehaviour.Properties, T> blockFactory) {
         return of(path, blockSettings, blockFactory, UnaryOperator.identity());
     }
 

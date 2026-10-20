@@ -1,28 +1,27 @@
 package pw.rxj.iron_quarry.item;
 
-import net.minecraft.block.Block;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.type.TooltipDisplayComponent;
-import net.minecraft.item.tooltip.TooltipData;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.recipe.ShapedRecipe;
-import net.minecraft.recipe.input.CraftingRecipeInput;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
@@ -44,7 +43,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     private boolean interdimensional;
     private int range;
 
-    public QuarryMonitorItem(Settings settings, QuarryMonitorConfig.Entry entry) {
+    public QuarryMonitorItem(Properties settings, QuarryMonitorConfig.Entry entry) {
         super(settings);
 
         this.interdimensional = entry.interdimensional;
@@ -56,14 +55,14 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     }
 
     @Override
-    public Text getName(ItemStack stack) {
+    public Component getName(ItemStack stack) {
         long timestamp = this.getCachedTimestamp(stack);
 
-        if(MinecraftClient.getInstance().isShiftPressed() && timestamp > 0) {
+        if(Minecraft.getInstance().hasShiftDown() && timestamp > 0) {
             ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
 
             if(!quarryBlockStack.isEmpty()) {
-                return quarryBlockStack.getName();
+                return quarryBlockStack.getHoverName();
             } else {
                 return ReadableString.translatable("item.iron_quarry.quarry_monitor.name.unknown_quarry_type");
             }
@@ -73,43 +72,43 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     }
 
     @Override
-    public boolean isItemBarVisible(ItemStack stack) {
+    public boolean isBarVisible(ItemStack stack) {
         ItemStack blueprintStack = this.getCachedBlueprintStack(stack);
-        if(blueprintStack.isEmpty()) return super.isItemBarVisible(stack);
+        if(blueprintStack.isEmpty()) return super.isBarVisible(stack);
 
-        return blueprintStack.isItemBarVisible();
+        return blueprintStack.isBarVisible();
     }
     @Override
-    public int getItemBarColor(ItemStack stack) {
+    public int getBarColor(ItemStack stack) {
         ItemStack blueprintStack = this.getCachedBlueprintStack(stack);
-        if(blueprintStack.isEmpty()) return super.getItemBarColor(stack);
+        if(blueprintStack.isEmpty()) return super.getBarColor(stack);
 
-        return blueprintStack.getItemBarColor();
+        return blueprintStack.getBarColor();
     }
     @Override
-    public int getItemBarStep(ItemStack stack) {
+    public int getBarWidth(ItemStack stack) {
         ItemStack blueprintStack = this.getCachedBlueprintStack(stack);
-        if(blueprintStack.isEmpty()) return super.getItemBarStep(stack);
+        if(blueprintStack.isEmpty()) return super.getBarWidth(stack);
 
-        return blueprintStack.getItemBarStep();
+        return blueprintStack.getBarWidth();
     }
 
     @Override
-    public Optional<TooltipData> getTooltipData(ItemStack stack) {
+    public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
         ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
 
         if(ZUtil.getBlockOrItem(quarryBlockStack) instanceof QuarryBlock quarryBlock) {
-            return quarryBlock.getTooltipData(quarryBlockStack);
+            return quarryBlock.getTooltipImage(quarryBlockStack);
         }
 
         return Optional.empty();
     }
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType options) {
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay displayComponent, Consumer<Component> textConsumer, TooltipFlag options) {
         ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
         long timestamp = this.getCachedTimestamp(stack);
 
-        if(MinecraftClient.getInstance().isShiftPressed() && timestamp > 0) {
+        if(Minecraft.getInstance().hasShiftDown() && timestamp > 0) {
             if(ZUtil.getBlockOrItem(quarryBlockStack) instanceof QuarryBlock quarryBlock) {
                 quarryBlock.appendTooltip(quarryBlockStack, context, textConsumer, options);
             } else {
@@ -156,42 +155,42 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     }
 
     @Override
-    public ItemStack getCraftingOutput(ItemStack output, CraftingRecipeInput input, RegistryWrapper.WrapperLookup wrapperLookup) {
+    public ItemStack getCraftingOutput(ItemStack output, CraftingInput input, HolderLookup.Provider wrapperLookup) {
         return IHandledCrafting.copyCenterSlotComponents(output, input);
     }
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        PlayerEntity player = context.getPlayer();
-        if(player == null) return ActionResult.FAIL;
+    public InteractionResult useOn(UseOnContext context) {
+        Player player = context.getPlayer();
+        if(player == null) return InteractionResult.FAIL;
 
-        if(!context.getHand().equals(Hand.MAIN_HAND)) return ActionResult.PASS;
+        if(!context.getHand().equals(InteractionHand.MAIN_HAND)) return InteractionResult.PASS;
 
-        World world = context.getWorld();
-        BlockPos targetedPos = context.getBlockPos();
+        Level world = context.getLevel();
+        BlockPos targetedPos = context.getClickedPos();
         if(world.getBlockState(targetedPos).getBlock() instanceof QuarryBlock) {
-            ItemStack stack = context.getStack();
+            ItemStack stack = context.getItemInHand();
             this.setPosition(stack, world, targetedPos);
-            Text positionText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
+            Component positionText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
 
-            player.sendMessage(ReadableString.translatable("item.iron_quarry.quarry_monitor.overlay.pos_set", positionText), true);
+            player.displayClientMessage(ReadableString.translatable("item.iron_quarry.quarry_monitor.overlay.pos_set", positionText), true);
 
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
     @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        return ActionResult.CONSUME;
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        return InteractionResult.CONSUME;
     }
 
-    public void setWorld(ItemStack stack, World world) {
-        this.setWorld(stack, world.getRegistryKey());
+    public void setWorld(ItemStack stack, Level world) {
+        this.setWorld(stack, world.dimension());
     }
-    public void setWorld(ItemStack stack, RegistryKey<World> newWorldKey) {
-        RegistryKey<World> oldWorldKey = this.getWorldRegistryKey(stack).orElse(null);
+    public void setWorld(ItemStack stack, ResourceKey<Level> newWorldKey) {
+        ResourceKey<Level> oldWorldKey = this.getWorldRegistryKey(stack).orElse(null);
         if(ZUtil.equals(oldWorldKey, newWorldKey)) return;
 
         this.resetPosition(stack);
@@ -199,7 +198,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         stack.set(ZComponents.QUARRY_MONITOR_WORLD, newWorldKey);
 
     }
-    public Optional<RegistryKey<World>> getWorldRegistryKey(ItemStack stack) {
+    public Optional<ResourceKey<Level>> getWorldRegistryKey(ItemStack stack) {
         return Optional.ofNullable(stack.get(ZComponents.QUARRY_MONITOR_WORLD));
     }
 
@@ -207,7 +206,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         stack.remove(ZComponents.QUARRY_MONITOR_POSITION);
 
     }
-    private void setPosition(ItemStack stack, @Nullable World world, BlockPos blockPos) {
+    private void setPosition(ItemStack stack, @Nullable Level world, BlockPos blockPos) {
         if(world != null) {
             this.setWorld(stack, world);
             blockPos = ZUtil.limitInsideWorldBounds(blockPos, world);
@@ -222,7 +221,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     }
 
     @Override
-    public void tick(ServerPlayerEntity playerEntity, ServerWorld world, ItemStack stack) {
+    public void tick(ServerPlayer playerEntity, ServerLevel world, ItemStack stack) {
         MinecraftServer minecraftServer = world.getServer();
 
         if(ZUtil.getBlockOrItem(stack) instanceof QuarryMonitorItem quarryMonitorItem) {
@@ -233,14 +232,14 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
             if(quarryBlockEntity == null) {
                 quarryMonitorItem.clearCachedQuarry(stack);
             } else {
-                quarryMonitorItem.setCachedQuarry(stack, quarryBlockEntity, world.getRegistryManager());
+                quarryMonitorItem.setCachedQuarry(stack, quarryBlockEntity, world.registryAccess());
             }
         }
     }
 
     public @Nullable QuarryBlockEntity fetchQuarryBlockEntity(MinecraftServer minecraftServer, ItemStack stack) {
-        RegistryKey<World> worldRegistryKey = this.getWorldRegistryKey(stack).orElse(null);
-        ServerWorld serverWorld = minecraftServer.getWorld(worldRegistryKey);
+        ResourceKey<Level> worldRegistryKey = this.getWorldRegistryKey(stack).orElse(null);
+        ServerLevel serverWorld = minecraftServer.getLevel(worldRegistryKey);
         if(serverWorld == null) return null;
 
         BlockPos quarryPos = this.getPosition(stack);
@@ -248,7 +247,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
         ChunkPos chunkPos = new ChunkPos(quarryPos.getX() >> 4, quarryPos.getZ() >> 4);
 
-        WorldChunk worldChunk = serverWorld.getChunkManager().getWorldChunk(chunkPos.x, chunkPos.z);
+        LevelChunk worldChunk = serverWorld.getChunkSource().getChunkNow(chunkPos.x, chunkPos.z);
         if(worldChunk == null) return null;
 
         Optional<QuarryBlockEntity> quarryBlockEntity = worldChunk.getBlockEntity(quarryPos, ZBlockEntities.QUARRY_BLOCK_ENTITY);
@@ -256,12 +255,12 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
     }
 
-    public void setCachedQuarry(ItemStack stack, QuarryBlockEntity blockEntity, RegistryWrapper.WrapperLookup registryLookup) {
+    public void setCachedQuarry(ItemStack stack, QuarryBlockEntity blockEntity, HolderLookup.Provider registryLookup) {
         QuarryBlock quarryBlock = blockEntity.getQuarryBlock();
         if(quarryBlock == null) return;
 
         ItemStack itemStack = new ItemStack(quarryBlock);
-        itemStack.applyComponentsFrom(blockEntity.createComponentMap());
+        itemStack.applyComponents(blockEntity.collectComponents());
 
         stack.set(ZComponents.QUARRY_MONITOR_CACHED_QUARRY, itemStack);
         stack.set(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, System.currentTimeMillis());
@@ -285,7 +284,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     private @Nullable QuarryBlock getCachedQuarryBlock(ItemStack quarryStack) {
         if(quarryStack.isEmpty()) return null;
 
-        Block block = Block.getBlockFromItem(quarryStack.getItem());
+        Block block = Block.byItem(quarryStack.getItem());
 
         if(block instanceof QuarryBlock quarryBlock) {
             return quarryBlock;
@@ -315,7 +314,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
         ComplexInventory outputInventory = quarryBlock.getOutputInventory(quarryStack);
 
-        return (float) outputInventory.occupiedSlots() / outputInventory.size();
+        return (float) outputInventory.occupiedSlots() / outputInventory.getContainerSize();
     }
     public ItemStack getCachedBlueprintStack(ItemStack stack) {
         ItemStack quarryStack = this.getCachedQuarryStack(stack);

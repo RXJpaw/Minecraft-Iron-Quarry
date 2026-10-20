@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.util;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Nullable;
 import team.reborn.energy.api.base.SimpleSidedEnergyContainer;
 
@@ -44,14 +44,14 @@ public class ComplexEnergyContainer extends SimpleSidedEnergyContainer {
         return (float) this.getStored() / this.getCapacity();
     }
 
-    public void read(NbtCompound data){
-        this.amount = data.getLong("Stored", 0L);
+    public void read(CompoundTag data){
+        this.amount = data.getLongOr("Stored", 0L);
     }
     public void read(long amount){
         this.amount = amount;
     }
-    public NbtCompound write(){
-        NbtCompound data = new NbtCompound();
+    public CompoundTag write(){
+        CompoundTag data = new CompoundTag();
 
         data.putLong("Stored", this.amount);
 

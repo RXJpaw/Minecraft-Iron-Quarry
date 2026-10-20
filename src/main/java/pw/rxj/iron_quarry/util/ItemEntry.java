@@ -1,15 +1,15 @@
 package pw.rxj.iron_quarry.util;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
 import pw.rxj.iron_quarry.Main;
 
 import java.util.function.Function;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 
-public class ItemEntry<T extends Item> implements ItemConvertible {
+public class ItemEntry<T extends Item> implements ItemLike {
     private final T item;
     private final Identifier id;
 
@@ -18,11 +18,11 @@ public class ItemEntry<T extends Item> implements ItemConvertible {
         this.item = item;
     }
 
-    public static <T extends Item> ItemEntry<T> of(String path, Function<Item.Settings, T> factory) {
-        Identifier id = Identifier.of(Main.MOD_ID, path);
-        RegistryKey<Item> key = RegistryKey.of(RegistryKeys.ITEM, id);
+    public static <T extends Item> ItemEntry<T> of(String path, Function<Item.Properties, T> factory) {
+        Identifier id = Identifier.fromNamespaceAndPath(Main.MOD_ID, path);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
 
-        return new ItemEntry<>(id, factory.apply(new Item.Settings().registryKey(key)));
+        return new ItemEntry<>(id, factory.apply(new Item.Properties().setId(key)));
     }
 
     @Override

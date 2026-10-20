@@ -1,6 +1,6 @@
 package pw.rxj.iron_quarry.interfaces;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import pw.rxj.iron_quarry.util.ZUtil;
 import team.reborn.energy.impl.EnergyImpl;
 

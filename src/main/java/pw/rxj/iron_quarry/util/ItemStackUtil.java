@@ -1,14 +1,14 @@
 package pw.rxj.iron_quarry.util;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
 
-public class ItemStackUtil<T extends ItemConvertible> {
+public class ItemStackUtil<T extends ItemLike> {
     public final ItemStack stack;
     public final T item;
 
@@ -17,8 +17,8 @@ public class ItemStackUtil<T extends ItemConvertible> {
         this.item = item;
     }
 
-    public static @Nullable <T extends ItemConvertible> ItemStackUtil<T> of(ItemStack stack, Class<T> clazz) {
-        ItemConvertible item = ZUtil.getBlockOrItem(stack);
+    public static @Nullable <T extends ItemLike> ItemStackUtil<T> of(ItemStack stack, Class<T> clazz) {
+        ItemLike item = ZUtil.getBlockOrItem(stack);
 
         if(clazz.isInstance(item)) {
             return new ItemStackUtil<>(stack, clazz.cast(item));
@@ -26,9 +26,9 @@ public class ItemStackUtil<T extends ItemConvertible> {
             return null;
         }
     }
-    public static <T extends ItemConvertible> Optional<ItemStackUtil<T>> ofAnyHand(PlayerEntity player, Class<T> clazz) {
-        for (Hand hand : Hand.values()) {
-            ItemStack stackInHand = player.getStackInHand(hand);
+    public static <T extends ItemLike> Optional<ItemStackUtil<T>> ofAnyHand(Player player, Class<T> clazz) {
+        for (InteractionHand hand : InteractionHand.values()) {
+            ItemStack stackInHand = player.getItemInHand(hand);
             ItemStackUtil<T> stackUtil = of(stackInHand, clazz);
             if(stackUtil != null) return Optional.of(stackUtil);
         }

@@ -1,41 +1,41 @@
 package pw.rxj.iron_quarry.util;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.LootableContainerBlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.inventory.ContainerLock;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemStack;
 import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.LockCode;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.registry.Registries;
-import net.minecraft.item.Item;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.storage.NbtReadView;
-import net.minecraft.text.OrderedText;
-import net.minecraft.util.ErrorReporter;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraft.world.border.WorldBorder;
-import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 
 public class ZUtil {
-    public static ItemConvertible getBlockOrItem(ItemStack stack) {
+    public static ItemLike getBlockOrItem(ItemStack stack) {
         if(stack.getItem() instanceof BlockItem blockItem) {
             return blockItem.getBlock();
         }
@@ -44,7 +44,7 @@ public class ZUtil {
     }
 
     public static String expandableFixedFloat(float input) {
-        if(MinecraftClient.getInstance().isShiftPressed()) return ReadableString.getDecimalFormatter("#,##0.00").format(input);
+        if(Minecraft.getInstance().hasShiftDown()) return ReadableString.getDecimalFormatter("#,##0.00").format(input);
 
         float inputAbs = Math.abs(input);
         String inputSign = input >= 0 ? "" : "-";
@@ -58,7 +58,7 @@ public class ZUtil {
         return ReadableString.cIntFrom(input);
     }
     public static <T extends Number> String expandableFixedInt(T number) {
-        if(MinecraftClient.getInstance().isShiftPressed()) return ReadableString.intFrom(number);
+        if(Minecraft.getInstance().hasShiftDown()) return ReadableString.intFrom(number);
 
         return ReadableString.cIntFrom(number);
     }
@@ -70,21 +70,21 @@ public class ZUtil {
         return enumList[index];
     }
 
-    public static @Nullable BlockEntity getBlockEntity(WorldChunk worldChunk, BlockState blockState, BlockPos blockPos) {
+    public static @Nullable BlockEntity getBlockEntity(LevelChunk worldChunk, BlockState blockState, BlockPos blockPos) {
         if(!blockState.hasBlockEntity()) return null;
         return worldChunk.getBlockEntity(blockPos);
     }
 
-    public static @Nullable LootableContainerBlockEntity getUnlockedLootableContainer(@Nullable BlockEntity blockEntity) {
-        if(blockEntity instanceof LootableContainerBlockEntity lootableBlockEntity) {
-            World world = lootableBlockEntity.getWorld();
+    public static @Nullable RandomizableContainerBlockEntity getUnlockedLootableContainer(@Nullable BlockEntity blockEntity) {
+        if(blockEntity instanceof RandomizableContainerBlockEntity lootableBlockEntity) {
+            Level world = lootableBlockEntity.getLevel();
             if(world == null) return null;
 
-            NbtCompound nbtCompound = lootableBlockEntity.createComponentlessNbt(world.getRegistryManager());
+            CompoundTag nbtCompound = lootableBlockEntity.saveCustomOnly(world.registryAccess());
             if(nbtCompound.isEmpty()) return null;
 
-            ContainerLock lock = ContainerLock.read(NbtReadView.create(ErrorReporter.EMPTY, world.getRegistryManager(), nbtCompound));
-            if(!lock.equals(ContainerLock.EMPTY)) return null;
+            LockCode lock = LockCode.fromTag(TagValueInput.create(ProblemReporter.DISCARDING, world.registryAccess(), nbtCompound));
+            if(!lock.equals(LockCode.NO_LOCK)) return null;
 
             return lootableBlockEntity;
         }
@@ -113,21 +113,21 @@ public class ZUtil {
         return (degrees % 360.0f) / 360.0f;
     }
 
-    public static boolean equals(@Nullable RegistryKey<?> key1, @Nullable RegistryKey<?> key2) {
-        Identifier registry1 = key1 == null ? null : key1.getRegistry();
-        Identifier registry2 = key2 == null ? null : key2.getRegistry();
-        Identifier value1 = key1 == null ? null : key1.getValue();
-        Identifier value2 = key2 == null ? null : key2.getValue();
+    public static boolean equals(@Nullable ResourceKey<?> key1, @Nullable ResourceKey<?> key2) {
+        Identifier registry1 = key1 == null ? null : key1.registry();
+        Identifier registry2 = key2 == null ? null : key2.registry();
+        Identifier value1 = key1 == null ? null : key1.identifier();
+        Identifier value2 = key2 == null ? null : key2.identifier();
 
         return registry1 == registry2 && value1 == value2;
     }
-    public static String toString(RegistryKey<?> registryKey) {
-        String registry = registryKey.getRegistry().toString();
-        String value = registryKey.getValue().toString();
+    public static String toString(ResourceKey<?> registryKey) {
+        String registry = registryKey.registry().toString();
+        String value = registryKey.identifier().toString();
 
         return registry + "/" + value;
     }
-    public static String toString(OrderedText orderedText) {
+    public static String toString(FormattedCharSequence orderedText) {
         StringBuilder builder = new StringBuilder();
 
         orderedText.accept((index, style, codePoint) -> {
@@ -137,7 +137,7 @@ public class ZUtil {
 
         return builder.toString();
     }
-    public static <T> @Nullable RegistryKey<T> toRegistryKey(String string) {
+    public static <T> @Nullable ResourceKey<T> toRegistryKey(String string) {
         String[] split = string.split("/");
         if(split.length < 2) return null;
 
@@ -146,11 +146,11 @@ public class ZUtil {
         Identifier value = Identifier.tryParse(split[1]);
         if(value == null) return null;
 
-        return RegistryKey.of(RegistryKey.ofRegistry(registry), value);
+        return ResourceKey.create(ResourceKey.createRegistryKey(registry), value);
     }
 
-    public static Vec3d toVec3d(BlockPos blockPos) {
-        return new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+    public static Vec3 toVec3d(BlockPos blockPos) {
+        return new Vec3(blockPos.getX(), blockPos.getY(), blockPos.getZ());
     }
 
     public static Direction getFacingDirection(float yaw, float pitch) {
@@ -159,24 +159,24 @@ public class ZUtil {
         } else if(pitch > 45.0F) {
             return Direction.DOWN;
         } else {
-            return Direction.fromHorizontalDegrees(yaw);
+            return Direction.fromYRot(yaw);
         }
     }
 
-    public static BlockPos limitInsideWorldBounds(BlockPos blockPos, World world) {
+    public static BlockPos limitInsideWorldBounds(BlockPos blockPos, Level world) {
         WorldBorder worldBorder = world.getWorldBorder();
 
-        double x = Math.min(Math.max(blockPos.getX(), worldBorder.getBoundWest()), worldBorder.getBoundEast() - 1);
-        double y = Math.min(Math.max(blockPos.getY(), world.getBottomY()), world.getTopYInclusive() + 1);
-        double z = Math.min(Math.max(blockPos.getZ(), worldBorder.getBoundNorth()), worldBorder.getBoundSouth() - 1);
+        double x = Math.min(Math.max(blockPos.getX(), worldBorder.getMinX()), worldBorder.getMaxX() - 1);
+        double y = Math.min(Math.max(blockPos.getY(), world.getMinY()), world.getMaxY() + 1);
+        double z = Math.min(Math.max(blockPos.getZ(), worldBorder.getMinZ()), worldBorder.getMaxZ() - 1);
 
-        return BlockPos.ofFloored(x, y, z);
+        return BlockPos.containing(x, y, z);
     }
-    public static boolean isInsideWorldBounds(BlockPos blockPos, World world) {
-        if(blockPos.getY() > world.getTopYInclusive() + 1) return false;
-        if(blockPos.getY() < world.getBottomY()) return false;
+    public static boolean isInsideWorldBounds(BlockPos blockPos, Level world) {
+        if(blockPos.getY() > world.getMaxY() + 1) return false;
+        if(blockPos.getY() < world.getMinY()) return false;
 
-        return world.getWorldBorder().contains(blockPos);
+        return world.getWorldBorder().isWithinBounds(blockPos);
     }
 
     public static HashSet<Integer> getNSpacedIndexes(int listSize, int n) {
@@ -193,19 +193,19 @@ public class ZUtil {
         return indexSet;
     }
 
-    public static RegistryEntry<Enchantment> getEnchantmentEntry(RegistryWrapper.WrapperLookup registryLookup, RegistryKey<Enchantment> enchantment) {
-        return registryLookup.getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(enchantment);
+    public static Holder<Enchantment> getEnchantmentEntry(HolderLookup.Provider registryLookup, ResourceKey<Enchantment> enchantment) {
+        return registryLookup.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(enchantment);
     }
-    public static int getEnchantmentLevel(ItemStack stack, RegistryKey<Enchantment> enchantment) {
-        for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : stack.getEnchantments().getEnchantmentEntries()) {
-            if(entry.getKey().matchesKey(enchantment)) return entry.getIntValue();
+    public static int getEnchantmentLevel(ItemStack stack, ResourceKey<Enchantment> enchantment) {
+        for (Object2IntMap.Entry<Holder<Enchantment>> entry : stack.getEnchantments().entrySet()) {
+            if(entry.getKey().is(enchantment)) return entry.getIntValue();
         }
 
         return 0;
     }
-    public static int getCappedEnchantmentLevel(ItemStack stack, RegistryKey<Enchantment> enchantment) {
-        for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : stack.getEnchantments().getEnchantmentEntries()) {
-            if(entry.getKey().matchesKey(enchantment)) return Math.min(entry.getIntValue(), entry.getKey().value().getMaxLevel());
+    public static int getCappedEnchantmentLevel(ItemStack stack, ResourceKey<Enchantment> enchantment) {
+        for (Object2IntMap.Entry<Holder<Enchantment>> entry : stack.getEnchantments().entrySet()) {
+            if(entry.getKey().is(enchantment)) return Math.min(entry.getIntValue(), entry.getKey().value().getMaxLevel());
         }
 
         return 0;
@@ -213,7 +213,7 @@ public class ZUtil {
 
     public static List<Item> getItemsIn(TagKey<Item> tag) {
         List<Item> items = new ArrayList<>();
-        Registries.ITEM.iterateEntries(tag).forEach(entry -> items.add(entry.value()));
+        BuiltInRegistries.ITEM.getTagOrEmpty(tag).forEach(entry -> items.add(entry.value()));
 
         return items;
     }

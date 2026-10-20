@@ -4,36 +4,39 @@ import com.mojang.serialization.MapCodec;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.tooltip.TooltipData;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.client.render.BlockRenderLayer;
-import net.minecraft.client.util.SpriteIdentifier;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.recipe.ShapedRecipe;
-import net.minecraft.recipe.input.CraftingRecipeInput;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
@@ -63,19 +66,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IEnergyContainer, ITooltipDataProvider, IHandledUseBlock, IHandledKeyedAction, IBlockTooltipAppender {
+public class QuarryBlock extends BaseEntityBlock implements IHandledCrafting, IEnergyContainer, ITooltipDataProvider, IHandledUseBlock, IHandledKeyedAction, IBlockTooltipAppender {
     private final String textureReference;
     private int ticksPerOperation;
     private int baseConsumption;
     private int energyCapacity;
     private int augmentLimit;
 
-    public QuarryBlock(Settings settings, String texRef, QuarryStatsConfig.Entry entry) {
+    public QuarryBlock(Properties settings, String texRef, QuarryStatsConfig.Entry entry) {
         super(settings);
         this.textureReference = texRef;
 
-        this.setDefaultState(this.stateManager.getDefaultState()
-                .with(FACING, Direction.NORTH)
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
         );
 
         this.ticksPerOperation = entry.ticksPerOperation;
@@ -90,7 +93,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         this.augmentLimit = quarryStats.augmentLimit;
     }
 
-    public static final EnumProperty<Direction> FACING = EnumProperty.of("facing", Direction.class);
+    public static final EnumProperty<Direction> FACING = EnumProperty.create("facing", Direction.class);
 
     public static QuarryBlock getFallback() {
         return ZBlocks.COPPER_QUARRY.getBlock();
@@ -120,21 +123,21 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         List<ItemStack> stacks = new ArrayList<>();
 
         stacks.add(this.getDrillStack(stack));
-        stacks.addAll(this.getAugmentInventory(stack).getHeldStacks());
+        stacks.addAll(this.getAugmentInventory(stack).getItems());
 
         return stacks;
     }
 
     public @NotNull ItemStack getDrillStack(ItemStack stack) {
-        return stack.getOrDefault(QuarryInventory.Drill.COMPONENT, ComplexInventory.ofSize(1)).getStack(0);
+        return stack.getOrDefault(QuarryInventory.Drill.COMPONENT, ComplexInventory.ofSize(1)).getItem(0);
     }
     public @NotNull ItemStack getBlueprintStack(ItemStack stack) {
-        return stack.getOrDefault(QuarryInventory.Blueprint.COMPONENT, ComplexInventory.ofSize(1)).getStack(0);
+        return stack.getOrDefault(QuarryInventory.Blueprint.COMPONENT, ComplexInventory.ofSize(1)).getItem(0);
     }
 
     @Override
-    public Optional<TooltipData> getTooltipData(ItemStack stack) {
-        return MinecraftClient.getInstance().isShiftPressed() ? Optional.of(TooltipQuarryInventoryData.from(
+    public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
+        return Minecraft.getInstance().hasShiftDown() ? Optional.of(TooltipQuarryInventoryData.from(
                 this.getBlueprintStack(stack),
                 this.getDrillStack(stack),
                 this.getAugmentInventory(stack),
@@ -142,14 +145,14 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
             : Optional.empty();
     }
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, Consumer<Text> textConsumer, TooltipType options) {
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, Consumer<Component> textConsumer, TooltipFlag options) {
         MachineUpgradesUtil machineUpgradesUtil = MachineUpgradesUtil.from(this.getMachineUpgradeStacks(stack));
 
         float yield_bonus = (machineUpgradesUtil.getFortuneMultiplier() - 1) * 100.0F;
         float energy_usage = this.baseConsumption * machineUpgradesUtil.getInefficiency();
         float operations = (20.0F / this.ticksPerOperation) * machineUpgradesUtil.getSpeedMultiplier();
 
-        SupplicableAlt<?> HasShiftDown = SupplicableAlt.when(MinecraftClient.getInstance().isShiftPressed());
+        SupplicableAlt<?> HasShiftDown = SupplicableAlt.when(Minecraft.getInstance().hasShiftDown());
 
         SupplicableAlt<String> PER_TYPE = HasShiftDown.<String>copy()
                 .then(() -> "per_operation")
@@ -158,14 +161,14 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
                 .then(() -> ZUtil.expandableFixedInt((int) (energy_usage * 20 / operations)))
                 .or(() -> ReadableString.cIntFrom(energy_usage));
 
-        MutableText LORE_USAGE_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy." + PER_TYPE.get(), PER_UNIT.get());
-        MutableText LORE_USAGE = ReadableString.translatable("item.iron_quarry.quarry_block.lore.usage", LORE_USAGE_DETAIL);
+        MutableComponent LORE_USAGE_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy." + PER_TYPE.get(), PER_UNIT.get());
+        MutableComponent LORE_USAGE = ReadableString.translatable("item.iron_quarry.quarry_block.lore.usage", LORE_USAGE_DETAIL);
 
-        MutableText LORE_SPEED_DETAIL = ReadableString.translatable("item.iron_quarry.lore.operation.per_second", ZUtil.expandableFixedFloat(operations));
-        MutableText LORE_SPEED = ReadableString.translatable("item.iron_quarry.quarry_block.lore.speed", LORE_SPEED_DETAIL);
+        MutableComponent LORE_SPEED_DETAIL = ReadableString.translatable("item.iron_quarry.lore.operation.per_second", ZUtil.expandableFixedFloat(operations));
+        MutableComponent LORE_SPEED = ReadableString.translatable("item.iron_quarry.quarry_block.lore.speed", LORE_SPEED_DETAIL);
 
-        MutableText LORE_YIELD_DETAIL = ReadableString.translatable("item.iron_quarry.lore.percentage.positive", ZUtil.expandableFixedFloat(yield_bonus));
-        MutableText LORE_YIELD = ReadableString.translatable("item.iron_quarry.quarry_block.lore.yield", LORE_YIELD_DETAIL);
+        MutableComponent LORE_YIELD_DETAIL = ReadableString.translatable("item.iron_quarry.lore.percentage.positive", ZUtil.expandableFixedFloat(yield_bonus));
+        MutableComponent LORE_YIELD = ReadableString.translatable("item.iron_quarry.quarry_block.lore.yield", LORE_YIELD_DETAIL);
 
         textConsumer.accept(LORE_USAGE);
         textConsumer.accept(LORE_SPEED);
@@ -190,11 +193,11 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
             long capacity = this.getEnergyCapacity();
             long stored = this.getEnergyStored(stack);
 
-            MutableText LORE_STORED_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy.unit", ReadableString.intFrom(stored));
-            MutableText LORE_STORED = ReadableString.translatable("item.iron_quarry.quarry_block.lore.stored", LORE_STORED_DETAIL);
+            MutableComponent LORE_STORED_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy.unit", ReadableString.intFrom(stored));
+            MutableComponent LORE_STORED = ReadableString.translatable("item.iron_quarry.quarry_block.lore.stored", LORE_STORED_DETAIL);
 
-            MutableText LORE_CAPACITY_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy.unit", ReadableString.intFrom(capacity));
-            MutableText LORE_CAPACITY = ReadableString.translatable("item.iron_quarry.quarry_block.lore.capacity", LORE_CAPACITY_DETAIL);
+            MutableComponent LORE_CAPACITY_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy.unit", ReadableString.intFrom(capacity));
+            MutableComponent LORE_CAPACITY = ReadableString.translatable("item.iron_quarry.quarry_block.lore.capacity", LORE_CAPACITY_DETAIL);
 
             textConsumer.accept(ReadableString.space());
             textConsumer.accept(LORE_STORED);
@@ -202,7 +205,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
 
             textConsumer.accept(CustomTooltipData.MARKER);
         } else {
-            MutableText LORE_DETAILS = ReadableString.translatable("item.iron_quarry.lore.details");
+            MutableComponent LORE_DETAILS = ReadableString.translatable("item.iron_quarry.lore.details");
 
             textConsumer.accept(ReadableString.space());
             textConsumer.accept(LORE_DETAILS);
@@ -213,7 +216,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
         return this.getEnergyConsumption(upgradesUtil, Blocks.STONE);
     }
     public long getEnergyConsumption(MachineUpgradesUtil upgradesUtil, Block block) {
-        float blockHardnessPenalty = Math.max(1.0F, Math.min(5.0F, block.getHardness() / 10));
+        float blockHardnessPenalty = Math.max(1.0F, Math.min(5.0F, block.defaultDestroyTime() / 10));
         float inefficiencyPenalty = upgradesUtil.getInefficiency();
         float operations = (20.0F / this.ticksPerOperation) * upgradesUtil.getSpeedMultiplier();
 
@@ -221,89 +224,89 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     }
 
     /**
-     * @see net.minecraft.server.network.ServerPlayerInteractionManager#tryBreakBlock(BlockPos)
+     * @see net.minecraft.server.level.ServerPlayerGameMode#destroyBlock(BlockPos)
      */
     @Override
-    public ActionResult useOnBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) {
+    public InteractionResult useOnBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
         BlockPos blockPos = hitResult.getBlockPos();
-        Direction side = hitResult.getSide();
+        Direction side = hitResult.getDirection();
 
         BlockEntity blockEntity = world.getBlockEntity(blockPos);
         BlockState blockState = world.getBlockState(blockPos);
-        ItemStack stack = player.getStackInHand(hand);
+        ItemStack stack = player.getItemInHand(hand);
 
         if (blockEntity instanceof QuarryBlockEntity quarryBlockEntity) {
-            if(stack.isIn(ZItemTags.C_WRENCHES)) {
-                if(world.isClient() && MinecraftClient.getInstance().options.sneakKey.isPressed()) {
+            if(stack.is(ZItemTags.C_WRENCHES)) {
+                if(world.isClientSide() && Minecraft.getInstance().options.keyShift.isDown()) {
                     ZNetwork.sendToServer(PacketKeyedAction.bake("key.sneak", hand, ActionGoal.USE_ON_BLOCK, hitResult));
                 } else {
                     MachineConfiguration Configuration = quarryBlockEntity.Configuration;
-                    Face face = Face.from(side, blockState.get(FACING));
+                    Face face = Face.from(side, blockState.getValue(FACING));
 
                     Configuration.setIoState(face, Configuration.getNextIoState(face));
                 }
 
-                return ActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             } else if(stack.getItem() instanceof QuarryMonitorItem) {
-                return ActionResult.PASS;
-            } else if(!player.shouldCancelInteraction()) {
-                if (!world.isClient()) {
-                    NamedScreenHandlerFactory screenHandlerFactory = blockState.createScreenHandlerFactory(world, blockPos);
-                    if (screenHandlerFactory != null) player.openHandledScreen(screenHandlerFactory);
+                return InteractionResult.PASS;
+            } else if(!player.isSecondaryUseActive()) {
+                if (!world.isClientSide()) {
+                    MenuProvider screenHandlerFactory = blockState.getMenuProvider(world, blockPos);
+                    if (screenHandlerFactory != null) player.openMenu(screenHandlerFactory);
                 }
 
-                return ActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
     @Override
-    public void keyedUseOnBlock(String keyName, ItemUsageContext context, BlockState blockState) {
+    public void keyedUseOnBlock(String keyName, UseOnContext context, BlockState blockState) {
         if(!keyName.equals("key.sneak")) return;
 
-        PlayerEntity player = context.getPlayer();
+        Player player = context.getPlayer();
         if(player == null) return;
 
-        BlockPos blockPos = context.getBlockPos();
-        if(player.squaredDistanceTo((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.5, (double)blockPos.getZ() + 0.5) > 64.0) return;
+        BlockPos blockPos = context.getClickedPos();
+        if(player.distanceToSqr((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.5, (double)blockPos.getZ() + 0.5) > 64.0) return;
 
-        World world = context.getWorld();
-        ItemStack stack = context.getStack();
+        Level world = context.getLevel();
+        ItemStack stack = context.getItemInHand();
         BlockEntity blockEntity = world.getBlockEntity(blockPos);
 
-        if(stack.isIn(ZItemTags.C_WRENCHES)) {
-            this.onBreak(world, blockPos, blockState, player);
+        if(stack.is(ZItemTags.C_WRENCHES)) {
+            this.playerWillDestroy(world, blockPos, blockState, player);
             boolean removed = world.removeBlock(blockPos, false);
-            if(removed) this.onBroken(world, blockPos, blockState);
+            if(removed) this.destroy(world, blockPos, blockState);
 
             if(!player.isCreative()) {
-                stack.postMine(world, blockState, blockPos, player);
-                this.afterBreak(world, player, blockPos, blockState, blockEntity, stack.copy());
+                stack.mineBlock(world, blockState, blockPos, player);
+                this.playerDestroy(world, player, blockPos, blockState, blockEntity, stack.copy());
             }
         }
     }
 
     @Override
-    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+    public BlockState playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof QuarryBlockEntity) {
-            if (!world.isClient() && player.isCreative()) {
+            if (!world.isClientSide() && player.isCreative()) {
                 ItemStack itemStack = new ItemStack(this);
-                itemStack.applyComponentsFrom(blockEntity.createComponentMap());
+                itemStack.applyComponents(blockEntity.collectComponents());
 
                 ItemEntity itemEntity = new ItemEntity(world, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, itemStack);
-                itemEntity.setToDefaultPickupDelay();
-                world.spawnEntity(itemEntity);
+                itemEntity.setDefaultPickUpDelay();
+                world.addFreshEntity(itemEntity);
             }
         }
 
-        return super.onBreak(world, pos, state, player);
+        return super.playerWillDestroy(world, pos, state, player);
     }
 
     @Override
-    public ItemStack getCraftingOutput(ItemStack output, CraftingRecipeInput input, RegistryWrapper.WrapperLookup wrapperLookup) {
+    public ItemStack getCraftingOutput(ItemStack output, CraftingInput input, HolderLookup.Provider wrapperLookup) {
         return IHandledCrafting.copyCenterSlotComponents(output, input);
     }
 
@@ -316,33 +319,33 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     public int getEnergyCapacity() { return this.energyCapacity; }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> stateManager) {
         stateManager.add(FACING);
     }
 
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().getOpposite());
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        return this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
     }
 
     public Identifier getTextureId(){
-        return Identifier.of(Main.MOD_ID, "textures/" + this.textureReference + ".png");
+        return Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/" + this.textureReference + ".png");
     }
     public Identifier getParticleTextureId(){
-        return Identifier.of(Main.MOD_ID, "textures/" + this.textureReference + "_particles.png");
+        return Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/" + this.textureReference + "_particles.png");
     }
-    private static final Identifier BLOCK_ATLAS_TEXTURE = Identifier.ofVanilla("textures/atlas/blocks.png");
+    private static final Identifier BLOCK_ATLAS_TEXTURE = Identifier.withDefaultNamespace("textures/atlas/blocks.png");
 
-    public SpriteIdentifier getSpriteId(){
-        return new SpriteIdentifier(BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, this.textureReference));
+    public Material getSpriteId(){
+        return new Material(BLOCK_ATLAS_TEXTURE, Identifier.fromNamespaceAndPath(Main.MOD_ID, this.textureReference));
     }
-    public SpriteIdentifier getParticleSpriteId(){
-        return new SpriteIdentifier(BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, this.textureReference + "_particles"));
+    public Material getParticleSpriteId(){
+        return new Material(BLOCK_ATLAS_TEXTURE, Identifier.fromNamespaceAndPath(Main.MOD_ID, this.textureReference + "_particles"));
     }
     @Environment(EnvType.CLIENT)
     public void initClient() {
         ResourceReloadListener.include(this.getTextureId());
         ResourceReloadListener.include(this.getParticleTextureId());
-        BlockRenderLayerMap.putBlock(this, BlockRenderLayer.CUTOUT);
+        BlockRenderLayerMap.putBlock(this, ChunkSectionLayer.CUTOUT);
     }
 
     public TexturePosition getTexturePosition(Face face, Boolean alt){
@@ -415,22 +418,22 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
 
     @Nullable
     @Override
-    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new QuarryBlockEntity(pos, state);
     }
 
     @Override
-    protected MapCodec<? extends BlockWithEntity> getCodec() {
+    protected MapCodec<? extends BaseEntityBlock> codec() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.MODEL;
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
     }
 
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return validateTicker(type, ZBlockEntities.QUARRY_BLOCK_ENTITY, QuarryBlockEntity::tick);
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
+        return createTickerHelper(type, ZBlockEntities.QUARRY_BLOCK_ENTITY, QuarryBlockEntity::tick);
     }
 }

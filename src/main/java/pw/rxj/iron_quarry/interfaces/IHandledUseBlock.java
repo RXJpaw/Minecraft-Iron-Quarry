@@ -1,11 +1,11 @@
 package pw.rxj.iron_quarry.interfaces;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.world.World;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 
 public interface IHandledUseBlock {
-    ActionResult useOnBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult);
+    InteractionResult useOnBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult);
 }

@@ -1,10 +1,10 @@
 package pw.rxj.iron_quarry.mixin;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix3x2fStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,12 +16,12 @@ import pw.rxj.iron_quarry.event.InGameHudRenderCallback;
 import pw.rxj.iron_quarry.interfaces.IAlwaysRenderItemName;
 import pw.rxj.iron_quarry.util.ZUtil;
 
-@Mixin(InGameHud.class)
+@Mixin(Gui.class)
 public abstract class InGameHudMixin {
-    @Inject(method = "renderMiscOverlays", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/RenderTickCounter;getDynamicDeltaTicks()F"))
-    public void renderMiscOverlays(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        float tickDelta = tickCounter.getTickProgress(false);
-        Matrix3x2fStack matrices = context.getMatrices();
+    @Inject(method = "renderCameraOverlays", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/DeltaTracker;getGameTimeDeltaTicks()F"))
+    public void renderMiscOverlays(GuiGraphics context, DeltaTracker tickCounter, CallbackInfo ci) {
+        float tickDelta = tickCounter.getGameTimeDeltaPartialTick(false);
+        Matrix3x2fStack matrices = context.pose();
         matrices.pushMatrix();
 
         InGameHudRenderCallback.START.invoker().onStart(context, tickDelta);
@@ -29,18 +29,18 @@ public abstract class InGameHudMixin {
         matrices.popMatrix();
     }
 
-    @Shadow @Final private MinecraftClient client;
-    @Shadow private int heldItemTooltipFade;
+    @Shadow @Final private Minecraft minecraft;
+    @Shadow private int toolHighlightTimer;
 
-    @Inject(method = "tick()V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;player:Lnet/minecraft/client/network/ClientPlayerEntity;", ordinal = 1, shift = At.Shift.BEFORE))
+    @Inject(method = "tick()V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;player:Lnet/minecraft/client/player/LocalPlayer;", ordinal = 1, shift = At.Shift.BEFORE))
     public void tick(CallbackInfo ci) {
         //this.client.player was already checked in injected method.
-        assert this.client.player != null;
+        assert this.minecraft.player != null;
 
-        ItemStack stack = this.client.player.getInventory().getSelectedStack();
+        ItemStack stack = this.minecraft.player.getInventory().getSelectedItem();
 
         if(ZUtil.getBlockOrItem(stack) instanceof IAlwaysRenderItemName alwaysRenderItemName) {
-            if(alwaysRenderItemName.renderItemName(stack)) this.heldItemTooltipFade = 40;
+            if(alwaysRenderItemName.renderItemName(stack)) this.toolHighlightTimer = 40;
         }
     }
 }

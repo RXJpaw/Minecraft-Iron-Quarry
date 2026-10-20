@@ -1,29 +1,28 @@
 package pw.rxj.iron_quarry.item;
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.type.TooltipDisplayComponent;
-import net.minecraft.item.tooltip.TooltipData;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.CraftingResultInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.Registries;
-import net.minecraft.recipe.input.SmithingRecipeInput;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.ResultContainer;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.SmithingRecipeInput;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import org.jetbrains.annotations.Nullable;
@@ -50,7 +49,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     private @NotNull AugmentType uniqueType = AugmentType.EMPTY;
     private @NotNull DynamicText dynamicName = DynamicText.EMPTY;
 
-    public AugmentItem(Settings settings) {
+    public AugmentItem(Properties settings) {
         super(settings);
     }
 
@@ -88,24 +87,24 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
-    public Optional<TooltipData> getTooltipData(ItemStack stack) {
+    public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
         if(!this.isTooltipExtended(stack)) return Optional.empty();
 
         List<Pair<ItemStack, Boolean>> inventory = new ArrayList<>();
         List<Item> capacityUpgrades = this.getUpgrades(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
 
-        Registries.ITEM.iterateEntries(ZItemTags.AUGMENT_CAPACITY_ENHANCERS).forEach(itemRegistryEntry -> {
+        BuiltInRegistries.ITEM.getTagOrEmpty(ZItemTags.AUGMENT_CAPACITY_ENHANCERS).forEach(itemRegistryEntry -> {
             Item upgradeItem = itemRegistryEntry.value();
 
-            inventory.add(new Pair<>(upgradeItem.getDefaultStack(), !capacityUpgrades.contains(upgradeItem)));
+            inventory.add(new Pair<>(upgradeItem.getDefaultInstance(), !capacityUpgrades.contains(upgradeItem)));
         });
 
         return Optional.of(TooltipInventoryData.from(inventory));
     }
 
     @Override
-    public Text getName(ItemStack stack) {
-        MinecraftClient minecraftClient = MinecraftClient.getInstance();
+    public Component getName(ItemStack stack) {
+        Minecraft minecraftClient = Minecraft.getInstance();
         if(minecraftClient.player == null) return getName();
 
         String translationKey = "item.iron_quarry.augment";
@@ -113,7 +112,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         AugmentType augmentType = this.getType(stack);
         translationKey += "." + augmentType.getName();
 
-        return Text.translatable(translationKey);
+        return Component.translatable(translationKey);
     }
 
     @Override
@@ -126,7 +125,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
-    public float getModelPredicate(ItemStack stack, ClientWorld world, LivingEntity entity, int seed) {
+    public float getModelPredicate(ItemStack stack, ClientLevel world, LivingEntity entity, int seed) {
         AugmentType type = getType(stack);
 
         for (int i = 0; i < CAPACITY_UPGRADE_SLOTS; i++) {
@@ -139,7 +138,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType options) {
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay displayComponent, Consumer<Component> textConsumer, TooltipFlag options) {
         AugmentType augmentType = this.getType(stack);
         int capacity = this.getCapacity(stack);
         int stored = this.getAmount(stack);
@@ -147,21 +146,21 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
         if(augmentType.isPresent()) {
             if(!this.isUnique()) {
-                MutableText LORE_UNUSED = ReadableString.translatable("item.iron_quarry.augment.lore.used", stored, capacity);
+                MutableComponent LORE_UNUSED = ReadableString.translatable("item.iron_quarry.augment.lore.used", stored, capacity);
                 textConsumer.accept(LORE_UNUSED);
             }
 
-            MutableText LORE_BENEFITS = ReadableString.translatable("item.iron_quarry.augment.lore.benefit." + augmentType.getName(), ZUtil.expandableFixedFloat(multiplied));
+            MutableComponent LORE_BENEFITS = ReadableString.translatable("item.iron_quarry.augment.lore.benefit." + augmentType.getName(), ZUtil.expandableFixedFloat(multiplied));
             textConsumer.accept(LORE_BENEFITS);
 
             float anyIneff = augmentType.anyIneff(multiplied);
             String drawbackKey = augmentType.getDrawbackKey();
             String drawbackFillIn = drawbackKey.equals("energy") ? ZUtil.expandableFixedFloat(anyIneff) : ReadableString.minPrecisionFloat(anyIneff);
 
-            MutableText LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback." + augmentType.getDrawbackKey(), drawbackFillIn);
+            MutableComponent LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback." + augmentType.getDrawbackKey(), drawbackFillIn);
             textConsumer.accept(LORE_DRAWBACK);
         } else if(!this.isUnique()) {
-            MutableText LORE_EMPTY = ReadableString.translatable("item.iron_quarry.lore.use_rei", stored, capacity);
+            MutableComponent LORE_EMPTY = ReadableString.translatable("item.iron_quarry.lore.use_rei", stored, capacity);
             textConsumer.accept(LORE_EMPTY);
         }
 
@@ -169,13 +168,13 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             if(this.isTooltipExtended(stack)) {
                 List<Item> used_upgrades = this.getUpgrades(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
 
-                MutableText LORE_INFO = ReadableString.translatable("item.iron_quarry.augment.lore.capacity_upgrades", used_upgrades.size(), CAPACITY_UPGRADE_SLOTS);
+                MutableComponent LORE_INFO = ReadableString.translatable("item.iron_quarry.augment.lore.capacity_upgrades", used_upgrades.size(), CAPACITY_UPGRADE_SLOTS);
 
                 textConsumer.accept(ReadableString.space());
                 textConsumer.accept(LORE_INFO);
                 textConsumer.accept(CustomTooltipData.MARKER);
             } else {
-                MutableText LORE_DETAILS = ReadableString.translatable("item.iron_quarry.lore.details");
+                MutableComponent LORE_DETAILS = ReadableString.translatable("item.iron_quarry.lore.details");
 
                 textConsumer.accept(ReadableString.space());
                 textConsumer.accept(LORE_DETAILS);
@@ -183,45 +182,45 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         }
 
         if(augmentType.isDisabled()) {
-            MutableText LORE_DISABLED = ReadableString.translatable("item.iron_quarry.lore.disabled");
+            MutableComponent LORE_DISABLED = ReadableString.translatable("item.iron_quarry.lore.disabled");
 
             textConsumer.accept(ReadableString.space());
             textConsumer.accept(LORE_DISABLED);
         }
     }
     public boolean isTooltipExtended(ItemStack stack) {
-        return MinecraftClient.getInstance().isShiftPressed() || this.getType(stack).isEmpty() || ZItemTags.AUGMENT_CAPACITY_ENHANCERS.equals(this.getSmithingPreviewAdditionTag(stack));
+        return Minecraft.getInstance().hasShiftDown() || this.getType(stack).isEmpty() || ZItemTags.AUGMENT_CAPACITY_ENHANCERS.equals(this.getSmithingPreviewAdditionTag(stack));
     }
 
     @Override
-    public boolean hasGlint(ItemStack stack) {
+    public boolean isFoil(ItemStack stack) {
         if(this.isUnique() || getAmount(stack) >= getType(stack).getCapacity(CAPACITY_UPGRADE_SLOTS)) return true;
 
-        return super.hasGlint(stack);
+        return super.isFoil(stack);
     }
 
     @Override
-    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, RegistryWrapper.WrapperLookup registryLookup) {
-        ItemStack template = input.getStackInSlot(0).copy();
+    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, HolderLookup.Provider registryLookup) {
+        ItemStack template = input.getItem(0).copy();
         if(DamageableSmithingTemplateItem.isNotOf(template)) return ItemStack.EMPTY;
 
-        ItemStack base = input.getStackInSlot(1).copy();
+        ItemStack base = input.getItem(1).copy();
         if(AugmentItem.isNotOf(base)) return ItemStack.EMPTY;
 
-        ItemStack addition = input.getStackInSlot(2).copy();
+        ItemStack addition = input.getItem(2).copy();
         AugmentStack augmentStack = AugmentStack.from(addition.copy());
 
         if(augmentStack == null) {
             boolean result = this.putUpgrade(base, addition);
             return result ? base : ItemStack.EMPTY;
         } else {
-            Inventory outcome = this.getSmithingOutcome(template, base, addition);
-            return outcome.getStack(3);
+            Container outcome = this.getSmithingOutcome(template, base, addition);
+            return outcome.getItem(3);
         }
     }
-    public Inventory getSmithingOutcome(ItemStack template, ItemStack input, ItemStack addition) {
+    public Container getSmithingOutcome(ItemStack template, ItemStack input, ItemStack addition) {
         DamageableSmithingTemplateItem templateItem = DamageableSmithingTemplateItem.instanceFrom(template);
-        if(templateItem == null) return new SimpleInventory(template, input, addition, ItemStack.EMPTY);
+        if(templateItem == null) return new SimpleContainer(template, input, addition, ItemStack.EMPTY);
 
         ItemStack comparisonStack = input.copy();
         while(addition.getCount() > 0) {
@@ -229,7 +228,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             stack.setCount(1);
 
             AugmentStack augmentStack = AugmentStack.from(stack);
-            if(augmentStack == null) return new SimpleInventory(template, input, addition, ItemStack.EMPTY);
+            if(augmentStack == null) return new SimpleContainer(template, input, addition, ItemStack.EMPTY);
             int augmentStackAmount = augmentStack.amount();
 
             if(templateItem.getCDurability(template) < augmentStackAmount) break;
@@ -239,13 +238,13 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             this.setType(input, augmentStack.type());
 
             templateItem.cdamage(template, augmentStackAmount, null, null);
-            addition.decrement(1);
+            addition.shrink(1);
         }
 
         if(this.getAmount(comparisonStack) == this.getAmount(input)) {
-            return new SimpleInventory(template, input, addition, ItemStack.EMPTY);
+            return new SimpleContainer(template, input, addition, ItemStack.EMPTY);
         } else {
-            return new SimpleInventory(template, ItemStack.EMPTY, addition, input);
+            return new SimpleContainer(template, ItemStack.EMPTY, addition, input);
         }
     }
     @Override
@@ -275,43 +274,43 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         return IHandledSmithing.super.getSmithingOutputPreview(base, addition, additionTag, output);
     }
     @Override
-    public Boolean handleSmithingTakeOutput(PlayerEntity player, Inventory inputInv, CraftingResultInventory outputInv, ScreenHandlerContext context) {
-        ItemStack template = inputInv.getStack(0).copy();
+    public Boolean handleSmithingTakeOutput(Player player, Container inputInv, ResultContainer outputInv, ContainerLevelAccess context) {
+        ItemStack template = inputInv.getItem(0).copy();
         DamageableSmithingTemplateItem templateItem = DamageableSmithingTemplateItem.instanceFrom(template);
         if(templateItem == null) return false;
 
-        ItemStack base = inputInv.getStack(1).copy();
+        ItemStack base = inputInv.getItem(1).copy();
         if(AugmentItem.isNotOf(base)) return false;
 
-        ItemStack addition = inputInv.getStack(2).copy();
+        ItemStack addition = inputInv.getItem(2).copy();
         AugmentStack augmentStack = AugmentStack.from(addition);
 
-        ItemStack outputStack = outputInv.getStack(0);
-        outputStack.onCraftByPlayer(player, outputStack.getCount());
-        outputInv.unlockLastRecipe(player, List.of(template, base, addition));
+        ItemStack outputStack = outputInv.getItem(0);
+        outputStack.onCraftedBy(player, outputStack.getCount());
+        outputInv.awardUsedRecipes(player, List.of(template, base, addition));
 
         if(augmentStack == null) {
             templateItem.cdamage(template, 1, null, null);
-            templateItem.triggerBreakEventIfNeeded(template, player.getEntityPos(), player.getEntityWorld());
-            inputInv.setStack(0, template);
+            templateItem.triggerBreakEventIfNeeded(template, player.position(), player.level());
+            inputInv.setItem(0, template);
 
-            base.decrement(1);
-            inputInv.setStack(1, base);
+            base.shrink(1);
+            inputInv.setItem(1, base);
 
-            addition.decrement(1);
-            inputInv.setStack(2, addition);
+            addition.shrink(1);
+            inputInv.setItem(2, addition);
         } else {
-            Inventory outcome = this.getSmithingOutcome(template, base, addition);
+            Container outcome = this.getSmithingOutcome(template, base, addition);
 
-            ItemStack outcomeTemplate = outcome.getStack(0);
-            templateItem.triggerBreakEventIfNeeded(outcomeTemplate, player.getEntityPos(), player.getEntityWorld());
+            ItemStack outcomeTemplate = outcome.getItem(0);
+            templateItem.triggerBreakEventIfNeeded(outcomeTemplate, player.position(), player.level());
 
-            inputInv.setStack(0, outcomeTemplate);
-            inputInv.setStack(1, outcome.getStack(1));
-            inputInv.setStack(2, outcome.getStack(2));
+            inputInv.setItem(0, outcomeTemplate);
+            inputInv.setItem(1, outcome.getItem(1));
+            inputInv.setItem(2, outcome.getItem(2));
         }
 
-        context.run((world, pos) -> world.syncWorldEvent(1044, pos, 0));
+        context.execute((world, pos) -> world.levelEvent(1044, pos, 0));
         return true;
     }
 
@@ -374,12 +373,12 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     public boolean putUpgrade(@NotNull ItemStack stack, ItemStack upgrade) {
         List<Identifier> itemIdList = new ArrayList<>(stack.getOrDefault(ZComponents.AUGMENT_UPGRADES, List.of()));
 
-        if(upgrade.isIn(ZItemTags.AUGMENT_CAPACITY_ENHANCERS)) {
+        if(upgrade.is(ZItemTags.AUGMENT_CAPACITY_ENHANCERS)) {
             List<Item> capacityUpgrades = this.getUpgrades(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
             if(capacityUpgrades.size() >= CAPACITY_UPGRADE_SLOTS) return false;
         }
 
-        Identifier upgradeId = Registries.ITEM.getId(upgrade.getItem());
+        Identifier upgradeId = BuiltInRegistries.ITEM.getKey(upgrade.getItem());
 
         for (Identifier itemId : itemIdList) {
             if(itemId.equals(upgradeId)) return false;
@@ -409,7 +408,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         List<Item> upgradeList = new ArrayList<>();
 
         for (Identifier id : itemIdList) {
-            Optional<Item> item = Registries.ITEM.getOptionalValue(id);
+            Optional<Item> item = BuiltInRegistries.ITEM.getOptional(id);
             item.ifPresent(upgradeList::add);
         }
 
@@ -418,14 +417,14 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     public List<Item> getUpgrades(@NotNull ItemStack stack, TagKey<Item> itemTag) {
         List<Item> upgradeList = this.getUpgrades(stack);
 
-        return upgradeList.stream().filter(item -> item.getDefaultStack().isIn(itemTag)).toList();
+        return upgradeList.stream().filter(item -> item.getDefaultInstance().is(itemTag)).toList();
     }
 
     public ItemStack withAllCapacityEnhancers() {
         ItemStack stack = new ItemStack(this);
 
         for (Item enhancer : ZUtil.getItemsIn(ZItemTags.AUGMENT_CAPACITY_ENHANCERS)) {
-            this.putUpgrade(stack, enhancer.getDefaultStack());
+            this.putUpgrade(stack, enhancer.getDefaultInstance());
         }
 
         return stack;
@@ -443,14 +442,14 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     public void onModifyItemGroupEntry(FabricItemGroupEntries entries) {
         if (this.getUniqueType().isDisabled()) return;
 
-        entries.add(this);
+        entries.accept(this);
 
         if(!this.isUnique()) {
-            entries.add(this.withAllCapacityEnhancers());
+            entries.accept(this.withAllCapacityEnhancers());
 
             for (int i = 0; i < CAPACITY_UPGRADE_SLOTS + 1; i++) {
-                if(!AugmentType.SPEED.isDisabled()) entries.add(this.withCapacity(AugmentType.SPEED, i));
-                if(!AugmentType.FORTUNE.isDisabled()) entries.add(this.withCapacity(AugmentType.FORTUNE, i));
+                if(!AugmentType.SPEED.isDisabled()) entries.accept(this.withCapacity(AugmentType.SPEED, i));
+                if(!AugmentType.FORTUNE.isDisabled()) entries.accept(this.withCapacity(AugmentType.FORTUNE, i));
             }
         }
     }

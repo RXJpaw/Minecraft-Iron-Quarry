@@ -1,9 +1,9 @@
 package pw.rxj.iron_quarry.gui;
 
-import net.minecraft.item.ItemStack;
 import oshi.util.tuples.Pair;
 
 import java.util.List;
+import net.minecraft.world.item.ItemStack;
 
 public class TooltipInventoryData implements CustomTooltipData {
     private final List<Pair<ItemStack, Boolean>> disableableInventory;

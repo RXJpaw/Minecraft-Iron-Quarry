@@ -1,12 +1,12 @@
 package pw.rxj.iron_quarry.render;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix3x2fStack;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.event.InGameHudRenderCallback;
@@ -19,21 +19,21 @@ import pw.rxj.iron_quarry.util.ZUtil;
 
 public class QuarryMonitorOverlayRenderer {
     private static final QuarryMonitorOverlayConfig.Handler QUARRY_MONITOR_OVERLAY_CONFIG = Main.CONFIG.getQuarryMonitorOverlayConfig();
-    public static final Identifier OVERLAY_TEXTURE = Identifier.of(Main.MOD_ID, "textures/gui/quarry_monitor_overlay.png");
+    public static final Identifier OVERLAY_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/quarry_monitor_overlay.png");
 
-    private static void renderOnScreen(DrawContext context, double tickDelta) {
-        MinecraftClient minecraftClient = MinecraftClient.getInstance();
-        if(minecraftClient.world == null) return;
-        ClientPlayerEntity player = minecraftClient.player;
+    private static void renderOnScreen(GuiGraphics context, double tickDelta) {
+        Minecraft minecraftClient = Minecraft.getInstance();
+        if(minecraftClient.level == null) return;
+        LocalPlayer player = minecraftClient.player;
         if(player == null) return;
 
-        PlayerInventory inventory = player.getInventory();
+        Inventory inventory = player.getInventory();
 
         QuarryMonitorItem quarryMonitorItem = null;
         ItemStack quarryMonitorStack = null;
 
-        for (int slot = 0; slot < inventory.size(); slot++) {
-            ItemStack stack = inventory.getStack(slot);
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            ItemStack stack = inventory.getItem(slot);
 
             if(ZUtil.getBlockOrItem(stack) instanceof QuarryMonitorItem item) {
                 quarryMonitorStack = stack;
@@ -55,7 +55,7 @@ public class QuarryMonitorOverlayRenderer {
 
         //texture render
 
-        Matrix3x2fStack matrices = context.getMatrices();
+        Matrix3x2fStack matrices = context.pose();
 
         matrices.pushMatrix();
         matrices.translate(x, y);
@@ -78,15 +78,15 @@ public class QuarryMonitorOverlayRenderer {
         //but since 1.20 DrawContext#fill (f.e in BlueprintPreviewRenderer) manipulates the way
         //DrawContext#drawItem works, which could potentially mess with other mods.
 
-        TextRenderer textRenderer = minecraftClient.textRenderer;
+        Font textRenderer = minecraftClient.font;
 
         if(blueprintStack.getItem() instanceof BlueprintItem) {
-            context.drawItem(blueprintStack, x + 13, y + 4);
-            context.drawStackOverlay(textRenderer, blueprintStack, x + 13, y + 4);
+            context.renderItem(blueprintStack, x + 13, y + 4);
+            context.renderItemDecorations(textRenderer, blueprintStack, x + 13, y + 4);
         }
         if(drillStack.getItem() instanceof DrillItem) {
-            context.drawItem(drillStack, x + 13, y + 25);
-            context.drawStackOverlay(textRenderer, drillStack, x + 13, y + 25);
+            context.renderItem(drillStack, x + 13, y + 25);
+            context.renderItemDecorations(textRenderer, drillStack, x + 13, y + 25);
         }
     }
 

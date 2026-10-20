@@ -2,10 +2,6 @@ package pw.rxj.iron_quarry.util;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.component.ComponentType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.records.IndexedValue;
@@ -16,6 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 public class MachineConfiguration {
     private final HashMap<Face, IoState> SidedIoConfig;
@@ -108,9 +108,9 @@ public class MachineConfiguration {
 
    //nbt
 
-    public NbtCompound write() {
-        NbtCompound config = new NbtCompound();
-        NbtCompound sidedIo = new NbtCompound();
+    public CompoundTag write() {
+        CompoundTag config = new CompoundTag();
+        CompoundTag sidedIo = new CompoundTag();
 
         for(Map.Entry<Face, IoState> entry : SidedIoConfig.entrySet()){
             Face face = entry.getKey();
@@ -123,16 +123,16 @@ public class MachineConfiguration {
 
         return config;
     }
-    public void read(NbtCompound config) {
-        NbtCompound sidedIoConfig = config.getCompoundOrEmpty("SidedIo");
+    public void read(CompoundTag config) {
+        CompoundTag sidedIoConfig = config.getCompoundOrEmpty("SidedIo");
 
         this.SidedIoConfig.clear();
 
-        for (String key : sidedIoConfig.getKeys()) {
+        for (String key : sidedIoConfig.keySet()) {
             Face face = Face.from(key);
             if(face == null) continue;
 
-            String ioName = sidedIoConfig.getString(key, "");
+            String ioName = sidedIoConfig.getStringOr(key, "");
             IoState ioState = IoState.from(ioName);
             if(ioState == null) continue;
 
@@ -143,17 +143,17 @@ public class MachineConfiguration {
 
     //components
 
-    public static final PacketCodec<RegistryByteBuf, MachineConfiguration> PACKET_CODEC = PacketCodec.of(MachineConfiguration::write, MachineConfiguration::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MachineConfiguration> PACKET_CODEC = StreamCodec.ofMember(MachineConfiguration::write, MachineConfiguration::new);
     public static final Codec<MachineConfiguration> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(Codec.INT.listOf().listOf().fieldOf("sided_io").forGetter(MachineConfiguration::toIntList))
                     .apply(instance, MachineConfiguration::new)
     );
-    public static final ComponentType<MachineConfiguration> COMPONENT = ZComponents.register("machine_configuration", (builder) -> builder
-            .codec(CODEC)
-            .packetCodec(PACKET_CODEC)
-            .cache());
+    public static final DataComponentType<MachineConfiguration> COMPONENT = ZComponents.register("machine_configuration", (builder) -> builder
+            .persistent(CODEC)
+            .networkSynchronized(PACKET_CODEC)
+            .cacheEncoding());
 
-    private MachineConfiguration(RegistryByteBuf buf) {
+    private MachineConfiguration(RegistryFriendlyByteBuf buf) {
         this();
 
         byte ioStates = buf.readByte();
@@ -164,7 +164,7 @@ public class MachineConfiguration {
             );
         }
     }
-    private void write(RegistryByteBuf buf) {
+    private void write(RegistryFriendlyByteBuf buf) {
         buf.writeByte(this.SidedIoConfig.size());
 
         for(Map.Entry<Face, IoState> pair : this.SidedIoConfig.entrySet()){

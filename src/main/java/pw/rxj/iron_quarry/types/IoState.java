@@ -1,11 +1,11 @@
 package pw.rxj.iron_quarry.types;
 
-import net.minecraft.client.util.SpriteIdentifier;
-import net.minecraft.util.Identifier;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.records.TexturePosition;
 
 import java.util.List;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.resources.Identifier;
 
 public enum IoState {
     BLOCKED(0, "blocked"),
@@ -20,12 +20,12 @@ public enum IoState {
 
     private static final List<IoState> ALL = List.of(BLOCKED, ORANGE, BLUE, GREEN, PURPLE, RED);
     public static Identifier getTextureId(){
-        return Identifier.of(Main.MOD_ID, "textures/block/options_io.png");
+        return Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/block/options_io.png");
     }
-    private static final Identifier BLOCK_ATLAS_TEXTURE = Identifier.ofVanilla("textures/atlas/blocks.png");
+    private static final Identifier BLOCK_ATLAS_TEXTURE = Identifier.withDefaultNamespace("textures/atlas/blocks.png");
 
-    public static SpriteIdentifier getSpriteId(){
-        return new SpriteIdentifier(BLOCK_ATLAS_TEXTURE, Identifier.of(Main.MOD_ID, "block/options_io"));
+    public static Material getSpriteId(){
+        return new Material(BLOCK_ATLAS_TEXTURE, Identifier.fromNamespaceAndPath(Main.MOD_ID, "block/options_io"));
     }
 
     private IoState(int id, String name) {

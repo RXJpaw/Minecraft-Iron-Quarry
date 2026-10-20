@@ -1,10 +1,10 @@
 package pw.rxj.iron_quarry.interfaces;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemUsageContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.state.BlockState;
 
 public interface IHandledKeyedAction {
-    default void keyedAttackOnBlock(String keyName, ItemUsageContext context, BlockState blockState) {}
-    default void keyedUseOnBlock(String keyName, ItemUsageContext context, BlockState blockState) {}
-    default void keyedUse(String keyName, ItemUsageContext context) {}
+    default void keyedAttackOnBlock(String keyName, UseOnContext context, BlockState blockState) {}
+    default void keyedUseOnBlock(String keyName, UseOnContext context, BlockState blockState) {}
+    default void keyedUse(String keyName, UseOnContext context) {}
 }

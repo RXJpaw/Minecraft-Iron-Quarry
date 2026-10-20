@@ -1,7 +1,5 @@
 package pw.rxj.iron_quarry.mixin;
 
-import net.minecraft.item.tooltip.TooltipData;
-import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -10,16 +8,18 @@ import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.Optional;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.ItemStack;
 
 @Mixin(ItemStack.class)
 public abstract class TooltipDataMixin {
 
-    @Inject(method="getTooltipData", at = @At(value = "HEAD"), cancellable = true)
-    private void onTooltipRender(CallbackInfoReturnable<Optional<TooltipData>> cir) {
+    @Inject(method="getTooltipImage", at = @At(value = "HEAD"), cancellable = true)
+    private void onTooltipRender(CallbackInfoReturnable<Optional<TooltipComponent>> cir) {
         ItemStack stack = (ItemStack) (Object) this;
 
         if(ZUtil.getBlockOrItem(stack) instanceof ITooltipDataProvider tooltipDataProvider) {
-            cir.setReturnValue(tooltipDataProvider.getTooltipData(stack));
+            cir.setReturnValue(tooltipDataProvider.getTooltipImage(stack));
         }
     }
 }

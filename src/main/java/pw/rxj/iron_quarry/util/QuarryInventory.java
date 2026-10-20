@@ -1,9 +1,9 @@
 package pw.rxj.iron_quarry.util;
 
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
-import net.minecraft.component.ComponentType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.data.ZComponents;
@@ -27,7 +27,7 @@ public class QuarryInventory {
         }
 
         @Override
-        public boolean canPlayerUse(PlayerEntity player) {
+        public boolean stillValid(Player player) {
             QuarryBlockEntity quarryBlockEntity = this.ref();
 
             return quarryBlockEntity != null && quarryBlockEntity.canPlayerUse(player);
@@ -37,26 +37,26 @@ public class QuarryInventory {
             return false;
         }
         @Override
-        public void markDirty() {
+        public void setChanged() {
             if(ref == null) return;
 
-            this.ref.markDirty();
+            this.ref.setChanged();
             if(this.mustUpdateListeners()) {
                 this.ref.updateListeners();
             }
         }
 
-        protected static ComponentType<ComplexInventory> registerComponent(String id) {
+        protected static DataComponentType<ComplexInventory> registerComponent(String id) {
             return ZComponents.register(id, (builder) -> builder
-                    .codec(ComplexInventory.CODEC)
-                    .packetCodec(ComplexInventory.PACKET_CODEC)
-                    .cache());
+                    .persistent(ComplexInventory.CODEC)
+                    .networkSynchronized(ComplexInventory.PACKET_CODEC)
+                    .cacheEncoding());
         }
     }
 
 
     public static class Output extends ReferencedQuarryInventory {
-        public static ComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_output");
+        public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_output");
 
         private Output(@Nullable QuarryBlockEntity ref) {
             super(18, ref);
@@ -69,7 +69,7 @@ public class QuarryInventory {
         }
     }
     public static class BatteryInput extends ReferencedQuarryInventory {
-        public static ComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_battery_input");
+        public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_battery_input");
 
         private BatteryInput(@Nullable QuarryBlockEntity ref) {
             super(1, ref);
@@ -82,14 +82,14 @@ public class QuarryInventory {
         }
 
         @Override
-        public boolean isValid(int slot, ItemStack stack) {
+        public boolean canPlaceItem(int slot, ItemStack stack) {
             EnergyStorage energyStorage = ContainerItemContext.withConstant(stack).find(EnergyStorage.ITEM);
 
             return energyStorage != null && energyStorage.supportsExtraction();
         }
     }
     public static class MachineUpgrades extends ReferencedQuarryInventory {
-        public static ComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_machine_upgrades");
+        public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_machine_upgrades");
 
         private MachineUpgrades(@Nullable QuarryBlockEntity ref) {
             super(6, ref);
@@ -103,11 +103,11 @@ public class QuarryInventory {
 
 
         @Override
-        public int getMaxCountPerStack() {
+        public int getMaxStackSize() {
             return 1;
         }
         @Override
-        public boolean isValid(int slot, ItemStack stack) {
+        public boolean canPlaceItem(int slot, ItemStack stack) {
             return stack.getItem() instanceof AugmentItem;
         }
         @Override
@@ -116,7 +116,7 @@ public class QuarryInventory {
         }
     }
     public static class Blueprint extends ReferencedQuarryInventory {
-        public static ComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_blueprint");
+        public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_blueprint");
 
         private Blueprint(@Nullable QuarryBlockEntity ref) {
             super(1, ref);
@@ -129,12 +129,12 @@ public class QuarryInventory {
         }
 
         @Override
-        public boolean isValid(int slot, ItemStack stack) {
+        public boolean canPlaceItem(int slot, ItemStack stack) {
             return stack.getItem() instanceof BlueprintItem;
         }
     }
     public static class Drill extends ReferencedQuarryInventory {
-        public static ComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_drill");
+        public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_drill");
 
         private Drill(@Nullable QuarryBlockEntity ref) {
             super(1, ref);
@@ -147,7 +147,7 @@ public class QuarryInventory {
         }
 
         @Override
-        public boolean isValid(int slot, ItemStack stack) {
+        public boolean canPlaceItem(int slot, ItemStack stack) {
             return stack.getItem() instanceof DrillItem;
         }
         @Override

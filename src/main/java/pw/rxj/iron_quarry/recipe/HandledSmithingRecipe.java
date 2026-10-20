@@ -3,24 +3,24 @@ package pw.rxj.iron_quarry.recipe;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.SmithingTransformRecipe;
-import net.minecraft.recipe.TransmuteRecipeResult;
-import net.minecraft.recipe.input.SmithingRecipeInput;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.interfaces.IHandledSmithing;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.Optional;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SmithingRecipeInput;
+import net.minecraft.world.item.crafting.SmithingTransformRecipe;
+import net.minecraft.world.item.crafting.TransmuteResult;
 
 public class HandledSmithingRecipe extends SmithingTransformRecipe {
     private final Optional<Ingredient> template;
@@ -34,7 +34,7 @@ public class HandledSmithingRecipe extends SmithingTransformRecipe {
         return (RecipeSerializer<SmithingTransformRecipe>) (RecipeSerializer<?>) SERIALIZER;
     }
 
-    public static RecipeSerializer<HandledSmithingRecipe> SERIALIZER = new Serializer();
+    public static RecipeSerializer<HandledSmithingRecipe> SERIALIZER = new pw.rxj.iron_quarry.recipe.HandledSmithingRecipe.Serializer();
 
     public static class Serializer implements RecipeSerializer<HandledSmithingRecipe> {
         private static final MapCodec<HandledSmithingRecipe> CODEC = RecordCodecBuilder.mapCodec((instance) ->
@@ -42,12 +42,12 @@ public class HandledSmithingRecipe extends SmithingTransformRecipe {
                                Ingredient.CODEC.fieldOf("base").xmap(Optional::of, Optional::orElseThrow).forGetter((recipe) -> recipe.base),
                                Ingredient.CODEC.optionalFieldOf("addition").forGetter((recipe) -> recipe.addition),
                                Codec.STRING.lenientOptionalFieldOf("addition").forGetter((recipe) -> Optional.empty()),
-                               ItemStack.VALIDATED_CODEC.fieldOf("result").forGetter((recipe) -> recipe.result))
+                               ItemStack.STRICT_CODEC.fieldOf("result").forGetter((recipe) -> recipe.result))
                 .apply(instance, (template, base, addition, rawAddition, result) ->
                         new HandledSmithingRecipe(template, base, addition, appendSmithingPreview(base, addition, parseTag(rawAddition), result))
                 )
         );
-        public static final PacketCodec<RegistryByteBuf, HandledSmithingRecipe> PACKET_CODEC = PacketCodec.ofStatic(Serializer::write, Serializer::read);
+        public static final StreamCodec<RegistryFriendlyByteBuf, HandledSmithingRecipe> PACKET_CODEC = StreamCodec.of(pw.rxj.iron_quarry.recipe.HandledSmithingRecipe.Serializer::write, pw.rxj.iron_quarry.recipe.HandledSmithingRecipe.Serializer::read);
 
         private static @Nullable TagKey<Item> parseTag(Optional<String> raw) {
             if(raw.isEmpty() || !raw.get().startsWith("#")) return null;
@@ -55,7 +55,7 @@ public class HandledSmithingRecipe extends SmithingTransformRecipe {
             Identifier id = Identifier.tryParse(raw.get().substring(1));
             if(id == null) return null;
 
-            return TagKey.of(RegistryKeys.ITEM, id);
+            return TagKey.create(Registries.ITEM, id);
         }
 
         private static ItemStack appendSmithingPreview(Optional<Ingredient> base, Optional<Ingredient> addition, @Nullable TagKey<Item> additionTag, ItemStack result) {
@@ -73,28 +73,28 @@ public class HandledSmithingRecipe extends SmithingTransformRecipe {
         }
 
         @Override
-        public PacketCodec<RegistryByteBuf, HandledSmithingRecipe> packetCodec() {
+        public StreamCodec<RegistryFriendlyByteBuf, HandledSmithingRecipe> streamCodec() {
             return PACKET_CODEC;
         }
 
-        private static HandledSmithingRecipe read(RegistryByteBuf buf) {
-            Optional<Ingredient> template = Ingredient.OPTIONAL_PACKET_CODEC.decode(buf);
-            Optional<Ingredient> base = Ingredient.OPTIONAL_PACKET_CODEC.decode(buf);
-            Optional<Ingredient> addition = Ingredient.OPTIONAL_PACKET_CODEC.decode(buf);
-            ItemStack result = ItemStack.PACKET_CODEC.decode(buf);
+        private static HandledSmithingRecipe read(RegistryFriendlyByteBuf buf) {
+            Optional<Ingredient> template = Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.decode(buf);
+            Optional<Ingredient> base = Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.decode(buf);
+            Optional<Ingredient> addition = Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.decode(buf);
+            ItemStack result = ItemStack.STREAM_CODEC.decode(buf);
             return new HandledSmithingRecipe(template, base, addition, result);
         }
 
-        private static void write(RegistryByteBuf buf, HandledSmithingRecipe recipe) {
-            Ingredient.OPTIONAL_PACKET_CODEC.encode(buf, recipe.template);
-            Ingredient.OPTIONAL_PACKET_CODEC.encode(buf, recipe.base);
-            Ingredient.OPTIONAL_PACKET_CODEC.encode(buf, recipe.addition);
-            ItemStack.PACKET_CODEC.encode(buf, recipe.result);
+        private static void write(RegistryFriendlyByteBuf buf, HandledSmithingRecipe recipe) {
+            Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.encode(buf, recipe.template);
+            Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.encode(buf, recipe.base);
+            Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.encode(buf, recipe.addition);
+            ItemStack.STREAM_CODEC.encode(buf, recipe.result);
         }
     }
 
     public HandledSmithingRecipe(Optional<Ingredient> template, Optional<Ingredient> base, Optional<Ingredient> addition, ItemStack result) {
-        super(template, base.orElseThrow(), addition, new TransmuteRecipeResult(result.getRegistryEntry(), result.getCount(), result.getComponentChanges()));
+        super(template, base.orElseThrow(), addition, new TransmuteResult(result.getItemHolder(), result.getCount(), result.getComponentsPatch()));
 
         this.template = template;
         this.base = base;
@@ -107,13 +107,13 @@ public class HandledSmithingRecipe extends SmithingTransformRecipe {
     }
 
     @Override
-    public ItemStack craft(SmithingRecipeInput input, RegistryWrapper.WrapperLookup registryLookup) {
+    public ItemStack assemble(SmithingRecipeInput input, HolderLookup.Provider registryLookup) {
         ItemStack result = this.getResultStack();
 
         if(ZUtil.getBlockOrItem(result) instanceof IHandledSmithing handledSmithing) {
             return handledSmithing.getSmithingOutput(this, input, registryLookup);
         }
 
-        return super.craft(input, registryLookup);
+        return super.assemble(input, registryLookup);
     }
 }

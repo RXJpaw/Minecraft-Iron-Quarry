@@ -1,6 +1,6 @@
 package pw.rxj.iron_quarry.gui;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import pw.rxj.iron_quarry.util.ComplexInventory;
 
 public class TooltipQuarryInventoryData implements CustomTooltipData {

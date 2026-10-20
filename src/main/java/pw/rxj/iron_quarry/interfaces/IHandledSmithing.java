@@ -1,37 +1,37 @@
 package pw.rxj.iron_quarry.interfaces;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.CraftingResultInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.recipe.input.SmithingRecipeInput;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 
 import java.util.Optional;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.ResultContainer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.SmithingRecipeInput;
 
 public interface IHandledSmithing {
-    ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, RegistryWrapper.WrapperLookup registryLookup);
+    ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, HolderLookup.Provider registryLookup);
 
     default ItemStack getSmithingOutputPreview(Optional<Ingredient> base, Optional<Ingredient> addition, @Nullable TagKey<Item> additionTag, ItemStack output) {
         return null;
     }
 
-    default Boolean handleSmithingTakeOutput(PlayerEntity player, Inventory inputInv, CraftingResultInventory outputInv, ScreenHandlerContext context) {
+    default Boolean handleSmithingTakeOutput(Player player, Container inputInv, ResultContainer outputInv, ContainerLevelAccess context) {
         return false;
     }
 
     default void makeSmithingPreview(ItemStack stack, TagKey<Item> additionTag) {
-        stack.set(ZComponents.SMITHING_OUTPUT_PREVIEW, additionTag.id());
+        stack.set(ZComponents.SMITHING_OUTPUT_PREVIEW, additionTag.location());
     }
 
     default @Nullable Identifier getSmithingPreviewAdditionId(ItemStack stack) {
@@ -41,14 +41,14 @@ public interface IHandledSmithing {
         Identifier addition = this.getSmithingPreviewAdditionId(stack);
         if(addition == null) return null;
 
-        return TagKey.of(RegistryKeys.ITEM, addition);
+        return TagKey.create(Registries.ITEM, addition);
     }
 
     default String getSmithingPreviewKey(ItemStack stack){
         Identifier addition = this.getSmithingPreviewAdditionId(stack);
         if(addition == null) return "";
 
-        return "smithing_preview.iron_quarry." + Registries.ITEM.getId(stack.getItem()) + "." + addition;
+        return "smithing_preview.iron_quarry." + BuiltInRegistries.ITEM.getKey(stack.getItem()) + "." + addition;
     }
     default boolean isSmithingPreview(ItemStack stack){
         Identifier addition = this.getSmithingPreviewAdditionId(stack);

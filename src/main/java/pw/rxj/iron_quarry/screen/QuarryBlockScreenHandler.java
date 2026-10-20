@@ -1,13 +1,13 @@
 package pw.rxj.iron_quarry.screen;
 
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
@@ -16,7 +16,7 @@ import pw.rxj.iron_quarry.data.QuarryBlockScreenData;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.util.*;
 
-public class QuarryBlockScreenHandler extends ScreenHandler {
+public class QuarryBlockScreenHandler extends AbstractContainerMenu {
     public static final SingleByteMap Buttons = new SingleByteMap().with(6, 2);
 
     private final MachineConfiguration Configuration;
@@ -28,35 +28,35 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
     private final ComplexInventory MachineUpgradesInventory;
     private QuarryBlock quarryBlock;
     private BlockPos blockPos;
-    private World world;
+    private Level world;
 
     //This constructor gets called on the client when the server wants it to open the screenHandler,
     //The client will call the other constructor with an empty Inventory and the screenHandler will automatically
     //sync this empty inventory with the inventory on the server.
-    public QuarryBlockScreenHandler(int syncId, PlayerInventory playerInventory, QuarryBlockScreenData data) {
+    public QuarryBlockScreenHandler(int syncId, Inventory playerInventory, QuarryBlockScreenData data) {
         this(syncId, playerInventory, QuarryInventory.Output.noRef(), QuarryInventory.BatteryInput.noRef(), QuarryInventory.MachineUpgrades.noRef(),
                 QuarryInventory.Blueprint.noRef(), QuarryInventory.Drill.noRef(), new ComplexEnergyContainer(), MachineConfiguration.empty(), QuarryBlock.getFallback());
 
         this.quarryBlock = (QuarryBlock) data.getBlock();
         this.blockPos = data.getBlockPos();
-        this.world = playerInventory.player.getEntityWorld();
+        this.world = playerInventory.player.level();
     }
 
     //This constructor gets called from the BlockEntity on the server without calling the other constructor first, the server knows the inventory of the container
     //and can therefore directly provide it as an argument. This inventory will then be synced to the client.
-    public QuarryBlockScreenHandler(int syncId, PlayerInventory playerInventory, ComplexInventory outputInventory, ComplexInventory batteryInputInventory, ComplexInventory machineUpgradesInventory,
+    public QuarryBlockScreenHandler(int syncId, Inventory playerInventory, ComplexInventory outputInventory, ComplexInventory batteryInputInventory, ComplexInventory machineUpgradesInventory,
                                                 ComplexInventory blueprintInventory, ComplexInventory drillInventory, ComplexEnergyContainer energyContainer, MachineConfiguration configuration, QuarryBlock quarryBlock) {
         super(Main.QUARRY_BLOCK_SCREEN_HANDLER, syncId);
 
         this.quarryBlock = quarryBlock;
-        this.blockPos = BlockPos.ORIGIN;
-        this.world = playerInventory.player.getEntityWorld();
+        this.blockPos = BlockPos.ZERO;
+        this.world = playerInventory.player.level();
 
-        checkSize(machineUpgradesInventory, 6);
-        checkSize(blueprintInventory, 1);
-        checkSize(drillInventory, 1);
-        checkSize(batteryInputInventory, 1);
-        checkSize(outputInventory, 18);
+        checkContainerSize(machineUpgradesInventory, 6);
+        checkContainerSize(blueprintInventory, 1);
+        checkContainerSize(drillInventory, 1);
+        checkContainerSize(batteryInputInventory, 1);
+        checkContainerSize(outputInventory, 18);
 
         this.MachineUpgradesInventory = machineUpgradesInventory;
         this.BlueprintInventory = blueprintInventory;
@@ -68,11 +68,11 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
         this.Configuration = configuration;
 
         //Some inventories do custom logic when a player opens it
-        machineUpgradesInventory.onOpen(playerInventory.player);
-        blueprintInventory.onOpen(playerInventory.player);
-        drillInventory.onOpen(playerInventory.player);
-        batteryInputInventory.onOpen(playerInventory.player);
-        outputInventory.onOpen(playerInventory.player);
+        machineUpgradesInventory.startOpen(playerInventory.player);
+        blueprintInventory.startOpen(playerInventory.player);
+        drillInventory.startOpen(playerInventory.player);
+        batteryInputInventory.startOpen(playerInventory.player);
+        outputInventory.startOpen(playerInventory.player);
 
         final int SLOT_SIZE = 18;
 
@@ -82,7 +82,7 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
                 this.addSlot(new ManagedSlot(machineUpgradesInventory, (row * 3) + slot, 199 + slot * SLOT_SIZE, 52 + row * SLOT_SIZE) {
                     @Override
                     public boolean isLocked() {
-                        return super.isLocked() || this.getIndex() >= QuarryBlockScreenHandler.this.quarryBlock.getAugmentLimit();
+                        return super.isLocked() || this.getContainerSlot() >= QuarryBlockScreenHandler.this.quarryBlock.getAugmentLimit();
                     }
                 });
             }
@@ -124,11 +124,11 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
     public QuarryBlock getQuarryBlock() {
         return this.quarryBlock;
     }
-    public @Nullable World getWorld() {
+    public @Nullable Level getWorld() {
         return this.world;
     }
     public @Nullable QuarryBlockEntity getQuarryBlockEntity() {
-        World world = this.getWorld();
+        Level world = this.getWorld();
         if(world == null) return null;
 
         BlockEntity blockEntity = world.getBlockEntity(this.getBlockPos());
@@ -136,12 +136,12 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        return this.OutputInventory.canPlayerUse(player);
+    public boolean stillValid(Player player) {
+        return this.OutputInventory.stillValid(player);
     }
 
     @Override
-    public boolean onButtonClick(PlayerEntity player, int id) {
+    public boolean clickMenuButton(Player player, int id) {
         SingleByteMap.ByteMapItem item = Buttons.get((byte) id);
         if(item == null) return false;
 
@@ -161,26 +161,26 @@ public class QuarryBlockScreenHandler extends ScreenHandler {
 
     //Shift + Player Inv Slot
     @Override
-    public ItemStack quickMove(PlayerEntity player, int invSlot) {
+    public ItemStack quickMoveStack(Player player, int invSlot) {
         ItemStack newStack = ItemStack.EMPTY;
-        int maxInvSize = this.DrillInventory.size() + this.OutputInventory.size() + this.BlueprintInventory.size() + this.BatteryInputInventory.size() + this.MachineUpgradesInventory.size();
+        int maxInvSize = this.DrillInventory.getContainerSize() + this.OutputInventory.getContainerSize() + this.BlueprintInventory.getContainerSize() + this.BatteryInputInventory.getContainerSize() + this.MachineUpgradesInventory.getContainerSize();
 
         Slot slot = this.slots.get(invSlot);
-        if (slot != null && slot.hasStack()) {
-            ItemStack originalStack = slot.getStack();
+        if (slot != null && slot.hasItem()) {
+            ItemStack originalStack = slot.getItem();
             newStack = originalStack.copy();
             if (invSlot < maxInvSize) {
-                if (!this.insertItem(originalStack, maxInvSize, this.slots.size(), true)) {
+                if (!this.moveItemStackTo(originalStack, maxInvSize, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.insertItem(originalStack, 0, maxInvSize, false)) {
+            } else if (!this.moveItemStackTo(originalStack, 0, maxInvSize, false)) {
                 return ItemStack.EMPTY;
             }
 
             if (originalStack.isEmpty()) {
-                slot.setStack(ItemStack.EMPTY);
+                slot.setByPlayer(ItemStack.EMPTY);
             } else {
-                slot.markDirty();
+                slot.setChanged();
             }
         }
 

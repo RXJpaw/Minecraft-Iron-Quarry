@@ -1,12 +1,11 @@
 package pw.rxj.iron_quarry.interfaces;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.text.Text;
-
 import java.util.function.Consumer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 
 public interface IBlockTooltipAppender {
-    void appendTooltip(ItemStack stack, Item.TooltipContext context, Consumer<Text> textConsumer, TooltipType type);
+    void appendTooltip(ItemStack stack, Item.TooltipContext context, Consumer<Component> textConsumer, TooltipFlag type);
 }

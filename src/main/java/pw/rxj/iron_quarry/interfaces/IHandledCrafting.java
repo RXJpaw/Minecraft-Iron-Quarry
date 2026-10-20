@@ -1,27 +1,27 @@
 package pw.rxj.iron_quarry.interfaces;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.CraftingRecipe;
-import net.minecraft.recipe.input.CraftingRecipeInput;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 public interface IHandledCrafting {
-    static ItemStack copyCenterSlotComponents(ItemStack output, CraftingRecipeInput input) {
+    static ItemStack copyCenterSlotComponents(ItemStack output, CraftingInput input) {
         ItemStack stack = getCenterStack(input);
         if(ZUtil.getBlockOrItem(stack) instanceof IHandledCrafting) {
-            return stack.copyComponentsToNewStack(output.getItem(), output.getCount());
+            return stack.transmuteCopy(output.getItem(), output.getCount());
         }
 
         return output;
     }
 
-    ItemStack getCraftingOutput(ItemStack output, CraftingRecipeInput input, RegistryWrapper.WrapperLookup wrapperLookup);
+    ItemStack getCraftingOutput(ItemStack output, CraftingInput input, HolderLookup.Provider wrapperLookup);
 
-    static ItemStack getCenterStack(CraftingRecipeInput input) {
-        if(input.getWidth() != 3 || input.getHeight() != 3) return ItemStack.EMPTY;
+    static ItemStack getCenterStack(CraftingInput input) {
+        if(input.width() != 3 || input.height() != 3) return ItemStack.EMPTY;
 
-        return input.getStackInSlot(1, 1);
+        return input.getItem(1, 1);
     }
 
     default ItemStack getCraftingOutputPreview(CraftingRecipe recipe) {

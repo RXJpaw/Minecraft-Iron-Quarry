@@ -1,12 +1,12 @@
 package pw.rxj.iron_quarry.render;
 
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.world.item.ItemStack;
 import pw.rxj.iron_quarry.interfaces.IEnergyContainer;
 
 public class EnergyBarRenderer {
-    public static void renderGuiItemOverlay(DrawContext context, ItemStack stack, int x, int y) {
+    public static void renderGuiItemOverlay(GuiGraphics context, ItemStack stack, int x, int y) {
         if (getItemBarStep(stack) > 0) {
             int step = (int) Math.ceil(getItemBarStep(stack));
             int color = 0xB76CEA;
