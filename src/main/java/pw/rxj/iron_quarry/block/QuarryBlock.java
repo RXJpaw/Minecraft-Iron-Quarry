@@ -342,7 +342,7 @@ public class QuarryBlock extends BlockWithEntity implements IHandledCrafting, IE
     public void initClient() {
         ResourceReloadListener.include(this.getTextureId());
         ResourceReloadListener.include(this.getParticleTextureId());
-        BlockRenderLayerMap.putBlock(this, BlockRenderLayer.CUTOUT_MIPPED);
+        BlockRenderLayerMap.putBlock(this, BlockRenderLayer.CUTOUT);
     }
 
     public TexturePosition getTexturePosition(Face face, Boolean alt){

@@ -270,14 +270,14 @@ public class QuarryBlockScreen extends HandledScreen<QuarryBlockScreenHandler> {
     }
 
     @Override
-    protected void drawSlot(DrawContext context, Slot slot) {
+    protected void drawSlot(DrawContext context, Slot slot, int mouseX, int mouseY) {
         if(AUGMENT_SLOTS.contains((ManagedSlot) slot)) {
             TrackableZone.Zone zone = AugmentsConfig.zone;
             RenderUtil.runScissored(context, zone.x - this.x, zone.y - this.y, zone.width, zone.height, () -> {
-                super.drawSlot(context, slot);
+                super.drawSlot(context, slot, mouseX, mouseY);
             });
         } else {
-            super.drawSlot(context, slot);
+            super.drawSlot(context, slot, mouseX, mouseY);
         }
     }
 

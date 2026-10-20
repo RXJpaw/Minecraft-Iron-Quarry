@@ -101,7 +101,7 @@ public class BlueprintPreviewRenderer {
 
         matrices.push();
 
-        Vec3d playerToCameraPos = lerpedPlayerPos.subtract(camera.getPos());
+        Vec3d playerToCameraPos = lerpedPlayerPos.subtract(camera.getCameraPos());
         matrices.translate(playerToCameraPos.x, playerToCameraPos.y, playerToCameraPos.z);
 
         // WorldRenderEvents.END doesn't call this when the world border is rendered.
@@ -117,7 +117,7 @@ public class BlueprintPreviewRenderer {
 
             screenPosList.add(new ScreenPosData(
                     RenderUtil.worldToScreen(pos1, positionMatrix, projectionMatrix),
-                    pos1.distanceTo(camera.getPos()),
+                    pos1.distanceTo(camera.getCameraPos()),
                     new Vec2f(0, 0),
                     1.0F
             ));
@@ -128,7 +128,7 @@ public class BlueprintPreviewRenderer {
 
             screenPosList.add(new ScreenPosData(
                     RenderUtil.worldToScreen(pos2, positionMatrix, projectionMatrix),
-                    pos2.distanceTo(camera.getPos()),
+                    pos2.distanceTo(camera.getCameraPos()),
                     new Vec2f(13, 0),
                     1.0F
             ));

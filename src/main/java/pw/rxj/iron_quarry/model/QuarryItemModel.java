@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.item.ItemModelManager;
-import net.minecraft.client.render.RenderLayers;
+import net.minecraft.client.render.TexturedRenderLayers;
 import net.minecraft.client.render.item.ItemRenderState;
 import net.minecraft.client.render.item.model.BasicItemModel;
 import net.minecraft.client.render.item.model.ItemModel;
@@ -40,7 +40,7 @@ public record QuarryItemModel(QuarryModel model, ModelSettings settings) impleme
 
         ItemRenderState.LayerRenderState layer = state.newLayer();
 
-        layer.setRenderLayer(RenderLayers.getItemLayer(stack));
+        layer.setRenderLayer(TexturedRenderLayers.getEntityCutout());
         this.settings.addSettings(layer, displayContext);
         List<BakedQuad> quads = this.model.getItemQuads(stack);
         layer.getQuads().addAll(quads);

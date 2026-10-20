@@ -17,7 +17,6 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.util.List;
-import java.util.OptionalDouble;
 import pw.rxj.iron_quarry.Main;
 
 public class RenderUtil {
@@ -32,10 +31,9 @@ public class RenderUtil {
                 .withLocation(Identifier.of(Main.MOD_ID, "pipeline/hidden_lines"))
                 .withDepthTestFunction(DepthTestFunction.GREATER_DEPTH_TEST)
                 .build());
-        private static final RenderLayer VISIBLE_LINES = RenderLayer.of("iron_quarry_visible_lines", 1536, VISIBLE_LINES_PIPELINE,
-                RenderLayer.MultiPhaseParameters.builder().lineWidth(new RenderPhase.LineWidth(OptionalDouble.of(3.0))).build(false));
-        private static final RenderLayer HIDDEN_LINES = RenderLayer.of("iron_quarry_hidden_lines", 1536, HIDDEN_LINES_PIPELINE,
-                RenderLayer.MultiPhaseParameters.builder().lineWidth(new RenderPhase.LineWidth(OptionalDouble.of(3.0))).build(false));
+        private static final RenderLayer VISIBLE_LINES = RenderLayer.of("iron_quarry_visible_lines", RenderSetup.builder(VISIBLE_LINES_PIPELINE).expectedBufferSize(1536).build());
+        private static final RenderLayer HIDDEN_LINES = RenderLayer.of("iron_quarry_hidden_lines", RenderSetup.builder(HIDDEN_LINES_PIPELINE).expectedBufferSize(1536).build());
+        private static final float LINE_WIDTH = 3.0F;
     }
 
     public static void runScissored(DrawContext context, int x, int y, int width, int height, Runnable runnable) {
@@ -68,7 +66,7 @@ public class RenderUtil {
         Camera camera = minecraftClient.gameRenderer.getCamera();
         Window window = minecraftClient.getWindow();
 
-        Vector4f relativeWorldPos = new Vector4f(camera.getPos().negate().add(worldPos).toVector3f(), 1.0F);
+        Vector4f relativeWorldPos = new Vector4f(camera.getCameraPos().negate().add(worldPos).toVector3f(), 1.0F);
 
         relativeWorldPos.mul(positionMatrix);
         relativeWorldPos.mul(projectionMatrix);
@@ -120,8 +118,8 @@ public class RenderUtil {
         for (SpriteVec2f line : lines) {
             Vector3f n = line.normalize();
 
-            buffer.vertex(positionMatrix, line.from.x, line.from.y, line.from.z).color(red, green, blue, alpha).normal(entry, n.x, n.y, n.z);
-            buffer.vertex(positionMatrix, line.to.x, line.to.y, line.to.z).color(red, green, blue, alpha).normal(entry, n.x, n.y, n.z);
+            buffer.vertex(positionMatrix, line.from.x, line.from.y, line.from.z).color(red, green, blue, alpha).normal(entry, n.x, n.y, n.z).lineWidth(Lines.LINE_WIDTH);
+            buffer.vertex(positionMatrix, line.to.x, line.to.y, line.to.z).color(red, green, blue, alpha).normal(entry, n.x, n.y, n.z).lineWidth(Lines.LINE_WIDTH);
         }
 
         BuiltBuffer builtBuffer = buffer.endNullable();

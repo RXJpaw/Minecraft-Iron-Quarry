@@ -5,6 +5,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.village.TradeOffer;
@@ -19,7 +20,7 @@ import java.util.Optional;
 public class ZTradeOffers {
     private static final SilkTouchAugmentConfig.Handler SILK_TOUCH_AUGMENT_CONFIG = Main.CONFIG.getSilkTouchAugmentConfig();
 
-    public static TradeOffer SILK_TOUCH_AUGMENT(Entity entity, Random random) {
+    public static TradeOffer SILK_TOUCH_AUGMENT(ServerWorld world, Entity entity, Random random) {
         ItemStack baseStack = SILK_TOUCH_AUGMENT_CONFIG.getRandomizedBase(random);
         TradedItem base = new TradedItem(baseStack.getItem(), baseStack.getCount());
 

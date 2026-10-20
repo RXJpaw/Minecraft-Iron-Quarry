@@ -1,13 +1,12 @@
 package pw.rxj.iron_quarry.types;
 
 import net.minecraft.text.Text;
-import net.minecraft.util.TranslatableOption;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Arrays;
 import java.util.Comparator;
 
-public enum AbsAlignment implements TranslatableOption {
+public enum AbsAlignment {
     TOP_LEFT(0),
     TOP_RIGHT(1),
     BOTTOM_LEFT(2),
@@ -28,15 +27,12 @@ public enum AbsAlignment implements TranslatableOption {
         return Arrays.stream(VALUES).filter(absAlignment -> absAlignment.getTranslationKey().equals(translationKey)).findFirst().orElse(AbsAlignment.BOTTOM_LEFT);
     }
 
-    @Override
     public int getId() {
         return this.id;
     }
-    @Override
     public String getTranslationKey() {
         return this.toString().toLowerCase();
     }
-    @Override
     public Text getText() {
         return Text.literal("Not yet implemented.");
     }
