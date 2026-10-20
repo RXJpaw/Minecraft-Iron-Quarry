@@ -27,9 +27,22 @@ import pw.rxj.iron_quarry.util.ZUtil;
 import java.util.List;
 
 @Environment(EnvType.CLIENT)
-public record QuarryItemModel(QuarryModel model, ModelRenderProperties settings, Matrix4fc transformation) implements ItemModel {
+public class QuarryItemModel implements ItemModel {
     public static final Identifier ID = Identifier.fromNamespaceAndPath(Main.MOD_ID, "quarry");
     private static final Identifier BLOCK_PARENT = Identifier.withDefaultNamespace("block/block");
+
+    private final QuarryModel model;
+    private final ModelRenderProperties settings;
+    private final Matrix4fc transformation;
+
+    private QuarryItemModel(QuarryModel model, ModelRenderProperties settings, Matrix4fc transformation) {
+        this.model = model;
+        this.settings = settings;
+        this.transformation = transformation;
+    }
+    public static QuarryItemModel of(QuarryModel model, ModelRenderProperties settings, Matrix4fc transformation) {
+        return new QuarryItemModel(model, settings, transformation);
+    }
 
     @Override
     public void update(ItemStackRenderState state, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel world, @Nullable ItemOwner heldItemContext, int seed) {
@@ -47,10 +60,23 @@ public record QuarryItemModel(QuarryModel model, ModelRenderProperties settings,
         layer.setExtents(() -> CuboidItemModelWrapper.computeExtents(quads));
     }
 
-    public record Unbaked(Identifier block) implements ItemModel.Unbaked {
-        public static final MapCodec<pw.rxj.iron_quarry.model.QuarryItemModel.Unbaked> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Identifier.CODEC.fieldOf("block").forGetter(pw.rxj.iron_quarry.model.QuarryItemModel.Unbaked::block)
-        ).apply(instance, pw.rxj.iron_quarry.model.QuarryItemModel.Unbaked::new));
+    public static class Unbaked implements ItemModel.Unbaked {
+        public static final MapCodec<Unbaked> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Identifier.CODEC.fieldOf("block").forGetter(Unbaked::getBlock)
+        ).apply(instance, Unbaked::of));
+
+        private final Identifier block;
+
+        private Unbaked(Identifier block) {
+            this.block = block;
+        }
+        public static Unbaked of(Identifier block) {
+            return new Unbaked(block);
+        }
+
+        protected Identifier getBlock() {
+            return this.block;
+        }
 
         @Override
         public void resolveDependencies(ResolvableModel.Resolver resolver) {
@@ -65,11 +91,11 @@ public record QuarryItemModel(QuarryModel model, ModelRenderProperties settings,
             QuarryModel model = QuarryModel.bake(quarryBlock, baker);
             ModelRenderProperties settings = new ModelRenderProperties(true, model.particleMaterial(), baker.getModel(BLOCK_PARENT).getTopTransforms());
 
-            return new QuarryItemModel(model, settings, transformation);
+            return QuarryItemModel.of(model, settings, transformation);
         }
 
         @Override
-        public MapCodec<pw.rxj.iron_quarry.model.QuarryItemModel.Unbaked> type() {
+        public MapCodec<Unbaked> type() {
             return CODEC;
         }
     }

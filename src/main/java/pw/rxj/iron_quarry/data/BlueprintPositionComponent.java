@@ -7,7 +7,16 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import pw.rxj.iron_quarry.types.DualPosition;
 
-public record BlueprintPositionComponent(BlockPos pos1, BlockPos pos2) {
+import java.util.Objects;
+
+public class BlueprintPositionComponent {
+    private final BlockPos pos1;
+    private final BlockPos pos2;
+
+    private BlueprintPositionComponent(BlockPos pos1, BlockPos pos2) {
+        this.pos1 = pos1;
+        this.pos2 = pos2;
+    }
     public static BlueprintPositionComponent of(BlockPos pos1, BlockPos pos2) {
         return new BlueprintPositionComponent(pos1.immutable(), pos2.immutable());
     }
@@ -15,12 +24,28 @@ public record BlueprintPositionComponent(BlockPos pos1, BlockPos pos2) {
         return of(pos, pos);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        return o instanceof BlueprintPositionComponent other && this.pos1.equals(other.pos1) && this.pos2.equals(other.pos2);
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.pos1, this.pos2);
+    }
+
+    protected BlockPos getPos1() {
+        return this.pos1;
+    }
+    protected BlockPos getPos2() {
+        return this.pos2;
+    }
     public BlockPos getPosition(DualPosition position) {
         if(position == null) throw new AssertionError();
 
         return switch (position) {
-            case FIRST -> this.pos1;
-            case SECOND -> this.pos2;
+            case FIRST -> this.getPos1();
+            case SECOND -> this.getPos2();
         };
     }
 
@@ -28,8 +53,8 @@ public record BlueprintPositionComponent(BlockPos pos1, BlockPos pos2) {
         if(position == null) throw new AssertionError();
 
         return switch (position) {
-            case FIRST -> of(blockPos, this.pos2);
-            case SECOND -> of(this.pos1, blockPos);
+            case FIRST -> of(blockPos, this.getPos2());
+            case SECOND -> of(this.getPos1(), blockPos);
         };
     }
 
@@ -40,13 +65,13 @@ public record BlueprintPositionComponent(BlockPos pos1, BlockPos pos2) {
         );
     }
     private void write(RegistryFriendlyByteBuf buf) {
-        buf.writeBlockPos(this.pos1);
-        buf.writeBlockPos(this.pos2);
+        buf.writeBlockPos(this.getPos1());
+        buf.writeBlockPos(this.getPos2());
     }
 
     public static final Codec<BlueprintPositionComponent> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            BlockPos.CODEC.fieldOf("pos1").forGetter(BlueprintPositionComponent::pos1),
-            BlockPos.CODEC.fieldOf("pos2").forGetter(BlueprintPositionComponent::pos2)
+            BlockPos.CODEC.fieldOf("pos1").forGetter(BlueprintPositionComponent::getPos1),
+            BlockPos.CODEC.fieldOf("pos2").forGetter(BlueprintPositionComponent::getPos2)
             ).apply(instance, BlueprintPositionComponent::of)
     );
     public static final StreamCodec<RegistryFriendlyByteBuf, BlueprintPositionComponent> PACKET_CODEC = StreamCodec.ofMember(BlueprintPositionComponent::write, BlueprintPositionComponent::read);

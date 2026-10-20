@@ -54,7 +54,7 @@ public class HandledSmithingRecipe extends SmithingTransformRecipe {
                         new HandledSmithingRecipe(template, base, addition, parseTag(rawAddition), result)
                 )
         );
-        public static final StreamCodec<RegistryFriendlyByteBuf, HandledSmithingRecipe> PACKET_CODEC = StreamCodec.of(pw.rxj.iron_quarry.recipe.HandledSmithingRecipe.Serializer::write, pw.rxj.iron_quarry.recipe.HandledSmithingRecipe.Serializer::read);
+        public static final StreamCodec<RegistryFriendlyByteBuf, HandledSmithingRecipe> PACKET_CODEC = StreamCodec.of(Serializer::write, Serializer::read);
 
         private static @Nullable TagKey<Item> parseTag(Optional<String> raw) {
             if(raw.isEmpty() || !raw.get().startsWith("#")) return null;

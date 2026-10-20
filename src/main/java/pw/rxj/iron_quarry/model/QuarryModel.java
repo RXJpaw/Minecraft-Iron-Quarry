@@ -66,7 +66,7 @@ public class QuarryModel implements BlockStateModel {
 
     public static void register(ModelLoadingPlugin.Context pluginContext, QuarryBlock quarryBlock) {
         pluginContext.registerBlockStateResolver(quarryBlock, context -> {
-            BlockStateModel.UnbakedRoot unbaked = new pw.rxj.iron_quarry.model.QuarryModel.Unbaked(quarryBlock).asRoot();
+            BlockStateModel.UnbakedRoot unbaked = Unbaked.of(quarryBlock).asRoot();
 
             quarryBlock.getStateDefinition().getPossibleStates().forEach(state -> context.setModel(state, unbaked));
         });
@@ -106,7 +106,16 @@ public class QuarryModel implements BlockStateModel {
         return 0;
     }
 
-    private record Unbaked(QuarryBlock quarryBlock) implements BlockStateModel.Unbaked {
+    private static class Unbaked implements BlockStateModel.Unbaked {
+        private final QuarryBlock quarryBlock;
+
+        private Unbaked(QuarryBlock quarryBlock) {
+            this.quarryBlock = quarryBlock;
+        }
+        public static Unbaked of(QuarryBlock quarryBlock) {
+            return new Unbaked(quarryBlock);
+        }
+
         @Override
         public void resolveDependencies(ResolvableModel.Resolver resolver) {
 

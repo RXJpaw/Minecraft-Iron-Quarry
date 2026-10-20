@@ -13,9 +13,11 @@ import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.interfaces.IModelPredicateProvider;
 
 @Environment(EnvType.CLIENT)
-public record HandledModelPredicateProperty() implements RangeSelectItemModelProperty {
+public class HandledModelPredicateProperty implements RangeSelectItemModelProperty {
     public static final Identifier ID = Identifier.fromNamespaceAndPath(Main.MOD_ID, "handled_model_predicate");
     public static final MapCodec<HandledModelPredicateProperty> CODEC = MapCodec.unit(new HandledModelPredicateProperty());
+
+    private HandledModelPredicateProperty() { }
 
     @Override
     public float get(ItemStack stack, @Nullable ClientLevel world, @Nullable ItemOwner context, int seed) {
