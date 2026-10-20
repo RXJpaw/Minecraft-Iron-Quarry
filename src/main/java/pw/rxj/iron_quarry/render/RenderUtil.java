@@ -1,7 +1,8 @@
 package pw.rxj.iron_quarry.render;
 
+import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
@@ -10,10 +11,11 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
+import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -39,11 +41,11 @@ public class RenderUtil {
     private static class Lines {
         private static final RenderPipeline VISIBLE_LINES_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(Main.MOD_ID, "pipeline/visible_lines"))
-                .withDepthTestFunction(DepthTestFunction.LESS_DEPTH_TEST)
+                .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN, true))
                 .build());
         private static final RenderPipeline HIDDEN_LINES_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(Main.MOD_ID, "pipeline/hidden_lines"))
-                .withDepthTestFunction(DepthTestFunction.GREATER_DEPTH_TEST)
+                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN, true))
                 .build());
         private static final RenderType VISIBLE_LINES = RenderType.create("iron_quarry_visible_lines", RenderSetup.builder(VISIBLE_LINES_PIPELINE).bufferSize(1536).createRenderSetup());
         private static final RenderType HIDDEN_LINES = RenderType.create("iron_quarry_hidden_lines", RenderSetup.builder(HIDDEN_LINES_PIPELINE).bufferSize(1536).createRenderSetup());
@@ -53,7 +55,6 @@ public class RenderUtil {
     private static class Markers {
         private static final RenderPipeline WORLD_MARKER_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(Main.MOD_ID, "pipeline/world_marker"))
-                .withDepthWrite(false)
                 .withCull(false)
                 .build());
         private static final Map<Identifier, RenderType> WORLD_MARKERS = new HashMap<>();
@@ -66,19 +67,23 @@ public class RenderUtil {
         }
     }
 
-    public static void runScissored(GuiGraphics context, int x, int y, int width, int height, Runnable runnable) {
+    public static class RenderStates {
+        public static final RenderStateDataKey<Matrix4f> PROJECTION_MATRIX = RenderStateDataKey.create(() -> Main.MOD_ID + ":projection_matrix");
+    }
+
+    public static void runScissored(GuiGraphicsExtractor context, int x, int y, int width, int height, Runnable runnable) {
         context.enableScissor(x, y, x + width, y + height);
         runnable.run();
         context.disableScissor();
     }
 
-    public static void drawTexture(GuiGraphics context, Identifier texture, int x, int y, float u, float v, int width, int height) {
+    public static void drawTexture(GuiGraphicsExtractor context, Identifier texture, int x, int y, float u, float v, int width, int height) {
         drawTexture(context, texture, x, y, u, v, width, height, 256, 256);
     }
-    public static void drawTexture(GuiGraphics context, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
+    public static void drawTexture(GuiGraphicsExtractor context, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
         context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight);
     }
-    public static void drawTexture(GuiGraphics context, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color) {
+    public static void drawTexture(GuiGraphicsExtractor context, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color) {
         context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight, color);
     }
     public static int whiteWithAlpha(double alpha) {
@@ -205,10 +210,10 @@ public class RenderUtil {
         Matrix4f positionMatrix = matrices.last().pose();
         VertexConsumer buffer = bufferSource.getBuffer(renderLayer);
 
-        buffer.addVertex(positionMatrix, x1, y1, 0.0F).setColor(color).setLight(LightTexture.FULL_BRIGHT);
-        buffer.addVertex(positionMatrix, x1, y2, 0.0F).setColor(color).setLight(LightTexture.FULL_BRIGHT);
-        buffer.addVertex(positionMatrix, x2, y2, 0.0F).setColor(color).setLight(LightTexture.FULL_BRIGHT);
-        buffer.addVertex(positionMatrix, x2, y1, 0.0F).setColor(color).setLight(LightTexture.FULL_BRIGHT);
+        buffer.addVertex(positionMatrix, x1, y1, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
+        buffer.addVertex(positionMatrix, x1, y2, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
+        buffer.addVertex(positionMatrix, x2, y2, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
+        buffer.addVertex(positionMatrix, x2, y1, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
 
         bufferSource.endBatch(renderLayer);
     }

@@ -1,0 +1,9 @@
+{
+    "replace": false,
+    "values": [
+        {
+            "id": "iron_quarry:silk_touch_augment",
+            "required": false
+        }
+    ]
+}

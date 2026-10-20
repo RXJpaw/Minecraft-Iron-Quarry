@@ -1,8 +1,8 @@
 package pw.rxj.iron_quarry.blockentity;
 
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
-import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory<QuarryBlockScreenData> {
+public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvider<QuarryBlockScreenData> {
     public QuarryBlockEntity(BlockPos pos, BlockState state) {
         super(ZBlockEntities.QUARRY_BLOCK_ENTITY, pos, state);
     }
@@ -164,7 +164,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         ItemStack batteryStack = BatteryInputInventory.getItem(0);
         if(batteryStack.isEmpty()) return;
 
-        EnergyStorage energyStorage = ContainerItemContext.ofSingleSlot(InventoryStorage.of(BatteryInputInventory, null).getSlot(0)).find(EnergyStorage.ITEM);
+        EnergyStorage energyStorage = ContainerItemContext.ofSingleSlot(ContainerStorage.of(BatteryInputInventory, null).getSlot(0)).find(EnergyStorage.ITEM);
 
         if(energyStorage != null && energyStorage.getAmount() > 0) {
             EnergyStorageUtil.move(energyStorage, EnergyContainer.getSideStorage(null), Long.MAX_VALUE, null);
@@ -191,14 +191,14 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
 
     }
 
-    public InventoryStorage getItemSideConfiguration(Direction direction){
+    public ContainerStorage getItemSideConfiguration(Direction direction){
         if(direction == null) return null;
 
         Face face = Face.from(direction, this.getBlockState().getValue(QuarryBlock.FACING));
         Object object = this.Configuration.getLinkedIo(face);
 
         if(object instanceof Container inventory) {
-            return InventoryStorage.of(inventory, null);
+            return ContainerStorage.of(inventory, null);
         }
 
         return null;
@@ -243,7 +243,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
         if(thisWorld == null) return;
         if(thisWorld.isClientSide()) return;
 
-        RandomSource random = thisWorld.random;
+        RandomSource random = thisWorld.getRandom();
 
         ServerLevel thisServerWorld = (ServerLevel) thisWorld;
         MinecraftServer minecraftServer = thisServerWorld.getServer();
@@ -334,7 +334,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
                 ChunkLoadingManager.addTicket(serverWorldToBreak, chunkPosToLoad, thisServerWorld, thisPos);
             }
 
-            LevelChunk worldChunk = serverWorldToBreak.getChunkSource().getChunkNow(chunkPos.x, chunkPos.z);
+            LevelChunk worldChunk = serverWorldToBreak.getChunkSource().getChunkNow(chunkPos.x(), chunkPos.z());
             if(worldChunk == null) return;
 
             thisBlockEntity.currentChunk = chunkPos;
@@ -347,13 +347,13 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedScreenHand
             int maxZ = Math.max(firstPos.getZ(), secondPos.getZ());
 
             //Max/Min within the current Chunk
-            int minChunkBlockX = Math.max(chunkPos.x << 4, minX);
+            int minChunkBlockX = Math.max(chunkPos.x() << 4, minX);
             int minChunkBlockY = Math.min(firstPos.getY(), secondPos.getY());
-            int minChunkBlockZ = Math.max(chunkPos.z << 4, minZ);
+            int minChunkBlockZ = Math.max(chunkPos.z() << 4, minZ);
 
-            int maxChunkBlockX = Math.min((chunkPos.x << 4) + 15, maxX);
+            int maxChunkBlockX = Math.min((chunkPos.x() << 4) + 15, maxX);
             int maxChunkBlockY = Math.max(firstPos.getY(), secondPos.getY());
-            int maxChunkBlockZ = Math.min((chunkPos.z << 4) + 15, maxZ);
+            int maxChunkBlockZ = Math.min((chunkPos.z() << 4) + 15, maxZ);
 
             for (int x = minChunkBlockX; x <= maxChunkBlockX; x++) {
                 for (int z = minChunkBlockZ; z <= maxChunkBlockZ; z++) {

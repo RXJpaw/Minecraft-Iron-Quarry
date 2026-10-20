@@ -59,6 +59,6 @@ public class ResourceReloadListener implements PreparableReloadListener {
         resourceIdList.add(resourceId);
     }
     public static void register() {
-        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(ID, new ResourceReloadListener());
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(ID, new ResourceReloadListener());
     }
 }

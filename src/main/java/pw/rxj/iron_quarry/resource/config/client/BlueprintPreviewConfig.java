@@ -7,7 +7,7 @@ import pw.rxj.iron_quarry.types.MarkerRenderMode;
 
 @EqualsAndHashCode
 public class BlueprintPreviewConfig {
-    public String markerRenderMode = MarkerRenderMode.HUD.getTranslationKey();
+    public String markerRenderMode = MarkerRenderMode.WORLD.getTranslationKey();
 
     public static class Handler extends AbstractInnerConfigHandler {
         protected Handler(ConfigHandler handler) {

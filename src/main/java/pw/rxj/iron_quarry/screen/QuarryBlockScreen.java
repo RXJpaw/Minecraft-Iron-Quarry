@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.BlockPos;
@@ -71,7 +71,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
     private final ManagedSlot DRILL_SLOT;
     private final ManagedSlot BATTERY_SLOT;
 
-    private void drawLockedSlot(GuiGraphics context, Slot slot, int width, int height) {
+    private void drawLockedSlot(GuiGraphicsExtractor context, Slot slot, int width, int height) {
         if(width < 0) Main.LOGGER.warn("Tried to drawLockedSlot with width < 0 ({})", width);
         if(width > 18) Main.LOGGER.warn("Tried to drawLockedSlot with width > 18 ({})", width);
         if(height < 0) Main.LOGGER.warn("Tried to drawLockedSlot with height < 0 ({})", height);
@@ -81,14 +81,11 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
     }
 
     public QuarryBlockScreen(QuarryBlockScreenHandler handler, Inventory inventory, Component title) {
-        super(handler, inventory, title);
+        super(handler, inventory, title, 176 + (Compat.REI_LOADED ? 0 : 100), 226);
 
         this.expandableMenuWidth = Compat.REI_LOADED ? 0 : 100;
         this.realBackgroundWidth = 176;
         this.realBackgroundHeight = 226;
-
-        this.imageWidth = this.realBackgroundWidth + this.expandableMenuWidth;
-        this.imageHeight = this.realBackgroundHeight;
 
         this.titleLabelY = 6;
         this.titleLabelX = 8;
@@ -104,7 +101,9 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
     }
 
     @Override
-    protected void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        super.extractBackground(context, mouseX, mouseY, delta);
+
         Minecraft minecraftClient = Minecraft.getInstance();
         if(minecraftClient.level == null) return;
 
@@ -180,7 +179,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
             RenderUtil.drawTexture(context, AUGMENTATION_CONFIGURATION_TEXTURE, augmentsMenuX, augmentsMenuY, 0, 0, augmentsMenuWidth, augmentsMenuHeight);
 
             RenderUtil.runScissored(context, augmentsMenuX, augmentsMenuY, augmentsMenuWidth, augmentsMenuHeight, () -> {
-                context.drawString(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.title.augmentation"), augmentsMenuX + 20, augmentsMenuY + 7, 0xFFFFFFFF);
+                context.text(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.title.augmentation"), augmentsMenuX + 20, augmentsMenuY + 7, 0xFFFFFFFF);
             });
 
             for (ManagedSlot slot: AUGMENT_SLOTS) {
@@ -232,7 +231,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
             RenderUtil.drawTexture(context, OPTIONS_CONFIGURATION_TEXTURE, ioConfigX, ioConfigY, 0, 0, ioConfigWidth, ioConfigHeight);
 
             RenderUtil.runScissored(context, ioConfigX, ioConfigY, ioConfigWidth, ioConfigHeight, () -> {
-                context.drawString(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.title.configuration"), ioConfigX + 20, ioConfigY + 7, 0xFFFFFFFF);
+                context.text(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.title.configuration"), ioConfigX + 20, ioConfigY + 7, 0xFFFFFFFF);
             });
 
             IO_OPTIONS.forEach(ioOption -> {
@@ -269,14 +268,14 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
     }
 
     @Override
-    protected void renderSlot(GuiGraphics context, Slot slot, int mouseX, int mouseY) {
+    protected void extractSlot(GuiGraphicsExtractor context, Slot slot, int mouseX, int mouseY) {
         if(AUGMENT_SLOTS.contains((ManagedSlot) slot)) {
             TrackableZone.Zone zone = AugmentsConfig.zone;
             RenderUtil.runScissored(context, zone.x - this.leftPos, zone.y - this.topPos, zone.width, zone.height, () -> {
-                super.renderSlot(context, slot, mouseX, mouseY);
+                super.extractSlot(context, slot, mouseX, mouseY);
             });
         } else {
-            super.renderSlot(context, slot, mouseX, mouseY);
+            super.extractSlot(context, slot, mouseX, mouseY);
         }
     }
 
@@ -285,8 +284,8 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
     }
 
     @Override
-    protected void renderLabels(GuiGraphics context, int mouseX, int mouseY) {
-        super.renderLabels(context, mouseX, mouseY);
+    protected void extractLabels(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+        super.extractLabels(context, mouseX, mouseY);
 
         if(!this.menu.getCarried().isEmpty()) return;
 
@@ -378,19 +377,13 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
-        renderTooltip(context, mouseX, mouseY);
-    }
-
-    @Override
     protected void init() {
         super.init();
         this.leftPos = (this.width - this.realBackgroundWidth) / 2;
         this.topPos = (this.height - this.realBackgroundHeight) / 2;
     }
 
-    public static void drawIoHighlight(GuiGraphics context, int x, int y) {
+    public static void drawIoHighlight(GuiGraphicsExtractor context, int x, int y) {
         context.fillGradient(x, y, x + 16, y + 16, 1612718112, 1612718112);
     }
 }

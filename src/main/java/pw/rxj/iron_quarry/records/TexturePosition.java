@@ -1,6 +1,6 @@
 package pw.rxj.iron_quarry.records;
 
-import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
 
 public record TexturePosition(int u, int v, int width, int height) {
     public int minU() {

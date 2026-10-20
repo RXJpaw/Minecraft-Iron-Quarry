@@ -1,13 +1,13 @@
 package pw.rxj.iron_quarry.item;
 
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import pw.rxj.iron_quarry.Main;
-import pw.rxj.iron_quarry.event.GameLifecycleCallback;
 import pw.rxj.iron_quarry.interfaces.IModifyItemGroupEntries;
 import pw.rxj.iron_quarry.resource.config.server.QuarryDrillStatsConfig;
 import pw.rxj.iron_quarry.resource.config.server.QuarryMonitorConfig;
@@ -92,11 +92,11 @@ public class ZItems {
             Registry.register(BuiltInRegistries.ITEM, id, item);
 
             if(item instanceof DrillItem drillItem){
-                GameLifecycleCallback.IMMINENT_FIRST_RELOAD.register(drillItem::assignCorrectToolComponent);
+                ServerLifecycleEvents.SERVER_STARTING.register(server -> drillItem.assignCorrectToolComponent());
             }
         }
 
-        ItemGroupEvents.modifyEntriesEvent(Main.ITEM_GROUP).register(entries -> {
+        CreativeModeTabEvents.modifyOutputEvent(Main.ITEM_GROUP).register(entries -> {
             itemEntryList.forEach(blockItemBlockEntry -> {
                 Item item = blockItemBlockEntry.getItem();
 

@@ -2,7 +2,7 @@ package pw.rxj.iron_quarry.render;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -21,7 +21,7 @@ public class QuarryMonitorOverlayRenderer {
     private static final QuarryMonitorOverlayConfig.Handler QUARRY_MONITOR_OVERLAY_CONFIG = Main.CONFIG.getQuarryMonitorOverlayConfig();
     public static final Identifier OVERLAY_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/quarry_monitor_overlay.png");
 
-    private static void renderOnScreen(GuiGraphics context, double tickDelta) {
+    private static void renderOnScreen(GuiGraphicsExtractor context, double tickDelta) {
         Minecraft minecraftClient = Minecraft.getInstance();
         if(minecraftClient.level == null) return;
         LocalPlayer player = minecraftClient.player;
@@ -81,12 +81,12 @@ public class QuarryMonitorOverlayRenderer {
         Font textRenderer = minecraftClient.font;
 
         if(blueprintStack.getItem() instanceof BlueprintItem) {
-            context.renderItem(blueprintStack, x + 13, y + 4);
-            context.renderItemDecorations(textRenderer, blueprintStack, x + 13, y + 4);
+            context.item(blueprintStack, x + 13, y + 4);
+            context.itemDecorations(textRenderer, blueprintStack, x + 13, y + 4);
         }
         if(drillStack.getItem() instanceof DrillItem) {
-            context.renderItem(drillStack, x + 13, y + 25);
-            context.renderItemDecorations(textRenderer, drillStack, x + 13, y + 25);
+            context.item(drillStack, x + 13, y + 25);
+            context.itemDecorations(textRenderer, drillStack, x + 13, y + 25);
         }
     }
 

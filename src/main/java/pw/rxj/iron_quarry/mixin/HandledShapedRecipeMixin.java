@@ -8,19 +8,18 @@ import pw.rxj.iron_quarry.interfaces.IHandledCrafting;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.List;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 
 @Mixin(ShapedRecipe.class)
 public class HandledShapedRecipeMixin {
-    @Inject(method = "assemble(Lnet/minecraft/world/item/crafting/CraftingInput;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/world/item/ItemStack;", at = @At(value = "RETURN"), cancellable = true)
-    private void craft(CraftingInput input, HolderLookup.Provider wrapperLookup, CallbackInfoReturnable<ItemStack> cir) {
+    @Inject(method = "assemble(Lnet/minecraft/world/item/crafting/CraftingInput;)Lnet/minecraft/world/item/ItemStack;", at = @At(value = "RETURN"), cancellable = true)
+    private void craft(CraftingInput input, CallbackInfoReturnable<ItemStack> cir) {
         ItemStack centerStack = IHandledCrafting.getCenterStack(input);
 
         if(ZUtil.getBlockOrItem(centerStack) instanceof IHandledCrafting handledCrafting) {
-            ItemStack result = handledCrafting.getCraftingOutput(cir.getReturnValue(), input, wrapperLookup);
+            ItemStack result = handledCrafting.getCraftingOutput(cir.getReturnValue(), input);
             cir.setReturnValue(result);
         }
     }

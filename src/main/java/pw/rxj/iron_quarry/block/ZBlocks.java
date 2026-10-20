@@ -1,6 +1,6 @@
 package pw.rxj.iron_quarry.block;
 
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Rarity;
@@ -52,7 +52,7 @@ public class ZBlocks {
             Registry.register(BuiltInRegistries.ITEM, blockEntry.getId(), blockEntry.getBlockItem());
         }
 
-        ItemGroupEvents.modifyEntriesEvent(Main.ITEM_GROUP).register(entries -> {
+        CreativeModeTabEvents.modifyOutputEvent(Main.ITEM_GROUP).register(entries -> {
             blockEntryList.forEach(blockItemBlockEntry -> entries.accept(blockItemBlockEntry.getBlock()));
         });
     }

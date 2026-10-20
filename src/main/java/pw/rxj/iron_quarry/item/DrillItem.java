@@ -12,7 +12,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -43,6 +42,8 @@ public class DrillItem extends Item implements ICustomEnchantabilityProvider, IC
         this.enchantability = entry.enchantability;
         this.toolEquivalent = entry.toolEquivalent;
         this.maxCDamage = entry.durability;
+
+        BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.add(settings.itemIdOrThrow(), (components, context, key) -> components.set(DataComponents.ENCHANTABLE, new Enchantable(this.enchantability)));
     }
     public void override(QuarryDrillStatsConfig.Entry quarryDrillStats) {
         this.enchantability = quarryDrillStats.enchantability;
@@ -78,13 +79,6 @@ public class DrillItem extends Item implements ICustomEnchantabilityProvider, IC
     @Override
     public int getMaxCDamage() {
         return this.maxCDamage;
-    }
-    @Override
-    public DataComponentMap components() {
-        return DataComponentMap.builder()
-                .addAll(super.components())
-                .set(DataComponents.ENCHANTABLE, new Enchantable(this.enchantability))
-                .build();
     }
 
     protected void assignCorrectToolComponent() {

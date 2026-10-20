@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.gui;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import pw.rxj.iron_quarry.render.RenderUtil;
@@ -46,12 +46,12 @@ public class TooltipQuarryInventoryComponent implements CustomTooltipComponent {
     }
 
     @Override
-    public void renderText(GuiGraphics context, Font textRenderer, int x, int y) {
+    public void extractText(GuiGraphicsExtractor context, Font textRenderer, int x, int y) {
 
     }
 
     @Override
-    public void renderImage(Font textRenderer, int x, int y, int width, int height, GuiGraphics context) {
+    public void extractImage(Font textRenderer, int x, int y, int width, int height, GuiGraphicsExtractor context) {
         RenderUtil.drawTexture(context, QUARRY_SCREEN_BACKGROUND_TEXTURE, x, y + 2, 79, 26, 18, 18, 256, 256);
         this.drawItemStack(x, y + 2, this.blueprintStack, textRenderer, context);
 
@@ -72,12 +72,12 @@ public class TooltipQuarryInventoryComponent implements CustomTooltipComponent {
         }
     }
 
-    private void drawItemStack(int x, int y, ItemStack stack, Font textRenderer, GuiGraphics context) {
-        context.renderItem(stack, x + 1, y + 1);
-        context.renderItemDecorations(textRenderer, stack, x + 1, y + 1);
+    private void drawItemStack(int x, int y, ItemStack stack, Font textRenderer, GuiGraphicsExtractor context) {
+        context.item(stack, x + 1, y + 1);
+        context.itemDecorations(textRenderer, stack, x + 1, y + 1);
     }
 
-    private void drawAugmentSlot(int x, int y, int index, Font textRenderer, GuiGraphics context) {
+    private void drawAugmentSlot(int x, int y, int index, Font textRenderer, GuiGraphicsExtractor context) {
         if(index >= this.MachineUpgradesInventory.getContainerSize()) return;
 
         ItemStack stack = this.MachineUpgradesInventory.getItem(index);

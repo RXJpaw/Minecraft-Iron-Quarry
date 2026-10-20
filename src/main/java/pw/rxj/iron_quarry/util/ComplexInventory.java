@@ -12,6 +12,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -131,7 +132,7 @@ public class ComplexInventory extends SimpleContainer {
         for(int i = 0; i < this.items.size(); ++i) {
             ItemStack itemStack = this.items.get(i);
             if (!itemStack.isEmpty()) {
-                list.add(new ItemContainerContents.Slot(i, itemStack));
+                list.add(new ItemContainerContents.Slot(i, ItemStackTemplate.fromNonEmptyStack(itemStack)));
             }
         }
 
@@ -145,7 +146,7 @@ public class ComplexInventory extends SimpleContainer {
             ComplexInventory inventory = ComplexInventory.ofSize(optionalInt.getAsInt() + 1);
 
             for(ItemContainerContents.Slot slot : slots) {
-                inventory.items.set(slot.index(), slot.item());
+                inventory.items.set(slot.index(), slot.item().create());
             }
 
             return inventory;

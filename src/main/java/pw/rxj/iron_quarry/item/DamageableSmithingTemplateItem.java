@@ -10,8 +10,6 @@ import pw.rxj.iron_quarry.util.ZUtil;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -28,7 +26,7 @@ public class DamageableSmithingTemplateItem extends SmithingTemplateItem impleme
     private final int maxCDamage;
 
     private DamageableSmithingTemplateItem(Component appliesToText, Component ingredientsText, int maxDamage, Component baseSlotDescriptionText, Component additionsSlotDescriptionText, List<Identifier> emptyBaseSlotTextures, List<Identifier> emptyAdditionsSlotTextures, Item.Properties settings) {
-        super(appliesToText, ingredientsText, baseSlotDescriptionText, additionsSlotDescriptionText, emptyBaseSlotTextures, emptyAdditionsSlotTextures, settings);
+        super(appliesToText, ingredientsText, baseSlotDescriptionText, additionsSlotDescriptionText, emptyBaseSlotTextures, emptyAdditionsSlotTextures, settings.stacksTo(1));
 
         this.appliesToText = appliesToText;
         this.ingredientsText = ingredientsText;
@@ -46,15 +44,6 @@ public class DamageableSmithingTemplateItem extends SmithingTemplateItem impleme
         return instanceFrom(stack) == null;
     }
 
-    @Override
-    public DataComponentMap components() {
-        DataComponentMap components = super.components();
-
-        DataComponentMap.Builder builder = DataComponentMap.builder().addAll(components);
-        builder.set(DataComponents.MAX_STACK_SIZE, 1);
-
-        return builder.build();
-    }
     @Override
     public int getMaxCDamage() {
         return this.maxCDamage;

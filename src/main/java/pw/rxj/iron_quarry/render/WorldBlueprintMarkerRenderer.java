@@ -4,14 +4,14 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import pw.rxj.iron_quarry.event.WorldRenderCallback;
 
 import java.awt.*;
 
@@ -23,7 +23,7 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
         return RenderUtil.cameraToScreen(worldPos, this.camera, this.projectionMatrix);
     }
 
-    public void render(WorldRenderCallback.Context context) {
+    public void render(CameraRenderState cameraRenderState) {
         Minecraft minecraftClient = Minecraft.getInstance();
         Font textRenderer = minecraftClient.font;
         MultiBufferSource.BufferSource bufferSource = minecraftClient.renderBuffers().bufferSource();
@@ -36,7 +36,7 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
             float alpha = screenPosData.alpha;
 
             float scale = getScale(distance);
-            PoseStack matrices = this.createMarkerMatrices(screenPosData);
+            PoseStack matrices = this.createMarkerMatrices(screenPosData, cameraRenderState);
 
             matrices.pushPose();
 
@@ -62,7 +62,7 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
                 matrices.translate(1 + width / -2.0F, 0.0F, 0.0F);
 
                 RenderUtil.fillWorld(matrices, bufferSource, -2, -2, width + 1, height + 1, 1409286144);
-                textRenderer.drawInBatch(text, 0, 0, new Color(1.0F, 1.0F, 1.0F, alpha).getRGB(), true, matrices.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, 0, LightTexture.FULL_BRIGHT);
+                textRenderer.drawInBatch(text, 0, 0, new Color(1.0F, 1.0F, 1.0F, alpha).getRGB(), true, matrices.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, 0, LightCoordsUtil.FULL_BRIGHT);
                 bufferSource.endBatch();
 
                 matrices.popPose();
@@ -70,16 +70,17 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
         }
     }
 
-    private PoseStack createMarkerMatrices(ScreenPosData screenPosData) {
+    private PoseStack createMarkerMatrices(ScreenPosData screenPosData, CameraRenderState cameraRenderState) {
         Minecraft minecraftClient = Minecraft.getInstance();
         Window window = minecraftClient.getWindow();
 
         double depth = screenPosData.screenPos.depth;
-        double clampedDepth = Mth.clamp(depth, MIN_MARKER_DEPTH, minecraftClient.gameRenderer.getDepthFar() * 0.5);
+        double clampedDepth = Mth.clamp(depth, MIN_MARKER_DEPTH, cameraRenderState.depthFar * 0.5);
         Vec3 markerPos = screenPosData.worldPos.subtract(this.camera.position()).scale(clampedDepth / depth);
         float pixelSize = (float) (window.getGuiScale() * 2.0 * clampedDepth / (window.getHeight() * this.projectionMatrix.m11()));
 
         PoseStack matrices = new PoseStack();
+        matrices.mulPose(cameraRenderState.viewRotationMatrix);
         matrices.translate(markerPos.x, markerPos.y, markerPos.z);
         matrices.mulPose(this.camera.rotation());
         matrices.scale(pixelSize, -pixelSize, pixelSize);

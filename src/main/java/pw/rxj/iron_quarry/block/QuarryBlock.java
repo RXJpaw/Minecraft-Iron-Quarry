@@ -3,13 +3,10 @@ package pw.rxj.iron_quarry.block;
 import com.mojang.serialization.MapCodec;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
@@ -306,7 +303,7 @@ public class QuarryBlock extends BaseEntityBlock implements IHandledCrafting, IE
     }
 
     @Override
-    public ItemStack getCraftingOutput(ItemStack output, CraftingInput input, HolderLookup.Provider wrapperLookup) {
+    public ItemStack getCraftingOutput(ItemStack output, CraftingInput input) {
         return IHandledCrafting.copyCenterSlotComponents(output, input);
     }
 
@@ -335,17 +332,16 @@ public class QuarryBlock extends BaseEntityBlock implements IHandledCrafting, IE
     }
     private static final Identifier BLOCK_ATLAS_TEXTURE = Identifier.withDefaultNamespace("textures/atlas/blocks.png");
 
-    public Material getSpriteId(){
-        return new Material(BLOCK_ATLAS_TEXTURE, Identifier.fromNamespaceAndPath(Main.MOD_ID, this.textureReference));
+    public SpriteId getSpriteId(){
+        return new SpriteId(BLOCK_ATLAS_TEXTURE, Identifier.fromNamespaceAndPath(Main.MOD_ID, this.textureReference));
     }
-    public Material getParticleSpriteId(){
-        return new Material(BLOCK_ATLAS_TEXTURE, Identifier.fromNamespaceAndPath(Main.MOD_ID, this.textureReference + "_particles"));
+    public SpriteId getParticleSpriteId(){
+        return new SpriteId(BLOCK_ATLAS_TEXTURE, Identifier.fromNamespaceAndPath(Main.MOD_ID, this.textureReference + "_particles"));
     }
     @Environment(EnvType.CLIENT)
     public void initClient() {
         ResourceReloadListener.include(this.getTextureId());
         ResourceReloadListener.include(this.getParticleTextureId());
-        BlockRenderLayerMap.putBlock(this, ChunkSectionLayer.CUTOUT);
     }
 
     public TexturePosition getTexturePosition(Face face, Boolean alt){

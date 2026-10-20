@@ -3,27 +3,27 @@ package pw.rxj.iron_quarry.model;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
-import net.fabricmc.fabric.api.renderer.v1.Renderer;
-import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
-import net.fabricmc.fabric.api.renderer.v1.mesh.MutableMesh;
-import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
-import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.fabricmc.fabric.api.client.renderer.v1.Renderer;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.Mesh;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableMesh;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableQuadView;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelDebugName;
 import net.minecraft.client.resources.model.ResolvableModel;
-import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.client.resources.model.sprite.MaterialBaker;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.types.Face;
@@ -37,13 +37,13 @@ import java.util.function.Predicate;
 
 @Environment(EnvType.CLIENT)
 public class QuarryModel implements BlockStateModel {
-    private final TextureAtlasSprite PARTICLE_SPRITE;
-    private final TextureAtlasSprite QUARRY_SPRITE;
-    private final TextureAtlasSprite IO_SPRITE;
+    private final Material.Baked PARTICLE_SPRITE;
+    private final Material.Baked QUARRY_SPRITE;
+    private final Material.Baked IO_SPRITE;
 
     private final QuarryBlock quarryBlock;
 
-    private QuarryModel(QuarryBlock quarryBlock, TextureAtlasSprite particleSprite, TextureAtlasSprite quarrySprite, TextureAtlasSprite ioSprite) {
+    private QuarryModel(QuarryBlock quarryBlock, Material.Baked particleSprite, Material.Baked quarrySprite, Material.Baked ioSprite) {
         this.quarryBlock = quarryBlock;
 
         this.PARTICLE_SPRITE = particleSprite;
@@ -52,13 +52,16 @@ public class QuarryModel implements BlockStateModel {
     }
 
     public static QuarryModel bake(QuarryBlock quarryBlock, ModelBaker baker) {
-        SpriteGetter spriteGetter = baker.sprites();
+        MaterialBaker materialBaker = baker.materials();
         ModelDebugName modelSource = () -> BuiltInRegistries.BLOCK.getKey(quarryBlock).toString();
 
         return new QuarryModel(quarryBlock,
-                spriteGetter.get(quarryBlock.getParticleSpriteId(), modelSource),
-                spriteGetter.get(quarryBlock.getSpriteId(), modelSource),
-                spriteGetter.get(IoState.getSpriteId(), modelSource));
+                bakeSprite(materialBaker, quarryBlock.getParticleSpriteId(), modelSource),
+                bakeSprite(materialBaker, quarryBlock.getSpriteId(), modelSource),
+                bakeSprite(materialBaker, IoState.getSpriteId(), modelSource));
+    }
+    private static Material.Baked bakeSprite(MaterialBaker materialBaker, SpriteId spriteId, ModelDebugName modelSource) {
+        return materialBaker.get(new Material(spriteId.texture()), modelSource);
     }
 
     public static void register(ModelLoadingPlugin.Context pluginContext, QuarryBlock quarryBlock) {
@@ -70,7 +73,7 @@ public class QuarryModel implements BlockStateModel {
     }
 
     @Override
-    public void emitQuads(QuadEmitter emitter, BlockAndTintGetter blockView, BlockPos pos, BlockState state, RandomSource random, Predicate<@Nullable Direction> cullTest) {
+    public void emitQuads(QuadEmitter emitter, BlockAndTintGetter blockView, BlockPos pos, BlockState state, RandomSource random, Predicate<Direction> cullTest) {
         if(blockView.getBlockEntity(pos) instanceof QuarryBlockEntity blockEntity) {
             Mesh mesh = this.getMesh(state.getValue(QuarryBlock.FACING), blockEntity.Configuration);
             if(mesh != null) mesh.outputTo(emitter);
@@ -82,20 +85,25 @@ public class QuarryModel implements BlockStateModel {
 
         if(ZUtil.getBlockOrItem(stack) instanceof QuarryBlock quarryBlock) {
             Mesh mesh = this.getMesh(Direction.NORTH, quarryBlock.getMachineConfiguration(stack));
-            if(mesh != null) mesh.forEach(quad -> quads.add(quad.toBakedQuad(QUARRY_SPRITE)));
+            if(mesh != null) mesh.forEach(quad -> quads.add(quad.toBakedQuad(QUARRY_SPRITE.sprite())));
         }
 
         return quads;
     }
 
     @Override
-    public void collectParts(RandomSource random, List<BlockModelPart> parts) {
+    public void collectParts(RandomSource random, List<BlockStateModelPart> parts) {
 
     }
 
     @Override
-    public TextureAtlasSprite particleIcon() {
+    public Material.Baked particleMaterial() {
         return PARTICLE_SPRITE;
+    }
+
+    @Override
+    public int materialFlags() {
+        return 0;
     }
 
     private record Unbaked(QuarryBlock quarryBlock) implements BlockStateModel.Unbaked {
@@ -121,7 +129,7 @@ public class QuarryModel implements BlockStateModel {
 
             emitter.square(direction, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F);
             this.quarryBlock.getTexturePosition(face, isOpen).applySprite(emitter, 0, 256);
-            emitter.spriteBake(QUARRY_SPRITE, MutableQuadView.BAKE_NORMALIZED);
+            emitter.materialBake(QUARRY_SPRITE, MutableQuadView.BAKE_NORMALIZED);
             emitter.color(-1, -1, -1, -1);
             emitter.emit();
 
@@ -129,7 +137,7 @@ public class QuarryModel implements BlockStateModel {
 
             emitter.square(direction, 0.25F, 0.25F, 0.75F, 0.75F, 0.0F);
             IoState.getTexturePosition(configuration.getIoState(face)).applySprite(emitter, 0, 256);
-            emitter.spriteBake(IO_SPRITE, MutableQuadView.BAKE_NORMALIZED);
+            emitter.materialBake(IO_SPRITE, MutableQuadView.BAKE_NORMALIZED);
             emitter.color(-1, -1, -1, -1);
             emitter.emit();
         }

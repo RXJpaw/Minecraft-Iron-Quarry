@@ -7,7 +7,7 @@ public enum MarkerRenderMode {
     WORLD;
 
     public static MarkerRenderMode byTranslationKey(String translationKey) {
-        return Arrays.stream(values()).filter(mode -> mode.getTranslationKey().equals(translationKey)).findFirst().orElse(MarkerRenderMode.HUD);
+        return Arrays.stream(values()).filter(mode -> mode.getTranslationKey().equals(translationKey)).findFirst().orElse(MarkerRenderMode.WORLD);
     }
 
     public String getTranslationKey() {

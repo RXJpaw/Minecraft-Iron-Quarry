@@ -6,7 +6,7 @@ import pw.rxj.iron_quarry.Main;
 
 import java.util.List;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
@@ -41,12 +41,12 @@ public class TooltipInventoryComponent implements CustomTooltipComponent {
     }
 
     @Override
-    public void renderText(GuiGraphics context, Font textRenderer, int x, int y) {
+    public void extractText(GuiGraphicsExtractor context, Font textRenderer, int x, int y) {
 
     }
 
     @Override
-    public void renderImage(Font textRenderer, int x, int y, int width, int height, GuiGraphics context) {
+    public void extractImage(Font textRenderer, int x, int y, int width, int height, GuiGraphicsExtractor context) {
         for(int index = 0; index < this.disableableInventory.size(); ++index) {
             int slotX = x + index * 18;
             int slotY = y + 2;
@@ -57,13 +57,13 @@ public class TooltipInventoryComponent implements CustomTooltipComponent {
         }
     }
 
-    private void drawSlot(int x, int y, int index, Font textRenderer, GuiGraphics context) {
+    private void drawSlot(int x, int y, int index, Font textRenderer, GuiGraphicsExtractor context) {
         Pair<ItemStack, Boolean> slot = this.disableableInventory.get(index);
         ItemStack itemStack = slot.getA();
         Boolean disabled = slot.getB();
 
-        context.renderItem(itemStack, x + 1, y + 1, index);
-        context.renderItemDecorations(textRenderer, itemStack, x + 1, y + 1);
+        context.item(itemStack, x + 1, y + 1, index);
+        context.itemDecorations(textRenderer, itemStack, x + 1, y + 1);
 
         if(disabled) {
             context.fillGradient(x, y, x + 18, y + 18, 0xAA000000, 0xAA000000);

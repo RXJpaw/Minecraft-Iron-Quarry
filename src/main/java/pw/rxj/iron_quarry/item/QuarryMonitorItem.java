@@ -155,7 +155,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     }
 
     @Override
-    public ItemStack getCraftingOutput(ItemStack output, CraftingInput input, HolderLookup.Provider wrapperLookup) {
+    public ItemStack getCraftingOutput(ItemStack output, CraftingInput input) {
         return IHandledCrafting.copyCenterSlotComponents(output, input);
     }
 
@@ -173,7 +173,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
             this.setPosition(stack, world, targetedPos);
             Component positionText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
 
-            player.displayClientMessage(ReadableString.translatable("item.iron_quarry.quarry_monitor.overlay.pos_set", positionText), true);
+            player.sendOverlayMessage(ReadableString.translatable("item.iron_quarry.quarry_monitor.overlay.pos_set", positionText));
 
             return InteractionResult.SUCCESS;
         }
@@ -247,7 +247,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
         ChunkPos chunkPos = new ChunkPos(quarryPos.getX() >> 4, quarryPos.getZ() >> 4);
 
-        LevelChunk worldChunk = serverWorld.getChunkSource().getChunkNow(chunkPos.x, chunkPos.z);
+        LevelChunk worldChunk = serverWorld.getChunkSource().getChunkNow(chunkPos.x(), chunkPos.z());
         if(worldChunk == null) return null;
 
         Optional<QuarryBlockEntity> quarryBlockEntity = worldChunk.getBlockEntity(quarryPos, ZBlockEntities.QUARRY_BLOCK_ENTITY);

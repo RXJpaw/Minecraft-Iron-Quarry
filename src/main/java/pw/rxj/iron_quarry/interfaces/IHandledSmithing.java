@@ -5,7 +5,6 @@ import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 
 import java.util.Optional;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -20,7 +19,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.SmithingRecipeInput;
 
 public interface IHandledSmithing {
-    ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, HolderLookup.Provider registryLookup);
+    ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input);
 
     default ItemStack getSmithingOutputPreview(Optional<Ingredient> base, Optional<Ingredient> addition, @Nullable TagKey<Item> additionTag, ItemStack output) {
         return null;

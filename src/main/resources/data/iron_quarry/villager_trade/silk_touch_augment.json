@@ -1,0 +1,29 @@
+{
+    "fabric:load_conditions": [
+        {
+            "condition": "iron_quarry:silk_touch_trading_enabled"
+        }
+    ],
+    "wants": {
+        "id": "minecraft:emerald",
+        "count": {
+            "type": "minecraft:uniform",
+            "min": 40,
+            "max": 64
+        }
+    },
+    "additional_wants": {
+        "id": "iron_quarry:circuit_mk3",
+        "count": {
+            "type": "minecraft:uniform",
+            "min": 3,
+            "max": 7
+        }
+    },
+    "gives": {
+        "id": "iron_quarry:silk_touch_augment"
+    },
+    "max_uses": 3,
+    "xp": 50,
+    "reputation_discount": 0.25
+}

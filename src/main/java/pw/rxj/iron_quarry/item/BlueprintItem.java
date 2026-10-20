@@ -2,13 +2,12 @@ package pw.rxj.iron_quarry.item;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTabOutput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.HashedStack;
@@ -69,7 +68,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     }
 
     @Override
-    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, HolderLookup.Provider registryLookup) {
+    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input) {
         ItemStack output = handler.getResultStack();
         if(BlueprintItem.isNotOf(output)) return ItemStack.EMPTY;
         ItemStack base = input.getItem(1).copy();
@@ -332,7 +331,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         this.setSecondPos(stack, context.getLevel(), targetedPos);
         Component secondPosText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
 
-        player.displayClientMessage(ReadableString.translatable("item.iron_quarry.blueprint.overlay.second_pos_set", secondPosText), true);
+        player.sendOverlayMessage(ReadableString.translatable("item.iron_quarry.blueprint.overlay.second_pos_set", secondPosText));
 
         return InteractionResult.SUCCESS;
     }
@@ -373,7 +372,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
 
         Component firstPosText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
 
-        player.displayClientMessage(ReadableString.translatable("item.iron_quarry.blueprint.overlay.first_pos_set", firstPosText), true);
+        player.sendOverlayMessage(ReadableString.translatable("item.iron_quarry.blueprint.overlay.first_pos_set", firstPosText));
 
         return InteractionResult.SUCCESS;
     }
@@ -507,7 +506,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     }
 
     @Override
-    public void onModifyItemGroupEntry(FabricItemGroupEntries entries) {
+    public void onModifyItemGroupEntry(FabricCreativeModeTabOutput entries) {
         entries.accept(this);
 
         ItemStack stack = new ItemStack(this);

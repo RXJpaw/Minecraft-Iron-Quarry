@@ -3,7 +3,7 @@ package pw.rxj.iron_quarry.mixin;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix3x2fStack;
 import org.spongepowered.asm.mixin.Final;
@@ -18,8 +18,8 @@ import pw.rxj.iron_quarry.util.ZUtil;
 
 @Mixin(Gui.class)
 public abstract class InGameHudMixin {
-    @Inject(method = "renderCameraOverlays", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/DeltaTracker;getGameTimeDeltaTicks()F"))
-    public void renderMiscOverlays(GuiGraphics context, DeltaTracker tickCounter, CallbackInfo ci) {
+    @Inject(method = "extractCameraOverlays", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/DeltaTracker;getGameTimeDeltaTicks()F"))
+    public void renderMiscOverlays(GuiGraphicsExtractor context, DeltaTracker tickCounter, CallbackInfo ci) {
         float tickDelta = tickCounter.getGameTimeDeltaPartialTick(false);
         Matrix3x2fStack matrices = context.pose();
         matrices.pushMatrix();

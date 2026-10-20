@@ -1,9 +1,8 @@
 package pw.rxj.iron_quarry.item;
 
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTabOutput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -105,7 +104,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     @Override
     public Component getName(ItemStack stack) {
         Minecraft minecraftClient = Minecraft.getInstance();
-        if(minecraftClient.player == null) return getName();
+        if(minecraftClient.player == null) return super.getName(stack);
 
         String translationKey = "item.iron_quarry.augment";
 
@@ -200,7 +199,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
-    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input, HolderLookup.Provider registryLookup) {
+    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input) {
         ItemStack template = input.getItem(0).copy();
         if(DamageableSmithingTemplateItem.isNotOf(template)) return ItemStack.EMPTY;
 
@@ -439,7 +438,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
-    public void onModifyItemGroupEntry(FabricItemGroupEntries entries) {
+    public void onModifyItemGroupEntry(FabricCreativeModeTabOutput entries) {
         if (this.getUniqueType().isDisabled()) return;
 
         entries.accept(this);

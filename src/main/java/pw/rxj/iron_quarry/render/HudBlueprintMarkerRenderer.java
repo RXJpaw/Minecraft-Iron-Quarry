@@ -2,7 +2,7 @@ package pw.rxj.iron_quarry.render;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.phys.Vec2;
@@ -17,7 +17,7 @@ public class HudBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
         return RenderUtil.worldToScreen(worldPos, this.positionMatrix, this.projectionMatrix);
     }
 
-    public void render(GuiGraphics context, double tickDelta) {
+    public void render(GuiGraphicsExtractor context, double tickDelta) {
         Minecraft minecraftClient = Minecraft.getInstance();
         Font textRenderer = minecraftClient.font;
         Matrix3x2fStack matrices = context.pose();
@@ -56,7 +56,7 @@ public class HudBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
                 matrices.translate(1 + width / -2.0F, 0.0F);
 
                 context.fill(-2, -2, width + 1, height + 1, 1409286144);
-                context.drawString(textRenderer, text, 0, 0, new Color(1.0F, 1.0F, 1.0F, alpha).getRGB(), true);
+                context.text(textRenderer, text, 0, 0, new Color(1.0F, 1.0F, 1.0F, alpha).getRGB(), true);
 
                 matrices.popMatrix();
             }

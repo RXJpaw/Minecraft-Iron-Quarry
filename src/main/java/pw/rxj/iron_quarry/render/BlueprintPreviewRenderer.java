@@ -1,9 +1,12 @@
 package pw.rxj.iron_quarry.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +31,7 @@ public class BlueprintPreviewRenderer {
     private static final HudBlueprintMarkerRenderer HUD_MARKER_RENDERER = new HudBlueprintMarkerRenderer();
     private static final WorldBlueprintMarkerRenderer WORLD_MARKER_RENDERER = new WorldBlueprintMarkerRenderer();
 
-    private static void renderInWorld(WorldRenderCallback.Context context) {
+    private static void renderInWorld(LevelRenderContext context) {
         HUD_MARKER_RENDERER.clear();
         WORLD_MARKER_RENDERER.clear();
 
@@ -63,15 +66,16 @@ public class BlueprintPreviewRenderer {
         ResourceKey<Level> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack).orElse(null);
         if(!minecraftClient.level.dimension().equals(worldRegistryKey)) return;
 
-        Camera camera = context.camera();
-        PoseStack matrices = context.matrixStack();
+        CameraRenderState cameraRenderState = context.levelState().cameraRenderState;
+        Camera camera = minecraftClient.gameRenderer.getMainCamera();
+        PoseStack matrices = context.poseStack();
         if(matrices == null) return;
-        Matrix4f positionMatrix = context.positionMatrix();
-        Matrix4f projectionMatrix = context.projectionMatrix();
+        Matrix4f positionMatrix = cameraRenderState.viewRotationMatrix;
+        Matrix4f projectionMatrix = cameraRenderState.getDataOrDefault(RenderUtil.RenderStates.PROJECTION_MATRIX, cameraRenderState.projectionMatrix);
 
         BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack).orElse(null);
         BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack).orElse(null);
-        if(firstPos != null && secondPos != null) renderCuboid(context, minecraftClient, player, camera, matrices, firstPos, secondPos);
+        if(firstPos != null && secondPos != null) renderCuboid(minecraftClient, player, camera, matrices, firstPos, secondPos);
 
         BlueprintMarkerRenderer markerRenderer = switch (BLUEPRINT_PREVIEW_CONFIG.getMarkerRenderMode()) {
             case HUD -> HUD_MARKER_RENDERER;
@@ -81,8 +85,8 @@ public class BlueprintPreviewRenderer {
         markerRenderer.update(firstPos, secondPos, camera, positionMatrix, projectionMatrix);
     }
 
-    private static void renderCuboid(WorldRenderCallback.Context context, Minecraft minecraftClient, LocalPlayer player, Camera camera, PoseStack matrices, BlockPos firstPos, BlockPos secondPos) {
-        float tickDelta = context.tickCounter().getGameTimeDeltaPartialTick(false);
+    private static void renderCuboid(Minecraft minecraftClient, LocalPlayer player, Camera camera, PoseStack matrices, BlockPos firstPos, BlockPos secondPos) {
+        float tickDelta = minecraftClient.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         int viewDistance = Math.min(minecraftClient.options.getEffectiveRenderDistance() * 16 * 3, RenderUtil.MAX_VIEW_DISTANCE * 16 * 3);
 
         Vec3 lerpedPlayerPos = player.getPosition(tickDelta);
@@ -107,9 +111,9 @@ public class BlueprintPreviewRenderer {
     public static void register() {
         ResourceReloadListener.include(BlueprintMarkerRenderer.BLUEPRINT_POSITIONS_TEXTURE);
 
-        WorldRenderCallback.AFTER_TRANSLUCENT.register(BlueprintPreviewRenderer::renderInWorld);
+        LevelRenderEvents.END_MAIN.register(BlueprintPreviewRenderer::renderInWorld);
 
-        WorldRenderCallback.AFTER_TRANSLUCENT.register(WORLD_MARKER_RENDERER::render);
+        WorldRenderCallback.AFTER_LEVEL.register(WORLD_MARKER_RENDERER::render);
         InGameHudRenderCallback.START.register(HUD_MARKER_RENDERER::render);
     }
 }

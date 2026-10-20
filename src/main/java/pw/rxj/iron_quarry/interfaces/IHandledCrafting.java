@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.interfaces;
 
-import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -16,7 +15,7 @@ public interface IHandledCrafting {
         return output;
     }
 
-    ItemStack getCraftingOutput(ItemStack output, CraftingInput input, HolderLookup.Provider wrapperLookup);
+    ItemStack getCraftingOutput(ItemStack output, CraftingInput input);
 
     static ItemStack getCenterStack(CraftingInput input) {
         if(input.width() != 3 || input.height() != 3) return ItemStack.EMPTY;

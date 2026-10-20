@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.util;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -75,7 +75,7 @@ public class ChunkLoadingManager {
     public static void register() {
         if(initialized) return; initialized = true;
 
-        ServerTickEvents.START_WORLD_TICK.register(serverWorld -> {
+        ServerTickEvents.START_LEVEL_TICK.register(serverWorld -> {
             if(!LOADED_CHUNKS.isEmpty()) serverWorld.resetEmptyTime();
             Iterator<Ticket> iterator = LOADED_CHUNKS.iterator();
 
@@ -90,8 +90,8 @@ public class ChunkLoadingManager {
             }
         });
 
-        ServerWorldEvents.UNLOAD.register((server, serverWorld) -> LOADED_CHUNKS.clear());
-        ServerWorldEvents.LOAD.register((server, serverWorld) -> LOADED_CHUNKS.clear());
+        ServerLevelEvents.UNLOAD.register((server, serverWorld) -> LOADED_CHUNKS.clear());
+        ServerLevelEvents.LOAD.register((server, serverWorld) -> LOADED_CHUNKS.clear());
     }
 
     public static class Ticket {

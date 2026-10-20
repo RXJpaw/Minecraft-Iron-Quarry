@@ -7,8 +7,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.item.v1.EnchantmentEvents;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
+import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.util.TriState;
 import net.fabricmc.loader.api.FabricLoader;
@@ -36,7 +37,6 @@ import pw.rxj.iron_quarry.data.QuarryBlockScreenData;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.event.GameLifecycleCallback;
 import pw.rxj.iron_quarry.factory.ZLootTables;
-import pw.rxj.iron_quarry.factory.ZTradeOffers;
 import pw.rxj.iron_quarry.interfaces.IBlockAttackable;
 import pw.rxj.iron_quarry.interfaces.ICustomEnchantabilityProvider;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
@@ -45,6 +45,7 @@ import pw.rxj.iron_quarry.interfaces.ITickingInventoryItem;
 import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
+import pw.rxj.iron_quarry.resource.SilkTouchTradingCondition;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreenHandler;
 import pw.rxj.iron_quarry.util.ChunkLoadingManager;
@@ -71,7 +72,7 @@ public class Main implements ModInitializer {
 	);
 	public static final ConfigHandler CONFIG = ConfigHandler.bake(FabricLoader.getInstance().getConfigDir().resolve(MOD_ID));
 
-	public static final MenuType<QuarryBlockScreenHandler> QUARRY_BLOCK_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(QuarryBlockScreenHandler::new, QuarryBlockScreenData.PACKET_CODEC);
+	public static final MenuType<QuarryBlockScreenHandler> QUARRY_BLOCK_SCREEN_HANDLER = new ExtendedMenuType<>(QuarryBlockScreenHandler::new, QuarryBlockScreenData.PACKET_CODEC);
 
 	public static final ResourceKey<CreativeModeTab> ITEM_GROUP = ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(MOD_ID, "universal"));
 
@@ -88,8 +89,8 @@ public class Main implements ModInitializer {
 		ZBlocks.register();
 		ZItems.register();
 
-		GameLifecycleCallback.IMMINENT_FIRST_RELOAD.register(ZTradeOffers::register);
 		GameLifecycleCallback.IMMINENT_FIRST_RELOAD.register(ZLootTables::register);
+		ResourceConditions.register(SilkTouchTradingCondition.TYPE);
 
 		AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
 			if(ZUtil.getBlockOrItem(player.getItemInHand(hand)) instanceof IBlockAttackable itemStack) {
@@ -123,7 +124,7 @@ public class Main implements ModInitializer {
 			}
 		});
 
-		ServerTickEvents.START_WORLD_TICK.register(world -> {
+		ServerTickEvents.START_LEVEL_TICK.register(world -> {
 			for (ServerPlayer player : world.players()) {
 				Inventory inventory = player.getInventory();
 
@@ -144,7 +145,7 @@ public class Main implements ModInitializer {
 
 		Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "handled_smithing_recipe"), HandledSmithingRecipe.SERIALIZER);
 
-		Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, ITEM_GROUP, FabricItemGroup.builder()
+		Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, ITEM_GROUP, FabricCreativeModeTab.builder()
 				.title(Component.translatable("itemGroup.iron_quarry.universal"))
 				.icon(() -> ZBlocks.NETHERITE_QUARRY.getBlockItem().getDefaultInstance())
 				.build());

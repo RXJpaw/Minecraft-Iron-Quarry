@@ -4,7 +4,7 @@ import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.records.TexturePosition;
 
 import java.util.List;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 
 public enum IoState {
@@ -24,8 +24,8 @@ public enum IoState {
     }
     private static final Identifier BLOCK_ATLAS_TEXTURE = Identifier.withDefaultNamespace("textures/atlas/blocks.png");
 
-    public static Material getSpriteId(){
-        return new Material(BLOCK_ATLAS_TEXTURE, Identifier.fromNamespaceAndPath(Main.MOD_ID, "block/options_io"));
+    public static SpriteId getSpriteId(){
+        return new SpriteId(BLOCK_ATLAS_TEXTURE, Identifier.fromNamespaceAndPath(Main.MOD_ID, "block/options_io"));
     }
 
     private IoState(int id, String name) {

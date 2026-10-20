@@ -30,8 +30,8 @@ public abstract class ComplexPayloadHandler<T extends ComplexPayloadHandler<?>> 
     protected static <E extends CustomPacketPayload> CustomPacketPayload.Type<E> register(String path, StreamCodec<? super RegistryFriendlyByteBuf, E> packetCodec) {
         CustomPacketPayload.Type<E> packetId = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(Main.MOD_ID, path));
 
-        PayloadTypeRegistry.playS2C().register(packetId, packetCodec);
-        PayloadTypeRegistry.playC2S().register(packetId, packetCodec);
+        PayloadTypeRegistry.clientboundPlay().register(packetId, packetCodec);
+        PayloadTypeRegistry.serverboundPlay().register(packetId, packetCodec);
 
         return packetId;
     }
