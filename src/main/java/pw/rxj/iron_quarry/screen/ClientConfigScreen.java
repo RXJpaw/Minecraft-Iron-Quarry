@@ -8,13 +8,16 @@ import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.network.chat.Component;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.resource.config.client.BlockBreakingConfig;
+import pw.rxj.iron_quarry.resource.config.client.BlueprintPreviewConfig;
 import pw.rxj.iron_quarry.resource.config.client.QuarryMonitorOverlayConfig;
 import pw.rxj.iron_quarry.types.AbsAlignment;
+import pw.rxj.iron_quarry.types.MarkerRenderMode;
 import pw.rxj.iron_quarry.util.ComplexOption;
 
 public class ClientConfigScreen extends OptionsSubScreen {
     private static final BlockBreakingConfig.Handler BLOCK_BREAKING_CONFIG = Main.CONFIG.getBlockBreakingConfig();
     private static final QuarryMonitorOverlayConfig.Handler QUARRY_MONITOR_OVERLAY_CONFIG = Main.CONFIG.getQuarryMonitorOverlayConfig();
+    private static final BlueprintPreviewConfig.Handler BLUEPRINT_PREVIEW_CONFIG = Main.CONFIG.getBlueprintPreviewConfig();
 
     public static OptionInstance<Integer> BLOCK_BREAK_DISTANCE_OPTION = ComplexOption.sliderOptionFrom(
             "screen.iron_quarry.client_config.block_break_distance",
@@ -56,6 +59,13 @@ public class ClientConfigScreen extends OptionsSubScreen {
             QUARRY_MONITOR_OVERLAY_CONFIG.getY(),
             QUARRY_MONITOR_OVERLAY_CONFIG::setY
     );
+    public static OptionInstance<String> BLUEPRINT_MARKERS = ComplexOption.rotatingOptionFrom(
+            "screen.iron_quarry.client_config.blueprint_markers",
+            true,
+            MarkerRenderMode.class,
+            BLUEPRINT_PREVIEW_CONFIG.getOptionMarkerRenderMode(),
+            BLUEPRINT_PREVIEW_CONFIG::setOptionMarkerRenderMode
+    );
 
 
     public ClientConfigScreen(Screen parent) {
@@ -68,7 +78,7 @@ public class ClientConfigScreen extends OptionsSubScreen {
 
         this.list.addSmall(QUARRY_MONITOR_ALIGNMENT, BLOCK_BREAK_DISTANCE_OPTION,
                          QUARRY_MONITOR_X,         BLOCK_BREAK_VOLUME_OPTION,
-                         QUARRY_MONITOR_Y);
+                         QUARRY_MONITOR_Y,         BLUEPRINT_MARKERS);
     }
 
     @Override

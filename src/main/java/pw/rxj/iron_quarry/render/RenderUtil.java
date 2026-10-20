@@ -7,21 +7,30 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.joml.Vector4f;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import pw.rxj.iron_quarry.Main;
 
 public class RenderUtil {
@@ -39,6 +48,22 @@ public class RenderUtil {
         private static final RenderType VISIBLE_LINES = RenderType.create("iron_quarry_visible_lines", RenderSetup.builder(VISIBLE_LINES_PIPELINE).bufferSize(1536).createRenderSetup());
         private static final RenderType HIDDEN_LINES = RenderType.create("iron_quarry_hidden_lines", RenderSetup.builder(HIDDEN_LINES_PIPELINE).bufferSize(1536).createRenderSetup());
         private static final float LINE_WIDTH = 3.0F;
+    }
+
+    private static class Markers {
+        private static final RenderPipeline WORLD_MARKER_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+                .withLocation(Identifier.fromNamespaceAndPath(Main.MOD_ID, "pipeline/world_marker"))
+                .withDepthWrite(false)
+                .withCull(false)
+                .build());
+        private static final Map<Identifier, RenderType> WORLD_MARKERS = new HashMap<>();
+
+        private static RenderType of(Identifier texture) {
+            return WORLD_MARKERS.computeIfAbsent(texture, id -> RenderType.create("iron_quarry_world_marker", RenderSetup.builder(WORLD_MARKER_PIPELINE)
+                    .withTexture("Sampler0", id, () -> RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST))
+                    .bufferSize(256)
+                    .createRenderSetup()));
+        }
     }
 
     public static void runScissored(GuiGraphics context, int x, int y, int width, int height, Runnable runnable) {
@@ -81,6 +106,30 @@ public class RenderUtil {
 
         float screenX = (float) window.getWidth() / window.getGuiScale() * (0.5F + relativeWorldPos.x * 0.5F);
         float screenY = (float) window.getHeight() / window.getGuiScale() * (0.5F - relativeWorldPos.y * 0.5F);
+
+        return ScreenPos.from(screenX, screenY, depth);
+    }
+
+    public static ScreenPos cameraToScreen(Vec3 worldPos, Camera camera, Matrix4f projectionMatrix) {
+        Minecraft minecraftClient = Minecraft.getInstance();
+        Window window = minecraftClient.getWindow();
+
+        Vec3 relativeWorldPos = worldPos.subtract(camera.position());
+        Vector3fc forward = camera.forwardVector();
+        Vector3fc left = camera.leftVector();
+        Vector3fc up = camera.upVector();
+
+        float depth = (float) (relativeWorldPos.x * forward.x() + relativeWorldPos.y * forward.y() + relativeWorldPos.z * forward.z());
+        float x = (float) -(relativeWorldPos.x * left.x() + relativeWorldPos.y * left.y() + relativeWorldPos.z * left.z());
+        float y = (float) (relativeWorldPos.x * up.x() + relativeWorldPos.y * up.y() + relativeWorldPos.z * up.z());
+
+        if (depth != 0) {
+            x /= depth;
+            y /= depth;
+        }
+
+        float screenX = (float) window.getWidth() / window.getGuiScale() * (0.5F + x * projectionMatrix.m00() * 0.5F);
+        float screenY = (float) window.getHeight() / window.getGuiScale() * (0.5F - y * projectionMatrix.m11() * 0.5F);
 
         return ScreenPos.from(screenX, screenY, depth);
     }
@@ -129,5 +178,38 @@ public class RenderUtil {
 
         MeshData builtBuffer = buffer.build();
         if(builtBuffer != null) renderLayer.draw(builtBuffer);
+    }
+
+    public static void drawWorldTexture(PoseStack matrices, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color) {
+        RenderType renderLayer = Markers.of(texture);
+        Matrix4f positionMatrix = matrices.last().pose();
+
+        float minU = u / textureWidth;
+        float maxU = (u + width) / textureWidth;
+        float minV = v / textureHeight;
+        float maxV = (v + height) / textureHeight;
+
+        BufferBuilder buffer = Tesselator.getInstance().begin(renderLayer.mode(), renderLayer.format());
+
+        buffer.addVertex(positionMatrix, x, y, 0.0F).setUv(minU, minV).setColor(color);
+        buffer.addVertex(positionMatrix, x, y + height, 0.0F).setUv(minU, maxV).setColor(color);
+        buffer.addVertex(positionMatrix, x + width, y + height, 0.0F).setUv(maxU, maxV).setColor(color);
+        buffer.addVertex(positionMatrix, x + width, y, 0.0F).setUv(maxU, minV).setColor(color);
+
+        MeshData builtBuffer = buffer.build();
+        if(builtBuffer != null) renderLayer.draw(builtBuffer);
+    }
+
+    public static void fillWorld(PoseStack matrices, MultiBufferSource.BufferSource bufferSource, int x1, int y1, int x2, int y2, int color) {
+        RenderType renderLayer = RenderTypes.textBackgroundSeeThrough();
+        Matrix4f positionMatrix = matrices.last().pose();
+        VertexConsumer buffer = bufferSource.getBuffer(renderLayer);
+
+        buffer.addVertex(positionMatrix, x1, y1, 0.0F).setColor(color).setLight(LightTexture.FULL_BRIGHT);
+        buffer.addVertex(positionMatrix, x1, y2, 0.0F).setColor(color).setLight(LightTexture.FULL_BRIGHT);
+        buffer.addVertex(positionMatrix, x2, y2, 0.0F).setColor(color).setLight(LightTexture.FULL_BRIGHT);
+        buffer.addVertex(positionMatrix, x2, y1, 0.0F).setColor(color).setLight(LightTexture.FULL_BRIGHT);
+
+        bufferSource.endBatch(renderLayer);
     }
 }

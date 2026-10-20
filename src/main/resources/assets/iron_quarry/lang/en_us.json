@@ -147,6 +147,10 @@
     "screen.iron_quarry.client_config.quarry_monitor_x.tooltip": "Relative horizontal position to the overlay anchor set above.",
     "screen.iron_quarry.client_config.quarry_monitor_y": "Y offset: %spx",
     "screen.iron_quarry.client_config.quarry_monitor_y.tooltip": "Relative vertical position to the overlay anchor set above.",
+    "screen.iron_quarry.client_config.blueprint_markers": "Blueprint Markers",
+    "screen.iron_quarry.client_config.blueprint_markers.tooltip": "Whether the blueprint position markers are drawn onto the HUD or into the world.",
+    "screen.iron_quarry.client_config.blueprint_markers.hud": "HUD",
+    "screen.iron_quarry.client_config.blueprint_markers.world": "World",
 
     "short_key.mouse.c.0": "LMB",
     "short_key.mouse.c.1": "RMB",
