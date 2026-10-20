@@ -40,8 +40,8 @@ public class ScreenPos {
         Minecraft minecraftClient = Minecraft.getInstance();
         Window window = minecraftClient.getWindow();
 
-        float x = window.getGuiScaledWidth() / 2.0F;
-        float y = window.getGuiScaledHeight() / 2.0F;
+        float x = (float) window.getWidth() / window.getGuiScale() / 2.0F;
+        float y = (float) window.getHeight() / window.getGuiScale() / 2.0F;
 
         return this.distanceTo(ScreenPos.from(x, y, 1.0F));
     }

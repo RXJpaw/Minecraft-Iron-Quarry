@@ -79,8 +79,8 @@ public class RenderUtil {
         float depth = relativeWorldPos.w;
         if (depth != 0) relativeWorldPos.div(depth);
 
-        float screenX = window.getGuiScaledWidth() * (0.5F + relativeWorldPos.x * 0.5F);
-        float screenY = window.getGuiScaledHeight() * (0.5F - relativeWorldPos.y * 0.5F);
+        float screenX = (float) window.getWidth() / window.getGuiScale() * (0.5F + relativeWorldPos.x * 0.5F);
+        float screenY = (float) window.getHeight() / window.getGuiScale() * (0.5F - relativeWorldPos.y * 0.5F);
 
         return ScreenPos.from(screenX, screenY, depth);
     }
