@@ -21,12 +21,12 @@ public class StringByteByteBlockHitResultPacket extends ComplexPayloadHandler<St
         this.string = buf.readUtf();
         this.byte0 = buf.readByte();
         this.byte1 = buf.readByte();
-        this.hitResult = buf.readBlockHitResult();
+        this.hitResult = BlockHitResult.STREAM_CODEC.decode(buf);
     }
     public void write(RegistryFriendlyByteBuf buf) {
         buf.writeUtf(string);
         buf.writeByte(byte0);
         buf.writeByte(byte1);
-        buf.writeBlockHitResult(hitResult);
+        BlockHitResult.STREAM_CODEC.encode(buf, hitResult);
     }
 }

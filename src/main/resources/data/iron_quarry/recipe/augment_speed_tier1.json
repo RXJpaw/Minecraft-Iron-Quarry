@@ -1,4 +1,10 @@
 {
+    "fabric:load_conditions": [
+        {
+            "condition": "iron_quarry:augment_enabled",
+            "augment": "speed"
+        }
+    ],
     "type": "iron_quarry:handled_smithing_recipe",
     "template": "iron_quarry:augmenting_template",
     "base": "iron_quarry:augment",

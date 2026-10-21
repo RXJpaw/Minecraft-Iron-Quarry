@@ -70,7 +70,7 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
             }
         }
 
-        minecraftClient.gameRenderer.featureRenderDispatcher().renderAllFeatures(this.submitNodeStorage);
+        RenderUtil.renderSubmits(minecraftClient.gameRenderer.featureRenderDispatcher(), this.submitNodeStorage, cameraRenderState.viewRotationMatrix, "Iron Quarry world blueprint markers");
     }
 
     private PoseStack createMarkerMatrices(ScreenPosData screenPosData, CameraRenderState cameraRenderState) {
@@ -83,9 +83,8 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
         float pixelSize = (float) (window.getGuiScale() * 2.0 * clampedDepth / (window.getHeight() * this.projectionMatrix.m11()));
 
         PoseStack matrices = new PoseStack();
-        matrices.mulPose(cameraRenderState.viewRotationMatrix);
         matrices.translate(markerPos.x, markerPos.y, markerPos.z);
-        matrices.mulPose(this.camera.rotation());
+        matrices.rotate(this.camera.rotation());
         matrices.scale(pixelSize, -pixelSize, pixelSize);
 
         return matrices;

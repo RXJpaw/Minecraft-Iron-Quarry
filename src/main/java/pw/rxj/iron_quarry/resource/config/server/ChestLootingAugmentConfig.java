@@ -6,7 +6,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
@@ -72,7 +73,7 @@ public class ChestLootingAugmentConfig {
             Entry entry = optionalEntry.get();
 
             return LootPool.lootPool()
-                    .setRolls(UniformGenerator.between(entry.rollsMin, entry.rollsMax))
+                    .setRolls(ContextIntProviders.fromFloat(ContextFloatProviders.round(ContextFloatProviders.between(entry.rollsMin, entry.rollsMax))))
                     .when(LootItemRandomChanceCondition.randomChance(entry.chance))
                     .add(LootItem.lootTableItem(ZItems.CHEST_LOOTING_AUGMENT));
         }

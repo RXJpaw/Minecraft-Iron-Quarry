@@ -6,6 +6,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.ItemQuads;
 import net.minecraft.client.renderer.item.CuboidItemModelWrapper;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -56,7 +57,7 @@ public class QuarryItemModel implements ItemModel {
         layer.setLocalTransform(this.transformation);
         this.settings.applyToLayer(layer, displayContext);
         List<BakedQuad> quads = this.model.getItemQuads(stack);
-        layer.prepareQuadList().addAll(quads);
+        layer.setQuads(ItemQuads.split(quads));
         layer.setExtents(() -> CuboidItemModelWrapper.computeExtents(quads));
     }
 

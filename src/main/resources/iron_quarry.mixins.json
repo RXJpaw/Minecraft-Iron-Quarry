@@ -9,7 +9,7 @@
         "GrindstoneInsertionMixin",
         "GrindstoneScreenHandlerMixin",
         "HandledShapedRecipeMixin",
-        "RecipeManagerMixin",
+        "ReloadableServerResourcesMixin",
         "SmithingScreenHandlerMixin"
     ],
     "client": [
@@ -22,7 +22,8 @@
         "TooltipComponentMixin",
         "TooltipDataMixin",
         "TooltipRenderMixin",
-        "GameRendererMixin"
+        "GameRendererMixin",
+        "LevelRendererMixin"
     ],
     "injectors": {
         "defaultRequire": 1

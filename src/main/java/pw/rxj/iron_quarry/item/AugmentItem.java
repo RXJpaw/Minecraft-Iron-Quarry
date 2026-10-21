@@ -317,7 +317,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     public void handleItemEntity(ItemEntity itemEntity) {
         if(itemEntity == null) return;
 
-        itemEntity.setInvulnerable(true);
+        itemEntity.setPermanentlyInvulnerable(true);
     }
 
     public boolean canInsert(@NotNull ItemStack stack, AugmentStack augmentStack) {

@@ -1,28 +1,35 @@
 package pw.rxj.iron_quarry.render;
 
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
@@ -31,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalDouble;
 import pw.rxj.iron_quarry.Main;
 
 public class RenderUtil {
@@ -39,10 +48,12 @@ public class RenderUtil {
     private static class Lines {
         private static final RenderPipeline VISIBLE_LINES_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(Main.MOD_ID, "pipeline/visible_lines"))
+                .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
                 .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN, true))
                 .build());
         private static final RenderPipeline HIDDEN_LINES_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(Main.MOD_ID, "pipeline/hidden_lines"))
+                .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
                 .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN, false))
                 .build());
         private static final RenderType VISIBLE_LINES = RenderType.create("iron_quarry_visible_lines", RenderSetup.builder(VISIBLE_LINES_PIPELINE).createRenderSetup());
@@ -56,6 +67,11 @@ public class RenderUtil {
                 .withLocation(Identifier.fromNamespaceAndPath(Main.MOD_ID, "pipeline/world_marker"))
                 .withCull(false)
                 .build());
+        private static final RenderPipeline WORLD_FILL_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+                .withLocation(Identifier.fromNamespaceAndPath(Main.MOD_ID, "pipeline/world_fill"))
+                .withCull(false)
+                .build());
+        private static final RenderType WORLD_FILL = RenderType.create("iron_quarry_world_fill", RenderSetup.builder(WORLD_FILL_PIPELINE).createRenderSetup());
         private static final Map<Identifier, RenderType> WORLD_MARKERS = new HashMap<>();
 
         private static RenderType of(Identifier texture) {
@@ -67,6 +83,41 @@ public class RenderUtil {
 
     public static class RenderStates {
         public static final RenderStateDataKey<Matrix4f> PROJECTION_MATRIX = RenderStateDataKey.create(() -> Main.MOD_ID + ":projection_matrix");
+    }
+
+    public static void renderSubmits(FeatureRenderDispatcher featureRenderDispatcher, SubmitNodeStorage submitNodeStorage, Matrix4fc modelViewMatrix, String label) {
+        Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
+
+        modelViewStack.pushMatrix();
+        modelViewStack.mul(modelViewMatrix);
+
+        try(FeatureRenderDispatcher.PreparedFrame preparedFrame = featureRenderDispatcher.prepareFrame(submitNodeStorage)) {
+            renderPreparedFrame(preparedFrame, null, null, label);
+        } finally {
+            modelViewStack.popMatrix();
+        }
+    }
+    public static void renderPreparedFrame(FeatureRenderDispatcher.PreparedFrame preparedFrame, @Nullable RenderPass renderPass, @Nullable GpuBufferSlice fog, String label) {
+        if(preparedFrame.isEmpty()) return;
+
+        GpuBufferSlice shaderFog = RenderSystem.getShaderFog();
+        if(fog != null) RenderSystem.setShaderFog(fog);
+
+        try {
+            if(renderPass != null) {
+                FeatureRenderDispatcher.renderAllFeatures(renderPass, preparedFrame);
+                return;
+            }
+
+            RenderTarget renderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
+
+            try(RenderPass ownRenderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> label, renderTarget.getColorTextureView(), Optional.empty(), renderTarget.getDepthTextureView(), OptionalDouble.empty())) {
+                RenderSystem.bindDefaultUniforms(ownRenderPass);
+                FeatureRenderDispatcher.renderAllFeatures(ownRenderPass, preparedFrame);
+            }
+        } finally {
+            RenderSystem.setShaderFog(shaderFog);
+        }
     }
 
     public static void runScissored(GuiGraphicsExtractor context, int x, int y, int width, int height, Runnable runnable) {
@@ -214,13 +265,13 @@ public class RenderUtil {
     }
 
     public static void fillWorld(OrderedSubmitNodeCollector submitNodeCollector, PoseStack matrices, int x1, int y1, int x2, int y2, int color) {
-        submitNodeCollector.submitCustomGeometry(matrices, RenderTypes.textBackgroundSeeThrough(), (entry, buffer) -> {
+        submitNodeCollector.submitCustomGeometry(matrices, Markers.WORLD_FILL, (entry, buffer) -> {
             Matrix4f positionMatrix = entry.pose();
 
-            buffer.addVertex(positionMatrix, x1, y1, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
-            buffer.addVertex(positionMatrix, x1, y2, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
-            buffer.addVertex(positionMatrix, x2, y2, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
-            buffer.addVertex(positionMatrix, x2, y1, 0.0F).setColor(color).setLight(LightCoordsUtil.FULL_BRIGHT);
+            buffer.addVertex(positionMatrix, x1, y1, 0.0F).setColor(color);
+            buffer.addVertex(positionMatrix, x1, y2, 0.0F).setColor(color);
+            buffer.addVertex(positionMatrix, x2, y2, 0.0F).setColor(color);
+            buffer.addVertex(positionMatrix, x2, y1, 0.0F).setColor(color);
         });
     }
 }

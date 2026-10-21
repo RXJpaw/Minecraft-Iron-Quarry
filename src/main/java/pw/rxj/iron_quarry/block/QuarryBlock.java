@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.block;
 
-import com.mojang.serialization.MapCodec;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -10,6 +9,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -280,7 +281,9 @@ public class QuarryBlock extends BaseEntityBlock implements IHandledCrafting, IE
 
             if(!player.isCreative()) {
                 stack.mineBlock(world, blockState, blockPos, player);
-                this.playerDestroy(world, player, blockPos, blockState, blockEntity, stack.copy());
+                if(world instanceof ServerLevel serverWorld && player instanceof ServerPlayer serverPlayer) {
+                    this.playerDestroy(serverWorld, serverPlayer, blockPos, blockState, blockEntity, stack.copy());
+                }
             }
         }
     }
@@ -416,11 +419,6 @@ public class QuarryBlock extends BaseEntityBlock implements IHandledCrafting, IE
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new QuarryBlockEntity(pos, state);
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        throw new UnsupportedOperationException();
     }
 
     @Override

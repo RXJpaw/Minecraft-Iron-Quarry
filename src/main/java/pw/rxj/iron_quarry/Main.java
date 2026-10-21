@@ -45,6 +45,7 @@ import pw.rxj.iron_quarry.interfaces.ITickingInventoryItem;
 import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
+import pw.rxj.iron_quarry.resource.AugmentEnabledCondition;
 import pw.rxj.iron_quarry.resource.SilkTouchTradingCondition;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreenHandler;
@@ -91,6 +92,7 @@ public class Main implements ModInitializer {
 
 		GameLifecycleCallback.IMMINENT_FIRST_RELOAD.register(ZLootTables::register);
 		ResourceConditions.register(SilkTouchTradingCondition.TYPE);
+		ResourceConditions.register(AugmentEnabledCondition.TYPE);
 
 		AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
 			if(ZUtil.getBlockOrItem(player.getItemInHand(hand)) instanceof IBlockAttackable itemStack) {

@@ -113,7 +113,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
 
     @Override
     public void handleItemEntity(ItemEntity itemEntity) {
-        if(this.isSealed(itemEntity.getItem())) itemEntity.setInvulnerable(true);
+        if(this.isSealed(itemEntity.getItem())) itemEntity.setPermanentlyInvulnerable(true);
     }
 
     @Override
@@ -322,7 +322,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         if(player == null) return InteractionResult.FAIL;
 
         if(!context.getHand().equals(InteractionHand.MAIN_HAND)) return InteractionResult.PASS;
-        if(player.isCreative() && Minecraft.getInstance().options.keyShift.isDown()) return InteractionResult.PASS;
+        if(player.isCreative() && player.isSecondaryUseActive()) return InteractionResult.PASS;
 
         ItemStack stack = context.getItemInHand();
         if(this.isSealed(stack)) return InteractionResult.FAIL;

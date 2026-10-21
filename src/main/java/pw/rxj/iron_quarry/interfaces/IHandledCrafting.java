@@ -18,7 +18,7 @@ public interface IHandledCrafting {
     ItemStack getCraftingOutput(ItemStack output, CraftingInput input);
 
     static ItemStack getCenterStack(CraftingInput input) {
-        if(input.width() != 3 || input.height() != 3) return ItemStack.EMPTY;
+        if(input == null || input.width() != 3 || input.height() != 3) return ItemStack.EMPTY;
 
         return input.getItem(1, 1);
     }

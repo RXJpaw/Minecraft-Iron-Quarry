@@ -1,18 +1,23 @@
 package pw.rxj.iron_quarry.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.RenderBuffers;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
@@ -31,8 +36,33 @@ public class BlueprintPreviewRenderer {
     private static final BlueprintPreviewConfig.Handler BLUEPRINT_PREVIEW_CONFIG = Main.CONFIG.getBlueprintPreviewConfig();
     private static final HudBlueprintMarkerRenderer HUD_MARKER_RENDERER = new HudBlueprintMarkerRenderer();
     private static final WorldBlueprintMarkerRenderer WORLD_MARKER_RENDERER = new WorldBlueprintMarkerRenderer();
+    private static final SubmitNodeStorage SUBMIT_NODE_STORAGE = new SubmitNodeStorage();
+
+    private static RenderBuffers renderBuffers;
+    private static FeatureRenderDispatcher featureRenderDispatcher;
+    private static FeatureRenderDispatcher.PreparedFrame preparedFrame;
+
+    private static FeatureRenderDispatcher getFeatureRenderDispatcher() {
+        if(featureRenderDispatcher == null) {
+            Minecraft minecraftClient = Minecraft.getInstance();
+
+            renderBuffers = new RenderBuffers(1);
+            featureRenderDispatcher = new FeatureRenderDispatcher(renderBuffers, minecraftClient.getModelManager(), minecraftClient.getAtlasManager(), minecraftClient.font, minecraftClient.gameRenderer.gameRenderState());
+        }
+
+        return featureRenderDispatcher;
+    }
+
+    private static void closePreparedFrame() {
+        if(preparedFrame == null) return;
+
+        preparedFrame.close();
+        preparedFrame = null;
+        renderBuffers.endFrame();
+    }
 
     private static void renderInWorld(LevelRenderContext context) {
+        closePreparedFrame();
         HUD_MARKER_RENDERER.clear();
         WORLD_MARKER_RENDERER.clear();
 
@@ -69,14 +99,12 @@ public class BlueprintPreviewRenderer {
 
         CameraRenderState cameraRenderState = context.levelState().cameraRenderState;
         Camera camera = minecraftClient.gameRenderer.mainCamera();
-        PoseStack matrices = context.poseStack();
-        if(matrices == null) return;
         Matrix4f positionMatrix = cameraRenderState.viewRotationMatrix;
         Matrix4f projectionMatrix = cameraRenderState.getDataOrDefault(RenderUtil.RenderStates.PROJECTION_MATRIX, cameraRenderState.projectionMatrix);
 
         BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack).orElse(null);
         BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack).orElse(null);
-        if(firstPos != null && secondPos != null) renderCuboid(minecraftClient, player, camera, context.submitNodeCollector(), matrices, firstPos, secondPos);
+        if(firstPos != null && secondPos != null) renderCuboid(minecraftClient, player, camera, firstPos, secondPos);
 
         BlueprintMarkerRenderer markerRenderer = switch (BLUEPRINT_PREVIEW_CONFIG.getMarkerRenderMode()) {
             case HUD -> HUD_MARKER_RENDERER;
@@ -86,7 +114,7 @@ public class BlueprintPreviewRenderer {
         markerRenderer.update(firstPos, secondPos, camera, positionMatrix, projectionMatrix);
     }
 
-    private static void renderCuboid(Minecraft minecraftClient, LocalPlayer player, Camera camera, SubmitNodeCollector submitNodeCollector, PoseStack matrices, BlockPos firstPos, BlockPos secondPos) {
+    private static void renderCuboid(Minecraft minecraftClient, LocalPlayer player, Camera camera, BlockPos firstPos, BlockPos secondPos) {
         float tickDelta = minecraftClient.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         int viewDistance = Math.min(minecraftClient.options.getEffectiveRenderDistance() * 16 * 3, RenderUtil.MAX_VIEW_DISTANCE * 16 * 3);
 
@@ -97,6 +125,7 @@ public class BlueprintPreviewRenderer {
         Cuboid limitedCuboid = originalCuboid.limitInside(viewDistanceCuboid);
         if(limitedCuboid.isFlat()) return;
 
+        PoseStack matrices = new PoseStack();
         matrices.pushPose();
 
         Vec3 playerToCameraPos = lerpedPlayerPos.subtract(camera.position());
@@ -104,15 +133,27 @@ public class BlueprintPreviewRenderer {
 
         // WorldRenderEvents.END doesn't call this when the world border is rendered.
         // Resulting in color, transparency and brightness being way off.
-        RenderUtil.drawZBufferedCuboid(submitNodeCollector, limitedCuboid.inflate(0.02), matrices, camera.forwardVector(), viewDistance, 0.976F, 0.718F, 0.192F, 0.667F);
+        RenderUtil.drawZBufferedCuboid(SUBMIT_NODE_STORAGE, limitedCuboid.inflate(0.02), matrices, camera.forwardVector(), viewDistance, 0.976F, 0.718F, 0.192F, 0.667F);
 
         matrices.popPose();
+
+        preparedFrame = getFeatureRenderDispatcher().prepareFrame(SUBMIT_NODE_STORAGE);
+    }
+
+    private static void renderBeforeClouds(@Nullable RenderPass renderPass) {
+        if(preparedFrame == null) return;
+
+        Minecraft minecraftClient = Minecraft.getInstance();
+
+        RenderUtil.renderPreparedFrame(preparedFrame, renderPass, minecraftClient.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE), "Iron Quarry blueprint preview");
     }
 
     public static void register() {
         ResourceReloadListener.include(BlueprintMarkerRenderer.BLUEPRINT_POSITIONS_TEXTURE);
 
         LevelRenderEvents.COLLECT_SUBMITS.register(BlueprintPreviewRenderer::renderInWorld);
+        WorldRenderCallback.BEFORE_CLOUDS.register(BlueprintPreviewRenderer::renderBeforeClouds);
+        LevelRenderEvents.END_MAIN.register(context -> closePreparedFrame());
 
         WorldRenderCallback.AFTER_LEVEL.register(WORLD_MARKER_RENDERER::render);
         InGameHudRenderCallback.START.register(HUD_MARKER_RENDERER::render);
