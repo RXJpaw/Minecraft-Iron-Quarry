@@ -6,6 +6,8 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screens.MenuScreens;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.block.ZBlocks;
+import pw.rxj.iron_quarry.compat.Compat;
+import pw.rxj.iron_quarry.compat.iris.IrisClient;
 import pw.rxj.iron_quarry.model.ZModels;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.render.BlueprintPreviewRenderer;
@@ -25,6 +27,7 @@ public class Client implements ClientModInitializer {
         ResourceReloadListener.include(IoState.getTextureId());
 
         BlueprintPreviewRenderer.register();
+        if(Compat.IRIS_LOADED) IrisClient.register();
         QuarryMonitorOverlayRenderer.register();
         ResourceReloadListener.register();
         ZModels.register();

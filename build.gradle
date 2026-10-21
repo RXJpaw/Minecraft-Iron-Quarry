@@ -10,6 +10,7 @@ repositories {
 	maven { url 'https://maven.shedaniel.me/' }
 	maven { url 'https://maven.nucleoid.xyz/' }
 	maven { url 'https://maven.terraformersmc.com/' }
+	maven { url 'https://api.modrinth.com/maven' }
 }
 
 loom {
@@ -35,6 +36,7 @@ dependencies {
 	api("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
 	api("dev.architectury:architectury-fabric:${project.architectury_version}")
 	compileOnly("me.shedaniel.cloth:basic-math:0.6.1")
+	compileOnly("maven.modrinth:iris:${project.iris_version}")
 
 	compileOnly 'org.projectlombok:lombok:1.18.48'
 	annotationProcessor 'org.projectlombok:lombok:1.18.48'

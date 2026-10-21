@@ -85,6 +85,10 @@ public class RenderUtil {
         public static final RenderStateDataKey<Matrix4f> PROJECTION_MATRIX = RenderStateDataKey.create(() -> Main.MOD_ID + ":projection_matrix");
     }
 
+    public static List<RenderPipeline> getLinePipelines() {
+        return List.of(Lines.VISIBLE_LINES_PIPELINE, Lines.HIDDEN_LINES_PIPELINE);
+    }
+
     public static void renderSubmits(FeatureRenderDispatcher featureRenderDispatcher, SubmitNodeStorage submitNodeStorage, Matrix4fc modelViewMatrix, String label) {
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
 
