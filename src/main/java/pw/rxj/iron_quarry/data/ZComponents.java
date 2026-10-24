@@ -16,7 +16,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 
 public class ZComponents {
@@ -58,9 +58,9 @@ public class ZComponents {
     public static DataComponentType<BlockPos> QUARRY_MONITOR_POSITION = register("quarry_monitor_position", (builder) -> builder
             .persistent(BlockPos.CODEC)
             .networkSynchronized(BlockPos.STREAM_CODEC));
-    public static DataComponentType<ItemStack> QUARRY_MONITOR_CACHED_QUARRY = register("quarry_monitor_cached_quarry", (builder) -> builder
-            .persistent(ItemStack.CODEC)
-            .networkSynchronized(ItemStack.STREAM_CODEC));
+    public static DataComponentType<ItemStackTemplate> QUARRY_MONITOR_CACHED_QUARRY = register("quarry_monitor_cached_quarry", (builder) -> builder
+            .persistent(ItemStackTemplate.CODEC)
+            .networkSynchronized(ItemStackTemplate.STREAM_CODEC));
     public static DataComponentType<Long> QUARRY_MONITOR_CACHED_TIMESTAMP = register("quarry_monitor_cached_timestamp", (builder) -> builder
             .persistent(Codec.LONG)
             .networkSynchronized(ByteBufCodecs.VAR_LONG));

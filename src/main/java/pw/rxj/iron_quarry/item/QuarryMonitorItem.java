@@ -14,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
@@ -255,12 +256,14 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         ItemStack itemStack = new ItemStack(quarryBlock);
         itemStack.applyComponents(blockEntity.collectComponents());
 
-        stack.set(ZComponents.QUARRY_MONITOR_CACHED_QUARRY, itemStack);
+        stack.set(ZComponents.QUARRY_MONITOR_CACHED_QUARRY, ItemStackTemplate.fromNonEmptyStack(itemStack));
         stack.set(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, System.currentTimeMillis());
     }
 
     private @NotNull ItemStack getCachedQuarryStack(ItemStack stack) {
-        return stack.getOrDefault(ZComponents.QUARRY_MONITOR_CACHED_QUARRY, ItemStack.EMPTY);
+        ItemStackTemplate quarryTemplate = stack.get(ZComponents.QUARRY_MONITOR_CACHED_QUARRY);
+
+        return quarryTemplate == null ? ItemStack.EMPTY : quarryTemplate.create();
     }
     public boolean exists(ItemStack stack) {
         ItemStack quarryStack = this.getCachedQuarryStack(stack);
