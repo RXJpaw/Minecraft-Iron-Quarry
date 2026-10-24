@@ -12,7 +12,6 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -30,7 +29,6 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.joml.Vector4f;
 
 import java.util.HashMap;
 import java.util.List;
@@ -69,10 +67,6 @@ public class RenderUtil {
         }
     }
 
-    public static class RenderStates {
-        public static final RenderStateDataKey<Matrix4f> PROJECTION_MATRIX = RenderStateDataKey.create(() -> Main.MOD_ID + ":projection_matrix");
-    }
-
     public static List<RenderPipeline> getLinePipelines() {
         return List.of(Lines.VISIBLE_LINES_PIPELINE, Lines.HIDDEN_LINES_PIPELINE);
     }
@@ -100,25 +94,6 @@ public class RenderUtil {
 
     public static Vec3 vec3dFrom(BlockPos blockPos) {
         return new Vec3(blockPos.getX(), blockPos.getY(), blockPos.getZ()).add(0.5, 0.5, 0.5);
-    }
-
-    public static ScreenPos worldToScreen(Vec3 worldPos, Matrix4f positionMatrix, Matrix4f projectionMatrix) {
-        Minecraft minecraftClient = Minecraft.getInstance();
-        Camera camera = minecraftClient.gameRenderer.getMainCamera();
-        Window window = minecraftClient.getWindow();
-
-        Vector4f relativeWorldPos = new Vector4f(camera.position().reverse().add(worldPos).toVector3f(), 1.0F);
-
-        relativeWorldPos.mul(positionMatrix);
-        relativeWorldPos.mul(projectionMatrix);
-
-        float depth = relativeWorldPos.w;
-        if (depth != 0) relativeWorldPos.div(depth);
-
-        float screenX = (float) window.getWidth() / window.getGuiScale() * (0.5F + relativeWorldPos.x * 0.5F);
-        float screenY = (float) window.getHeight() / window.getGuiScale() * (0.5F - relativeWorldPos.y * 0.5F);
-
-        return ScreenPos.from(screenX, screenY, depth);
     }
 
     public static ScreenPos cameraToScreen(Vec3 worldPos, Camera camera, Matrix4f projectionMatrix) {

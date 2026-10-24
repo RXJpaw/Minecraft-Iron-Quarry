@@ -14,26 +14,20 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
-import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
-import pw.rxj.iron_quarry.event.InGameHudRenderCallback;
 import pw.rxj.iron_quarry.event.WorldRenderCallback;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
-import pw.rxj.iron_quarry.resource.config.client.BlueprintPreviewConfig;
 import pw.rxj.iron_quarry.util.ItemStackUtil;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 
 public class BlueprintPreviewRenderer {
-    private static final BlueprintPreviewConfig.Handler BLUEPRINT_PREVIEW_CONFIG = Main.CONFIG.getBlueprintPreviewConfig();
-    private static final HudBlueprintMarkerRenderer HUD_MARKER_RENDERER = new HudBlueprintMarkerRenderer();
     private static final WorldBlueprintMarkerRenderer WORLD_MARKER_RENDERER = new WorldBlueprintMarkerRenderer();
 
     private static void renderInWorld(LevelRenderContext context) {
-        HUD_MARKER_RENDERER.clear();
         WORLD_MARKER_RENDERER.clear();
 
         Minecraft minecraftClient = Minecraft.getInstance();
@@ -72,18 +66,13 @@ public class BlueprintPreviewRenderer {
         PoseStack matrices = context.poseStack();
         if(matrices == null) return;
         Matrix4f positionMatrix = cameraRenderState.viewRotationMatrix;
-        Matrix4f projectionMatrix = cameraRenderState.getDataOrDefault(RenderUtil.RenderStates.PROJECTION_MATRIX, cameraRenderState.projectionMatrix);
+        Matrix4f projectionMatrix = cameraRenderState.projectionMatrix;
 
         BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack).orElse(null);
         BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack).orElse(null);
         if(firstPos != null && secondPos != null) renderCuboid(minecraftClient, player, camera, matrices, firstPos, secondPos);
 
-        BlueprintMarkerRenderer markerRenderer = switch (BLUEPRINT_PREVIEW_CONFIG.getMarkerRenderMode()) {
-            case HUD -> HUD_MARKER_RENDERER;
-            case WORLD -> WORLD_MARKER_RENDERER;
-        };
-
-        markerRenderer.update(firstPos, secondPos, camera, positionMatrix, projectionMatrix);
+        WORLD_MARKER_RENDERER.update(firstPos, secondPos, camera, positionMatrix, projectionMatrix);
     }
 
     private static void renderCuboid(Minecraft minecraftClient, LocalPlayer player, Camera camera, PoseStack matrices, BlockPos firstPos, BlockPos secondPos) {
@@ -115,6 +104,5 @@ public class BlueprintPreviewRenderer {
         LevelRenderEvents.END_MAIN.register(BlueprintPreviewRenderer::renderInWorld);
 
         WorldRenderCallback.AFTER_LEVEL.register(WORLD_MARKER_RENDERER::render);
-        InGameHudRenderCallback.START.register(HUD_MARKER_RENDERER::render);
     }
 }
