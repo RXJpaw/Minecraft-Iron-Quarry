@@ -1,5 +1,5 @@
 {
-    "type": "minecraft:crafting_shaped",
+    "type": "iron_quarry:handled_crafting_recipe",
     "pattern": [
         " CA",
         "CMC",

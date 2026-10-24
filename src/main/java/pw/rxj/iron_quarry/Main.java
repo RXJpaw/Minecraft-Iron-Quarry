@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.item.v1.EnchantmentEvents;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
+import net.fabricmc.fabric.api.recipe.v1.sync.RecipeSynchronization;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.util.TriState;
@@ -44,6 +45,7 @@ import pw.rxj.iron_quarry.interfaces.IHandledUseBlock;
 import pw.rxj.iron_quarry.interfaces.ITickingInventoryItem;
 import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.network.ZNetwork;
+import pw.rxj.iron_quarry.recipe.HandledCraftingRecipe;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.resource.SilkTouchTradingCondition;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
@@ -143,7 +145,9 @@ public class Main implements ModInitializer {
 
 		Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(MOD_ID, "quarry_block_screen_handler"), QUARRY_BLOCK_SCREEN_HANDLER);
 
+		Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "handled_crafting_recipe"), HandledCraftingRecipe.SERIALIZER);
 		Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "handled_smithing_recipe"), HandledSmithingRecipe.SERIALIZER);
+		RecipeSynchronization.synchronizeRecipeSerializer(HandledCraftingRecipe.SERIALIZER);
 
 		Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, ITEM_GROUP, FabricCreativeModeTab.builder()
 				.title(Component.translatable("itemGroup.iron_quarry.universal"))

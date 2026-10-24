@@ -21,7 +21,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -44,7 +43,6 @@ import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
 import pw.rxj.iron_quarry.gui.TooltipQuarryInventoryData;
 import pw.rxj.iron_quarry.interfaces.IBlockTooltipAppender;
 import pw.rxj.iron_quarry.interfaces.IEnergyContainer;
-import pw.rxj.iron_quarry.interfaces.IHandledCrafting;
 import pw.rxj.iron_quarry.interfaces.IHandledKeyedAction;
 import pw.rxj.iron_quarry.interfaces.IHandledUseBlock;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
@@ -63,7 +61,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class QuarryBlock extends BaseEntityBlock implements IHandledCrafting, IEnergyContainer, ITooltipDataProvider, IHandledUseBlock, IHandledKeyedAction, IBlockTooltipAppender {
+public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, ITooltipDataProvider, IHandledUseBlock, IHandledKeyedAction, IBlockTooltipAppender {
     private final String textureReference;
     private int ticksPerOperation;
     private int baseConsumption;
@@ -300,11 +298,6 @@ public class QuarryBlock extends BaseEntityBlock implements IHandledCrafting, IE
         }
 
         return super.playerWillDestroy(world, pos, state, player);
-    }
-
-    @Override
-    public ItemStack getCraftingOutput(ItemStack output, CraftingInput input) {
-        return IHandledCrafting.copyCenterSlotComponents(output, input);
     }
 
     public int getTicksPerOperation(){

@@ -17,7 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -29,7 +28,6 @@ import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blockentity.ZBlockEntities;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
-import pw.rxj.iron_quarry.interfaces.IHandledCrafting;
 import pw.rxj.iron_quarry.interfaces.ITickingInventoryItem;
 import pw.rxj.iron_quarry.resource.config.server.QuarryMonitorConfig;
 import pw.rxj.iron_quarry.util.ComplexInventory;
@@ -39,7 +37,7 @@ import pw.rxj.iron_quarry.util.ZUtil;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class QuarryMonitorItem extends Item implements ITickingInventoryItem, ITooltipDataProvider, IHandledCrafting {
+public class QuarryMonitorItem extends Item implements ITickingInventoryItem, ITooltipDataProvider {
     private boolean interdimensional;
     private int range;
 
@@ -152,11 +150,6 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
                 textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.never_updated"));
             }
         }
-    }
-
-    @Override
-    public ItemStack getCraftingOutput(ItemStack output, CraftingInput input) {
-        return IHandledCrafting.copyCenterSlotComponents(output, input);
     }
 
     @Override
