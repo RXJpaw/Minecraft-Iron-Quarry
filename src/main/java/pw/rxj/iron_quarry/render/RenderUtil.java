@@ -71,6 +71,10 @@ public class RenderUtil {
         public static final RenderStateDataKey<Matrix4f> PROJECTION_MATRIX = RenderStateDataKey.create(() -> Main.MOD_ID + ":projection_matrix");
     }
 
+    public static List<RenderPipeline> getLinePipelines() {
+        return List.of(Lines.VISIBLE_LINES_PIPELINE, Lines.HIDDEN_LINES_PIPELINE);
+    }
+
     public static void runScissored(GuiGraphicsExtractor context, int x, int y, int width, int height, Runnable runnable) {
         context.enableScissor(x, y, x + width, y + height);
         runnable.run();
