@@ -8,12 +8,13 @@ import net.fabricmc.fabric.api.client.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableMesh;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelDebugName;
 import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.client.resources.model.sprite.MaterialBaker;
 import net.minecraft.client.resources.model.sprite.SpriteId;
@@ -22,7 +23,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
@@ -150,6 +150,14 @@ public class QuarryModel implements BlockStateModel {
             IoState.getTexturePosition(configuration.getIoState(face)).applySprite(emitter, 0, 256);
             emitter.materialBake(IO_SPRITE, MutableQuadView.BAKE_NORMALIZED);
             emitter.color(-1, -1, -1, -1);
+            emitter.emit();
+
+            // black backing so sodium's UV inset doesn't reveal the world around the IO overlay
+            emitter.square(direction, 0.0F, 0.0F, 1.0F, 1.0F, 0.0625F);
+            emitter.cullFace(direction);
+            IoState.getTexturePosition(configuration.getIoState(face)).applySprite(emitter, 0, 256);
+            emitter.materialBake(IO_SPRITE, MutableQuadView.BAKE_NORMALIZED);
+            emitter.color(0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
             emitter.emit();
         }
 
