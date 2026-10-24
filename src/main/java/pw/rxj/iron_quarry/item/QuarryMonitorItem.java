@@ -2,7 +2,9 @@ package pw.rxj.iron_quarry.item;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -16,6 +18,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ChunkPos;
@@ -255,12 +258,13 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
         ItemStack itemStack = new ItemStack(quarryBlock);
         itemStack.applyComponents(blockEntity.collectComponents());
+        itemStack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(QuarryBlock.FACING, blockEntity.getBlockState()));
 
         stack.set(ZComponents.QUARRY_MONITOR_CACHED_QUARRY, ItemStackTemplate.fromNonEmptyStack(itemStack));
         stack.set(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, System.currentTimeMillis());
     }
 
-    private @NotNull ItemStack getCachedQuarryStack(ItemStack stack) {
+    public @NotNull ItemStack getCachedQuarryStack(ItemStack stack) {
         ItemStackTemplate quarryTemplate = stack.get(ZComponents.QUARRY_MONITOR_CACHED_QUARRY);
 
         return quarryTemplate == null ? ItemStack.EMPTY : quarryTemplate.create();
@@ -289,6 +293,12 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         return null;
     }
 
+    public Direction getCachedFacing(ItemStack stack) {
+        BlockItemStateProperties properties = this.getCachedQuarryStack(stack).getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+        Direction facing = properties.get(QuarryBlock.FACING);
+
+        return facing == null ? Direction.NORTH : facing;
+    }
     public long getCachedTimestamp(ItemStack stack) {
         return stack.getOrDefault(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, 0L);
     }

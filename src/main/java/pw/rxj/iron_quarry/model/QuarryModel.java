@@ -24,6 +24,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.types.Face;
@@ -78,7 +79,7 @@ public class QuarryModel implements BlockStateModel {
 
         Direction frontDirection = state.getOptionalValue(QuarryBlock.FACING).orElse(Direction.NORTH);
 
-        Mesh mesh = this.getMesh(frontDirection, configuration);
+        Mesh mesh = this.getMesh(frontDirection, configuration, true);
         if(mesh != null) mesh.outputTo(emitter);
     }
 
@@ -86,7 +87,7 @@ public class QuarryModel implements BlockStateModel {
         List<BakedQuad> quads = new ArrayList<>();
 
         if(ZUtil.getBlockOrItem(stack) instanceof QuarryBlock quarryBlock) {
-            Mesh mesh = this.getMesh(Direction.NORTH, quarryBlock.getMachineConfiguration(stack));
+            Mesh mesh = this.getMesh(Direction.NORTH, quarryBlock.getMachineConfiguration(stack), true);
             if(mesh != null) mesh.forEach(quad -> quads.add(quad.toBakedQuad(QUARRY_SPRITE.sprite())));
         }
 
@@ -128,7 +129,7 @@ public class QuarryModel implements BlockStateModel {
         }
     }
 
-    private Mesh getMesh(Direction frontDirection, MachineConfiguration configuration){
+    private Mesh getMesh(Direction frontDirection, MachineConfiguration configuration, boolean withBacking){
         MutableMesh mesh = Renderer.get().mutableMesh();
         QuadEmitter emitter = mesh.emitter();
 
@@ -152,6 +153,8 @@ public class QuarryModel implements BlockStateModel {
             emitter.color(-1, -1, -1, -1);
             emitter.emit();
 
+            if(!withBacking) continue;
+
             // black backing so sodium's UV inset doesn't reveal the world around the IO overlay
             emitter.square(direction, 0.0F, 0.0F, 1.0F, 1.0F, 0.0625F);
             emitter.cullFace(direction);
@@ -163,4 +166,13 @@ public class QuarryModel implements BlockStateModel {
 
         return mesh.immutableCopy();
     }
+
+    public @Nullable Mesh getPreviewMesh(ItemStack stack, Direction frontDirection) {
+        if(ZUtil.getBlockOrItem(stack) instanceof QuarryBlock quarryBlock) {
+            return this.getMesh(frontDirection, quarryBlock.getMachineConfiguration(stack), false);
+        }
+
+        return null;
+    }
+
 }

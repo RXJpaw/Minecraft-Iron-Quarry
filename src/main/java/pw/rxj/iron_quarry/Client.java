@@ -12,6 +12,7 @@ import pw.rxj.iron_quarry.model.ZModels;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.render.BlueprintPreviewRenderer;
 import pw.rxj.iron_quarry.render.QuarryMonitorOverlayRenderer;
+import pw.rxj.iron_quarry.render.QuarryMonitorPreviewRenderer;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
 import pw.rxj.iron_quarry.types.IoState;
@@ -26,6 +27,7 @@ public class Client implements ClientModInitializer {
         ZBlocks.quarryBlockList.forEach(QuarryBlock::initClient);
         ResourceReloadListener.include(IoState.getTextureId());
 
+        QuarryMonitorPreviewRenderer.register();
         BlueprintPreviewRenderer.register();
         if(Compat.IRIS_LOADED) IrisClient.register();
         QuarryMonitorOverlayRenderer.register();

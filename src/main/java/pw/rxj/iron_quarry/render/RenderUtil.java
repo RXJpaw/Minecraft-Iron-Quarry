@@ -12,6 +12,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.MeshView;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -21,9 +22,12 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -65,6 +69,26 @@ public class RenderUtil {
                     .bufferSize(256)
                     .createRenderSetup()));
         }
+    }
+
+    private static class Previews {
+        private static final RenderPipeline OCCLUDED_PREVIEW_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+                .withLocation(Identifier.fromNamespaceAndPath(Main.MOD_ID, "pipeline/occluded_preview"))
+                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN, false))
+                .withCull(true)
+                .build());
+        private static final RenderPipeline OVERLAY_PREVIEW_PIPELINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+                .withLocation(Identifier.fromNamespaceAndPath(Main.MOD_ID, "pipeline/overlay_preview"))
+                .withCull(true)
+                .build());
+        private static final RenderType OCCLUDED_PREVIEW = RenderType.create("iron_quarry_occluded_preview", RenderSetup.builder(OCCLUDED_PREVIEW_PIPELINE)
+                .withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS, () -> RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST, true))
+                .bufferSize(1536)
+                .createRenderSetup());
+        private static final RenderType OVERLAY_PREVIEW = RenderType.create("iron_quarry_overlay_preview", RenderSetup.builder(OVERLAY_PREVIEW_PIPELINE)
+                .withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS, () -> RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST, true))
+                .bufferSize(1536)
+                .createRenderSetup());
     }
 
     public static List<RenderPipeline> getLinePipelines() {
@@ -188,6 +212,24 @@ public class RenderUtil {
         buffer.addVertex(positionMatrix, x, y + height, 0.0F).setUv(minU, maxV).setColor(color);
         buffer.addVertex(positionMatrix, x + width, y + height, 0.0F).setUv(maxU, maxV).setColor(color);
         buffer.addVertex(positionMatrix, x + width, y, 0.0F).setUv(maxU, minV).setColor(color);
+
+        MeshData builtBuffer = buffer.build();
+        if(builtBuffer != null) renderLayer.draw(builtBuffer);
+    }
+
+    public static void drawPreviewMesh(PoseStack matrices, MeshView mesh, CardinalLighting cardinalLighting, float alpha, boolean occludedOnly) {
+        RenderType renderLayer = occludedOnly ? Previews.OCCLUDED_PREVIEW : Previews.OVERLAY_PREVIEW;
+        Matrix4f positionMatrix = matrices.last().pose();
+
+        BufferBuilder buffer = Tesselator.getInstance().begin(renderLayer.mode(), renderLayer.format());
+
+        mesh.forEach(quad -> {
+            float shade = quad.diffuseShade() ? cardinalLighting.byFace(quad.lightFace()) : 1.0F;
+
+            for (int vertex = 0; vertex < 4; vertex++) {
+                buffer.addVertex(positionMatrix, quad.x(vertex), quad.y(vertex), quad.z(vertex)).setUv(quad.u(vertex), quad.v(vertex)).setColor(ARGB.multiplyAlpha(ARGB.scaleRGB(quad.color(vertex), shade), alpha));
+            }
+        });
 
         MeshData builtBuffer = buffer.build();
         if(builtBuffer != null) renderLayer.draw(builtBuffer);
