@@ -1,5 +1,6 @@
 package pw.rxj.iron_quarry.render;
 
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
@@ -25,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -157,7 +159,7 @@ public class RenderUtil {
                pos.x >  range || pos.y >  range || pos.z >  range;
     }
 
-    public static void drawZBufferedCuboid(Cuboid cuboid, PoseStack matrices, int viewDistance, float red, float green, float blue, float alpha) {
+    public static void drawZBufferedCuboid(Cuboid cuboid, PoseStack matrices, @Nullable GpuBufferSlice fog, int viewDistance, float red, float green, float blue, float alpha) {
         double squaredViewDistance = Math.pow(viewDistance, 2);
 
         Matrix4f positionMatrix = matrices.last().pose();
@@ -168,11 +170,18 @@ public class RenderUtil {
         List<SpriteVec2f> splitBoxLines = boxLines.stream().map(vec -> vec.autoSplit(8.0F)).flatMap(List::stream).toList();
         List<SpriteVec2f> filteredSplitBoxLines = splitBoxLines.stream().filter(vec -> vec.squaredDistanceTo(new Vector3f()) <= squaredViewDistance).toList();
 
-        //Visible Outlines
-        drawLines(tessellator, Lines.VISIBLE_LINES, positionMatrix, matrices.last(), filteredSplitBoxLines, red, green, blue, alpha);
+        GpuBufferSlice shaderFog = RenderSystem.getShaderFog();
+        if(fog != null) RenderSystem.setShaderFog(fog);
 
-        //Hidden Outlines
-        drawLines(tessellator, Lines.HIDDEN_LINES, positionMatrix, matrices.last(), filteredSplitBoxLines, red, green, blue, alpha * 0.2F);
+        try {
+            //Visible Outlines
+            drawLines(tessellator, Lines.VISIBLE_LINES, positionMatrix, matrices.last(), filteredSplitBoxLines, red, green, blue, alpha);
+
+            //Hidden Outlines
+            drawLines(tessellator, Lines.HIDDEN_LINES, positionMatrix, matrices.last(), filteredSplitBoxLines, red, green, blue, alpha * 0.2F);
+        } finally {
+            RenderSystem.setShaderFog(shaderFog);
+        }
     }
 
     private static void drawLines(Tesselator tessellator, RenderType renderLayer, Matrix4f positionMatrix, PoseStack.Pose entry, List<SpriteVec2f> lines, float red, float green, float blue, float alpha) {

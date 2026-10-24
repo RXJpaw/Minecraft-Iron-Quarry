@@ -7,3 +7,4 @@ accessible class net/minecraft/world/item/component/ItemContainerContents$Slot
 accessible method net/minecraft/world/item/component/ItemContainerContents$Slot <init> (ILnet/minecraft/world/item/ItemStackTemplate;)V
 accessible field net/minecraft/client/renderer/item/ItemModels ID_MAPPER Lnet/minecraft/util/ExtraCodecs$LateBoundIdMapper;
 accessible field net/minecraft/client/renderer/item/properties/numeric/RangeSelectItemModelProperties ID_MAPPER Lnet/minecraft/util/ExtraCodecs$LateBoundIdMapper;
+accessible field net/minecraft/client/renderer/GameRenderer fogRenderer Lnet/minecraft/client/renderer/fog/FogRenderer;

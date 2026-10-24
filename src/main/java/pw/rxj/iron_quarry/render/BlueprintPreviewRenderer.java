@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -103,7 +104,7 @@ public class BlueprintPreviewRenderer {
 
         // WorldRenderEvents.END doesn't call this when the world border is rendered.
         // Resulting in color, transparency and brightness being way off.
-        RenderUtil.drawZBufferedCuboid(limitedCuboid.inflate(0.02), matrices, viewDistance, 0.976F, 0.718F, 0.192F, 0.667F);
+        RenderUtil.drawZBufferedCuboid(limitedCuboid.inflate(0.02), matrices, minecraftClient.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE), viewDistance, 0.976F, 0.718F, 0.192F, 0.667F);
 
         matrices.popPose();
     }
