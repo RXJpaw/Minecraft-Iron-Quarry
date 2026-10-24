@@ -1,11 +1,6 @@
 package pw.rxj.iron_quarry.util;
 
 import com.mojang.serialization.Codec;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.OptionalInt;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -16,6 +11,11 @@ import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalInt;
 
 public class ComplexInventory extends SimpleContainer {
     public ComplexInventory(int size){
@@ -23,22 +23,6 @@ public class ComplexInventory extends SimpleContainer {
     }
     public static ComplexInventory ofSize(int size) {
         return new ComplexInventory(size);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if(this == o) return true;
-        if(!(o instanceof ComplexInventory other) || other.getContainerSize() != this.getContainerSize()) return false;
-
-        for (int i = 0; i < this.getContainerSize(); i++) {
-            if(!ItemStack.matches(this.getItem(i), other.getItem(i))) return false;
-        }
-
-        return true;
-    }
-    @Override
-    public int hashCode() {
-        return ItemStack.hashStackList(this.getItems());
     }
 
     public boolean canInsertAll(List<ItemStack> stacks) {
@@ -151,5 +135,27 @@ public class ComplexInventory extends SimpleContainer {
 
             return inventory;
         }
+    }
+
+    //comparison
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(!(o instanceof ComplexInventory other)) return false;
+
+        int size = Math.max(this.getContainerSize(), other.getContainerSize());
+        for (int i = 0; i < size; i++) {
+            if(!ItemStack.matches(this.getItem(i), other.getItem(i))) return false;
+        }
+
+        return true;
+    }
+    @Override
+    public int hashCode() {
+        int size = this.getContainerSize();
+        while (size > 0 && this.getItem(size - 1).isEmpty()) size--;
+
+        return ItemStack.hashStackList(this.getItems().subList(0, size));
     }
 }
