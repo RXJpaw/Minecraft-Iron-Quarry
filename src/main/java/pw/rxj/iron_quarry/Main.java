@@ -148,6 +148,7 @@ public class Main implements ModInitializer {
 		Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "handled_crafting_recipe"), HandledCraftingRecipe.SERIALIZER);
 		Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "handled_smithing_recipe"), HandledSmithingRecipe.SERIALIZER);
 		RecipeSynchronization.synchronizeRecipeSerializer(HandledCraftingRecipe.SERIALIZER);
+		RecipeSynchronization.synchronizeRecipeSerializer(HandledSmithingRecipe.SERIALIZER);
 
 		Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, ITEM_GROUP, FabricCreativeModeTab.builder()
 				.title(Component.translatable("itemGroup.iron_quarry.universal"))
