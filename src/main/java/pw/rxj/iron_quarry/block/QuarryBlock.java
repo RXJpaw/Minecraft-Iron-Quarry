@@ -3,6 +3,7 @@ package pw.rxj.iron_quarry.block;
 import com.mojang.serialization.MapCodec;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.BlockPos;
@@ -222,7 +223,14 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
     }
 
     private void dismantle(Level world, BlockPos blockPos, BlockState blockState, Player player, ItemStack stack) {
+        if(player.blockActionRestricted(world, blockPos, player.gameMode())) return;
+
         BlockEntity blockEntity = world.getBlockEntity(blockPos);
+
+        if(!PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, blockPos, blockState, blockEntity)) {
+            PlayerBlockBreakEvents.CANCELED.invoker().onBlockBreakCanceled(world, player, blockPos, blockState, blockEntity);
+            return;
+        }
 
         this.playerWillDestroy(world, blockPos, blockState, player);
         boolean removed = world.removeBlock(blockPos, false);
@@ -232,6 +240,8 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
             stack.mineBlock(world, blockState, blockPos, player);
             this.playerDestroy(world, player, blockPos, blockState, blockEntity, stack.copy());
         }
+
+        if(removed) PlayerBlockBreakEvents.AFTER.invoker().afterBlockBreak(world, player, blockPos, blockState, blockEntity);
     }
 
     @Override
