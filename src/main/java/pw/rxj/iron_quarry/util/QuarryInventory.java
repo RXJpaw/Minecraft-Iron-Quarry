@@ -67,6 +67,11 @@ public class QuarryInventory {
         public static Output ofRef(@Nullable QuarryBlockEntity ref) {
             return new Output(ref);
         }
+
+        @Override
+        public boolean mustUpdateListeners() {
+            return true;
+        }
     }
     public static class BatteryInput extends ReferencedQuarryInventory {
         public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_battery_input");
