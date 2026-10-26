@@ -195,13 +195,15 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
 
         if (blockEntity instanceof QuarryBlockEntity quarryBlockEntity) {
             if(stack.is(ZItemTags.C_WRENCHES)) {
-                if(player.isSecondaryUseActive()) {
-                    if(!world.isClientSide()) this.dismantle(world, blockPos, blockState, player, stack);
-                } else {
-                    MachineConfiguration Configuration = quarryBlockEntity.Configuration;
-                    Face face = Face.from(side, blockState.getValue(FACING));
+                if(!world.isClientSide()) {
+                    if(player.isSecondaryUseActive()) {
+                        this.dismantle(world, blockPos, blockState, player, stack);
+                    } else {
+                        MachineConfiguration Configuration = quarryBlockEntity.Configuration;
+                        Face face = Face.from(side, blockState.getValue(FACING));
 
-                    Configuration.setIoState(face, Configuration.getNextIoState(face));
+                        Configuration.setIoState(face, Configuration.getNextIoState(face));
+                    }
                 }
 
                 return InteractionResult.SUCCESS;
