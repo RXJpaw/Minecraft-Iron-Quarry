@@ -300,7 +300,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
         ItemStack blueprintStack = thisBlockEntity.BlueprintInventory.getItem(0);
         int blueprintHash = blueprintStack.hashCode();
         ItemStack drillStack = thisBlockEntity.DrillInventory.getItem(0);
-        int drillHash = drillStack.hashCode();
+        int drillHash = drillStack.isEmpty() ? 0 : drillStack.hashCode();
 
         if(thisBlockEntity.blueprintHash != blueprintHash || thisBlockEntity.drillHash != drillHash) {
             thisBlockEntity.blueprintHash = blueprintHash;
