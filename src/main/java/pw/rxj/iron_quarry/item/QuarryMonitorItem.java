@@ -37,6 +37,7 @@ import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
 import pw.rxj.iron_quarry.interfaces.ITickingInventoryItem;
 import pw.rxj.iron_quarry.resource.config.server.QuarryMonitorConfig;
 import pw.rxj.iron_quarry.util.ComplexInventory;
+import pw.rxj.iron_quarry.util.MachineWarningsUtil;
 import pw.rxj.iron_quarry.util.ReadableString;
 import pw.rxj.iron_quarry.util.ZUtil;
 
@@ -125,37 +126,10 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
             if(timestamp > 0) {
                 textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.last_updated", ReadableString.toTimeAgo(timestamp)));
 
-                int warningFlag = this.getWarningFlag(stack);
-                if(QuarryMonitorItem.hasWarnings(warningFlag)) {
+                MachineWarningsUtil warningsUtil = MachineWarningsUtil.from(stack);
+                if(warningsUtil.hasWarnings()) {
                     textConsumer.accept(ReadableString.space());
-
-                    if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_QUARRY_UNKNOWN)) {
-                        textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_status_unknown"));
-                    } else {
-                        if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_ENERGY_10)) {
-                            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_energy_10"));
-                        } else if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_ENERGY_30)) {
-                            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_energy_30"));
-                        }
-
-                        if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_INV_90)) {
-                            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_inv_90"));
-                        } else if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_INV_70)) {
-                            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_inv_70"));
-                        }
-
-                        if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_DRILL_EMPTY)) {
-                            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_drill_empty"));
-                        }
-
-                        if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_OWNER_MISSING)) {
-                            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_owner_missing"));
-                        }
-                        if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_MINING_DENIED)) {
-                            QuarryBlockedDataComponent blockedData = stack.get(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
-                            if(blockedData != null) textConsumer.accept(blockedData.getText());
-                        }
-                    }
+                    warningsUtil.appendTooltip(textConsumer);
                 }
 
                 textConsumer.accept(ReadableString.space());
@@ -328,6 +302,12 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     public long getCachedTimestamp(ItemStack stack) {
         return stack.getOrDefault(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, 0L);
     }
+    public @Nullable QuarryOwnerComponent getCachedOwner(ItemStack stack) {
+        return stack.get(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
+    }
+    public @Nullable QuarryBlockedDataComponent getCachedBlockedData(ItemStack stack) {
+        return stack.get(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
+    }
     public float getCachedEnergyPct(ItemStack stack) {
         ItemStack quarryStack = this.getCachedQuarryStack(stack);
         if(quarryStack.isEmpty()) return 0.0F;
@@ -365,61 +345,5 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         if(quarryBlock == null) return ItemStack.EMPTY;
 
         return quarryBlock.getDrillStack(quarryStack);
-    }
-
-    //warnings
-
-    public static final int WARNING_QUARRY_UNKNOWN = 0;
-    public static final int WARNING_INV_70 = 1;
-    public static final int WARNING_INV_90 = 2;
-    public static final int WARNING_ENERGY_30 = 3;
-    public static final int WARNING_ENERGY_10 = 4;
-    public static final int WARNING_DRILL_EMPTY = 5;
-    public static final int WARNING_OWNER_MISSING = 6;
-    public static final int WARNING_MINING_DENIED = 7;
-
-    public static boolean hasWarnings(int flag) {
-        return flag != 0;
-    }
-    public static boolean hasWarning(int flag, int warning) {
-        warning = 1 << warning;
-
-        return (flag & warning) == warning;
-    }
-
-    public boolean[] getWarningList(ItemStack stack) {
-        float invPct = this.getCachedOutputInvPct(stack);
-        float energyPct = this.getCachedEnergyPct(stack);
-        boolean hasDrillStack = this.getCachedDrillStack(stack).getItem() instanceof DrillItem;
-        ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
-
-        boolean ownerMissing = !quarryBlockStack.isEmpty() && !stack.has(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
-        boolean miningDenied = stack.has(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
-
-        return new boolean[] { quarryBlockStack.isEmpty(), invPct >= 0.7F, invPct >= 0.9F, energyPct <= 0.3F, energyPct <= 0.1F, !hasDrillStack, ownerMissing, miningDenied };
-    }
-    public int getWarningAmount(ItemStack stack) {
-        int amount = 0;
-
-        for (boolean hasConflict : this.getWarningList(stack)) {
-            if(hasConflict) amount++;
-        }
-
-        return amount;
-    }
-    public int getWarningFlag(ItemStack stack) {
-        boolean[] list = this.getWarningList(stack);
-        int flag = 0;
-
-        if(list[WARNING_QUARRY_UNKNOWN]) flag += 1 << WARNING_QUARRY_UNKNOWN;
-        if(list[WARNING_INV_70]) flag += 1 << WARNING_INV_70;
-        if(list[WARNING_INV_90]) flag += 1 << WARNING_INV_90;
-        if(list[WARNING_ENERGY_30]) flag += 1 << WARNING_ENERGY_30;
-        if(list[WARNING_ENERGY_10]) flag += 1 << WARNING_ENERGY_10;
-        if(list[WARNING_DRILL_EMPTY]) flag += 1 << WARNING_DRILL_EMPTY;
-        if(list[WARNING_OWNER_MISSING]) flag += 1 << WARNING_OWNER_MISSING;
-        if(list[WARNING_MINING_DENIED]) flag += 1 << WARNING_MINING_DENIED;
-
-        return flag;
     }
 }

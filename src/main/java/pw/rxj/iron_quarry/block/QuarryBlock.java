@@ -142,50 +142,16 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
     }
     @Override
     public void appendTooltip(ItemStack stack, Item.TooltipContext context, Consumer<Component> textConsumer, TooltipFlag options) {
-        MachineUpgradesUtil machineUpgradesUtil = MachineUpgradesUtil.from(this.getMachineUpgradeStacks(stack));
+        MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(this.getMachineUpgradeStacks(stack));
 
-        float yield_bonus = (machineUpgradesUtil.getFortuneMultiplier() - 1) * 100.0F;
-        float energy_usage = this.baseConsumption * machineUpgradesUtil.getInefficiency();
-        float operations = (20.0F / this.ticksPerOperation) * machineUpgradesUtil.getSpeedMultiplier();
+        upgradesUtil.appendStatsTooltip(this, textConsumer);
 
-        SupplicableAlt<?> HasShiftDown = SupplicableAlt.when(Minecraft.getInstance().hasShiftDown());
-
-        SupplicableAlt<String> PER_TYPE = HasShiftDown.<String>copy()
-                .then(() -> "per_operation")
-                .or(() -> "per_tick");
-        SupplicableAlt<String> PER_UNIT = HasShiftDown.<String>copy()
-                .then(() -> ZUtil.expandableFixedInt((int) (energy_usage * 20 / operations)))
-                .or(() -> ReadableString.cIntFrom(energy_usage));
-
-        MutableComponent LORE_USAGE_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy." + PER_TYPE.get(), PER_UNIT.get());
-        MutableComponent LORE_USAGE = ReadableString.translatable("item.iron_quarry.quarry_block.lore.usage", LORE_USAGE_DETAIL);
-
-        MutableComponent LORE_SPEED_DETAIL = ReadableString.translatable("item.iron_quarry.lore.operation.per_second", ZUtil.expandableFixedFloat(operations));
-        MutableComponent LORE_SPEED = ReadableString.translatable("item.iron_quarry.quarry_block.lore.speed", LORE_SPEED_DETAIL);
-
-        MutableComponent LORE_YIELD_DETAIL = ReadableString.translatable("item.iron_quarry.lore.percentage.positive", ZUtil.expandableFixedFloat(yield_bonus));
-        MutableComponent LORE_YIELD = ReadableString.translatable("item.iron_quarry.quarry_block.lore.yield", LORE_YIELD_DETAIL);
-
-        textConsumer.accept(LORE_USAGE);
-        textConsumer.accept(LORE_SPEED);
-        textConsumer.accept(LORE_YIELD);
-
-        int conflictFlag = machineUpgradesUtil.getConflictFlag();
-        if(MachineUpgradesUtil.hasConflicts(conflictFlag)) {
+        if(upgradesUtil.hasConflicts()) {
             textConsumer.accept(ReadableString.space());
-
-            if(MachineUpgradesUtil.hasConflict(conflictFlag, MachineUpgradesUtil.CONFLICT_SPEED)) {
-                textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.speed_limit", ZUtil.expandableFixedFloat((MachineUpgradesUtil.SPEED_LIMIT-1)*100)));
-            }
-            if(MachineUpgradesUtil.hasConflict(conflictFlag, MachineUpgradesUtil.CONFLICT_FORTUNE)) {
-                textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.fortune_limit", ZUtil.expandableFixedFloat((MachineUpgradesUtil.FORTUNE_LIMIT-1)*100)));
-            }
-            if(MachineUpgradesUtil.hasConflict(conflictFlag, MachineUpgradesUtil.CONFLICT_SILK_TOUCH)) {
-                textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.silk_touch_fortune"));
-            }
+            upgradesUtil.appendConflictTooltip(textConsumer);
         }
 
-        if(HasShiftDown.test()) {
+        if(Minecraft.getInstance().hasShiftDown()) {
             long capacity = this.getEnergyCapacity();
             long stored = this.getEnergyStored(stack);
 

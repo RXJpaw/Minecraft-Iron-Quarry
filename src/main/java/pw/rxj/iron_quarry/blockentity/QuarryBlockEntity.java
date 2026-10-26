@@ -258,14 +258,6 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
     public @Nullable QuarryBlockedDataComponent getBlocked() {
         return this.blocked;
     }
-    public List<Component> getWarnings() {
-        List<Component> warnings = new ArrayList<>();
-
-        if(this.owner == null) warnings.add(ReadableString.translatable("item.iron_quarry.warning.quarry_owner_missing"));
-        if(this.blocked != null) warnings.add(this.blocked.getText());
-
-        return warnings;
-    }
 
     //World Ticking
     private final ArrayList<BlockPos> MiningQueue = new ArrayList<>();

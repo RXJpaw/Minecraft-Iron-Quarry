@@ -1,14 +1,19 @@
 package pw.rxj.iron_quarry.util;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantments;
+import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.item.AugmentItem;
 import pw.rxj.iron_quarry.item.DrillItem;
 import pw.rxj.iron_quarry.types.AugmentType;
 
 import java.util.List;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantments;
+import java.util.function.Consumer;
 
 public class MachineUpgradesUtil {
     public static final float FORTUNE_LIMIT = 3.0F;
@@ -115,6 +120,9 @@ public class MachineUpgradesUtil {
 
         return flag;
     }
+    public boolean hasConflicts() {
+        return hasConflicts(this.getConflictFlag());
+    }
 
     public boolean exceedsSpeedLimit() {
         return this.speedMultiplier > SPEED_LIMIT;
@@ -124,5 +132,46 @@ public class MachineUpgradesUtil {
     }
     public boolean conflictsWithSilkTouch() {
         return this.hasSilkTouch && this.fortuneMultiplier > 1;
+    }
+
+    public void appendStatsTooltip(QuarryBlock quarryBlock, Consumer<Component> textConsumer) {
+        float yield_bonus = (this.getFortuneMultiplier() - 1) * 100.0F;
+        float energy_usage = quarryBlock.getBaseConsumption() * this.getInefficiency();
+        float operations = (20.0F / quarryBlock.getTicksPerOperation()) * this.getSpeedMultiplier();
+
+        SupplicableAlt<?> HasShiftDown = SupplicableAlt.when(Minecraft.getInstance().hasShiftDown());
+
+        SupplicableAlt<String> PER_TYPE = HasShiftDown.<String>copy()
+                .then(() -> "per_operation")
+                .or(() -> "per_tick");
+        SupplicableAlt<String> PER_UNIT = HasShiftDown.<String>copy()
+                .then(() -> ZUtil.expandableFixedInt((int) (energy_usage * 20 / operations)))
+                .or(() -> ReadableString.cIntFrom(energy_usage));
+
+        MutableComponent LORE_USAGE_DETAIL = ReadableString.translatable("item.iron_quarry.lore.energy." + PER_TYPE.get(), PER_UNIT.get());
+        MutableComponent LORE_USAGE = ReadableString.translatable("item.iron_quarry.quarry_block.lore.usage", LORE_USAGE_DETAIL);
+
+        MutableComponent LORE_SPEED_DETAIL = ReadableString.translatable("item.iron_quarry.lore.operation.per_second", ZUtil.expandableFixedFloat(operations));
+        MutableComponent LORE_SPEED = ReadableString.translatable("item.iron_quarry.quarry_block.lore.speed", LORE_SPEED_DETAIL);
+
+        MutableComponent LORE_YIELD_DETAIL = ReadableString.translatable("item.iron_quarry.lore.percentage.positive", ZUtil.expandableFixedFloat(yield_bonus));
+        MutableComponent LORE_YIELD = ReadableString.translatable("item.iron_quarry.quarry_block.lore.yield", LORE_YIELD_DETAIL);
+
+        textConsumer.accept(LORE_USAGE);
+        textConsumer.accept(LORE_SPEED);
+        textConsumer.accept(LORE_YIELD);
+    }
+    public void appendConflictTooltip(Consumer<Component> textConsumer) {
+        int conflictFlag = this.getConflictFlag();
+
+        if(hasConflict(conflictFlag, CONFLICT_SPEED)) {
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.speed_limit", ZUtil.expandableFixedFloat((SPEED_LIMIT-1)*100)));
+        }
+        if(hasConflict(conflictFlag, CONFLICT_FORTUNE)) {
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.fortune_limit", ZUtil.expandableFixedFloat((FORTUNE_LIMIT-1)*100)));
+        }
+        if(hasConflict(conflictFlag, CONFLICT_SILK_TOUCH)) {
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.silk_touch_fortune"));
+        }
     }
 }

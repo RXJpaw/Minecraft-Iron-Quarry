@@ -2,17 +2,19 @@ package pw.rxj.iron_quarry.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.block.Block;
 import pw.rxj.iron_quarry.util.ReadableString;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class QuarryBlockedDataComponent {
     private static final StreamCodec<RegistryFriendlyByteBuf, Block> BLOCK_PACKET_CODEC = ByteBufCodecs.registry(Registries.BLOCK);
@@ -44,8 +46,9 @@ public class QuarryBlockedDataComponent {
     public BlockPos getBlockPos() {
         return this.blockPos;
     }
-    public MutableComponent getText() {
-        return ReadableString.translatable("item.iron_quarry.warning.quarry_mining_denied", this.block.getName(), this.blockPos.getX(), this.blockPos.getY(), this.blockPos.getZ());
+    public void appendTooltip(Consumer<Component> textConsumer) {
+        textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_mining_denied", this.blockPos.getX(), this.blockPos.getY(), this.blockPos.getZ()));
+        if(Minecraft.getInstance().hasShiftDown()) textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_mining_denied.block", this.block.getName()));
     }
 
     private static QuarryBlockedDataComponent read(RegistryFriendlyByteBuf buf) {

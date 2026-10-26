@@ -10,9 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import org.joml.Matrix3x2fStack;
 import pw.rxj.iron_quarry.Global;
 import pw.rxj.iron_quarry.Main;
@@ -118,13 +116,10 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
         QuarryBlock block = blockEntity.getQuarryBlock();
         if(block == null) return;
 
-        ItemStack stack = new ItemStack(block);
-        stack.applyComponents(blockEntity.collectComponents());
-
         ComplexEnergyContainer EnergyContainer = blockEntity.EnergyContainer;
         MachineConfiguration MachineConfiguration = blockEntity.Configuration;
-        MachineUpgradesUtil machineUpgradesUtil = MachineUpgradesUtil.from(block.getMachineUpgradeStacks(stack));
-        List<Component> warnings = blockEntity.getWarnings();
+        MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(blockEntity.getMachineUpgradeStacks());
+        MachineWarningsUtil warningsUtil = MachineWarningsUtil.from(blockEntity);
 
         int backgroundX = this.leftPos;
         int backgroundY = this.topPos;
@@ -158,24 +153,21 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
             tooltip.add(owner != null
                     ? ReadableString.translatable("screen.iron_quarry.quarry_block.title.info_display", owner.getName())
                     : ReadableString.translatable("screen.iron_quarry.quarry_block.title.info_display.no_owner"));
-            block.appendTooltip(stack, Item.TooltipContext.of(this.minecraft.level), tooltip::add, TooltipFlag.NORMAL);
+            upgradesUtil.appendStatsTooltip(block, tooltip::add);
 
-            int conflictAmount = machineUpgradesUtil.getConflictAmount();
-
-            List<Component> infoTooltip = new ArrayList<>(tooltip.subList(0, conflictAmount > 0 ? 5 + conflictAmount : 4));
-            if(!warnings.isEmpty()) {
-                infoTooltip.add(ReadableString.space());
-                infoTooltip.addAll(warnings);
+            if(warningsUtil.hasWarnings()) {
+                tooltip.add(ReadableString.space());
+                warningsUtil.appendTooltip(tooltip::add);
             }
 
-            return infoTooltip;
+            return tooltip;
         });
 
         RenderUtil.drawTexture(context, INVENTORY_LOCATION, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, 179, 5, 3, 9);
-        if(!warnings.isEmpty() || machineUpgradesUtil.getConflictAmount() > 0) {
+        if(warningsUtil.hasWarnings()) {
             double alpha = Math.sin(System.currentTimeMillis() / 100.0) + 0.5;
 
-            RenderUtil.drawTexture(context, INVENTORY_LOCATION, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, warnings.isEmpty() ? 182 : 185, 5, 3, 9, 256, 256, RenderUtil.whiteWithAlpha(alpha));
+            RenderUtil.drawTexture(context, INVENTORY_LOCATION, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, warningsUtil.hasCriticalWarnings() ? 185 : 182, 5, 3, 9, 256, 256, RenderUtil.whiteWithAlpha(alpha));
         }
 
         //Blueprint Buttons
