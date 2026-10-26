@@ -21,7 +21,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -44,16 +43,12 @@ import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
 import pw.rxj.iron_quarry.gui.TooltipQuarryInventoryData;
 import pw.rxj.iron_quarry.interfaces.IBlockTooltipAppender;
 import pw.rxj.iron_quarry.interfaces.IEnergyContainer;
-import pw.rxj.iron_quarry.interfaces.IHandledKeyedAction;
 import pw.rxj.iron_quarry.interfaces.IHandledUseBlock;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.item.ZItemTags;
-import pw.rxj.iron_quarry.network.PacketKeyedAction;
-import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.records.TexturePosition;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.resource.config.server.QuarryStatsConfig;
-import pw.rxj.iron_quarry.types.ActionGoal;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.util.*;
 
@@ -62,7 +57,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, ITooltipDataProvider, IHandledUseBlock, IHandledKeyedAction, IBlockTooltipAppender {
+public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, ITooltipDataProvider, IHandledUseBlock, IBlockTooltipAppender {
     private final String textureReference;
     private int ticksPerOperation;
     private int baseConsumption;
@@ -199,8 +194,8 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
 
         if (blockEntity instanceof QuarryBlockEntity quarryBlockEntity) {
             if(stack.is(ZItemTags.C_WRENCHES)) {
-                if(world.isClientSide() && Minecraft.getInstance().options.keyShift.isDown()) {
-                    ZNetwork.sendToServer(PacketKeyedAction.bake("key.sneak", hand, ActionGoal.USE_ON_BLOCK, hitResult));
+                if(player.isSecondaryUseActive()) {
+                    if(!world.isClientSide()) this.dismantle(world, blockPos, blockState, player, stack);
                 } else {
                     MachineConfiguration Configuration = quarryBlockEntity.Configuration;
                     Face face = Face.from(side, blockState.getValue(FACING));
@@ -226,29 +221,16 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
         return InteractionResult.PASS;
     }
 
-    @Override
-    public void keyedUseOnBlock(String keyName, UseOnContext context, BlockState blockState) {
-        if(!keyName.equals("key.sneak")) return;
-
-        Player player = context.getPlayer();
-        if(player == null) return;
-
-        BlockPos blockPos = context.getClickedPos();
-        if(player.distanceToSqr((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.5, (double)blockPos.getZ() + 0.5) > 64.0) return;
-
-        Level world = context.getLevel();
-        ItemStack stack = context.getItemInHand();
+    private void dismantle(Level world, BlockPos blockPos, BlockState blockState, Player player, ItemStack stack) {
         BlockEntity blockEntity = world.getBlockEntity(blockPos);
 
-        if(stack.is(ZItemTags.C_WRENCHES)) {
-            this.playerWillDestroy(world, blockPos, blockState, player);
-            boolean removed = world.removeBlock(blockPos, false);
-            if(removed) this.destroy(world, blockPos, blockState);
+        this.playerWillDestroy(world, blockPos, blockState, player);
+        boolean removed = world.removeBlock(blockPos, false);
+        if(removed) this.destroy(world, blockPos, blockState);
 
-            if(!player.isCreative()) {
-                stack.mineBlock(world, blockState, blockPos, player);
-                this.playerDestroy(world, player, blockPos, blockState, blockEntity, stack.copy());
-            }
+        if(!player.isCreative()) {
+            stack.mineBlock(world, blockState, blockPos, player);
+            this.playerDestroy(world, player, blockPos, blockState, blockEntity, stack.copy());
         }
     }
 

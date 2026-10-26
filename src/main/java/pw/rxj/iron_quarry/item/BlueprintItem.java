@@ -31,20 +31,16 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.SmithingRecipeInput;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.data.BlueprintPositionComponent;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.interfaces.*;
 import pw.rxj.iron_quarry.network.PacketBlueprintExpand;
-import pw.rxj.iron_quarry.network.PacketKeyedAction;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.render.Cuboid;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
-import pw.rxj.iron_quarry.types.ActionGoal;
 import pw.rxj.iron_quarry.types.DualPosition;
 import pw.rxj.iron_quarry.types.ScrollDirection;
 import pw.rxj.iron_quarry.util.ReadableString;
@@ -55,7 +51,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmithing, IHandledGrinding, IHandledItemEntity, IHandledMainHandScrolling, IAlwaysRenderItemName, IHandledKeyedAction, IModifyItemGroupEntries {
+public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmithing, IHandledGrinding, IHandledItemEntity, IHandledMainHandScrolling, IAlwaysRenderItemName, IModifyItemGroupEntries {
     public BlueprintItem(Properties settings) {
         super(settings);
     }
@@ -339,27 +335,15 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     public InteractionResult use(Level world, Player user, InteractionHand hand) {
         ItemStack stack = user.getItemInHand(hand);
 //        Main.LOGGER.info(user.shouldCancelInteraction());
-        if(!world.isClientSide()) return InteractionResult.FAIL;
         if(!hand.equals(InteractionHand.MAIN_HAND) || !user.isCreative()) return InteractionResult.FAIL;
+        if(!user.isSecondaryUseActive()) return InteractionResult.PASS;
 
-        if(Minecraft.getInstance().options.keyShift.isDown()) {
-            ZNetwork.sendToServer(PacketKeyedAction.bake("key.sneak", hand, ActionGoal.USE, BlockHitResult.miss(Vec3.ZERO, Direction.UP, BlockPos.ZERO)));
-            return InteractionResult.CONSUME;
-        }
-
-        return InteractionResult.PASS;
-    }
-    @Override
-    public void keyedUse(String keyName, UseOnContext context) {
-        if(!keyName.equals("key.sneak")) return;
-
-        ItemStack stack = context.getItemInHand();
-        Player player = context.getPlayer();
-
-        if(player != null && player.isCreative()) {
+        if(!world.isClientSide()) {
             this.setSealed(stack, !this.isSealed(stack));
             this.resetMinedChunks(stack);
         }
+
+        return InteractionResult.CONSUME;
     }
     @Override
     public InteractionResult attackOnBlock(Player player, Level world, InteractionHand hand, BlockPos targetedPos, Direction direction) {

@@ -19,8 +19,7 @@ public class ZNetwork {
     private static final List<CustomPacketPayload.Type<? extends ComplexPayloadHandler>> packetList = List.of(
             PacketServerConfigApply.PACKET_ID,
             PacketQuarryBlockBreak.PACKET_ID,
-            PacketBlueprintExpand.PACKET_ID,
-            PacketKeyedAction.PACKET_ID
+            PacketBlueprintExpand.PACKET_ID
     );
 
     public static void registerClient() {
