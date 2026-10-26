@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -89,6 +90,9 @@ public class BlockActress {
     }
     public boolean isFluidStatePresent() {
         return !this.isFluidStateEmpty();
+    }
+    public boolean isLiquidBlock() {
+        return this.block instanceof LiquidBlock;
     }
     public boolean isUnbreakable() {
         return this.block.defaultDestroyTime() < 0;

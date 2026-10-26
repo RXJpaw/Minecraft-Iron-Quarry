@@ -426,7 +426,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
             //enables block entity tracking / disables neighbor- and redstone updates to reduce lag!
             BlockActress blockActress = testActress.get().with(true, 0, 2);
 
-            if(blockActress.isFluidStatePresent()) {
+            if(blockActress.isLiquidBlock()) {
                 blockActress.setBlockState(Blocks.AIR);
                 MiningQueue.remove(miningQueueIndex);
                 continue;
