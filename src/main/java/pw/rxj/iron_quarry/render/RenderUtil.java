@@ -110,6 +110,9 @@ public class RenderUtil {
     public static void drawTexture(GuiGraphicsExtractor context, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color) {
         context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight, color);
     }
+    public static void drawSprite(GuiGraphicsExtractor context, Identifier sprite, int x, int y, int width, int height) {
+        context.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, width, height);
+    }
     public static int whiteWithAlpha(double alpha) {
         int a = (int) Math.round(Mth.clamp(alpha, 0.0, 1.0) * 255.0);
 

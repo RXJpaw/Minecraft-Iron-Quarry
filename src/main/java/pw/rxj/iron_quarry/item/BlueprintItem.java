@@ -452,6 +452,12 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
 
         return mined == mineable;
     }
+    public boolean hasNextChunk(ItemStack stack) {
+        return this.isSealed(stack) && this.getMinedChunks(stack) + 1 < this.getMineableChunks(stack);
+    }
+    public boolean hasPreviousChunk(ItemStack stack) {
+        return this.isSealed(stack) && this.getMinedChunks(stack) > 0;
+    }
     public void resetMinedChunks(ItemStack stack) {
         stack.remove(ZComponents.BLUEPRINT_MINED_CHUNKS);
     }

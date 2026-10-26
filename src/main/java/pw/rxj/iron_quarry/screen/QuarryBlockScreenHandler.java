@@ -17,7 +17,7 @@ import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.util.*;
 
 public class QuarryBlockScreenHandler extends AbstractContainerMenu {
-    public static final SingleByteMap Buttons = new SingleByteMap().with(6, 2);
+    public static final SingleByteMap Buttons = new SingleByteMap().with(6, 2).with(2, 1);
 
     private final MachineConfiguration Configuration;
     private final ComplexInventory DrillInventory;
@@ -35,21 +35,20 @@ public class QuarryBlockScreenHandler extends AbstractContainerMenu {
     //sync this empty inventory with the inventory on the server.
     public QuarryBlockScreenHandler(int syncId, Inventory playerInventory, QuarryBlockScreenData data) {
         this(syncId, playerInventory, QuarryInventory.Output.noRef(), QuarryInventory.BatteryInput.noRef(), QuarryInventory.MachineUpgrades.noRef(),
-                QuarryInventory.Blueprint.noRef(), QuarryInventory.Drill.noRef(), new ComplexEnergyContainer(), MachineConfiguration.empty(), QuarryBlock.getFallback());
+                QuarryInventory.Blueprint.noRef(), QuarryInventory.Drill.noRef(), new ComplexEnergyContainer(), MachineConfiguration.empty(), QuarryBlock.getFallback(), data.getBlockPos());
 
         this.quarryBlock = (QuarryBlock) data.getBlock();
-        this.blockPos = data.getBlockPos();
         this.world = playerInventory.player.level();
     }
 
     //This constructor gets called from the BlockEntity on the server without calling the other constructor first, the server knows the inventory of the container
     //and can therefore directly provide it as an argument. This inventory will then be synced to the client.
     public QuarryBlockScreenHandler(int syncId, Inventory playerInventory, ComplexInventory outputInventory, ComplexInventory batteryInputInventory, ComplexInventory machineUpgradesInventory,
-                                                ComplexInventory blueprintInventory, ComplexInventory drillInventory, ComplexEnergyContainer energyContainer, MachineConfiguration configuration, QuarryBlock quarryBlock) {
+                                                ComplexInventory blueprintInventory, ComplexInventory drillInventory, ComplexEnergyContainer energyContainer, MachineConfiguration configuration, QuarryBlock quarryBlock, BlockPos blockPos) {
         super(Main.QUARRY_BLOCK_SCREEN_HANDLER, syncId);
 
         this.quarryBlock = quarryBlock;
-        this.blockPos = BlockPos.ZERO;
+        this.blockPos = blockPos;
         this.world = playerInventory.player.level();
 
         checkContainerSize(machineUpgradesInventory, 6);
@@ -154,6 +153,18 @@ public class QuarryBlockScreenHandler extends AbstractContainerMenu {
 
             Face face = Face.from(faceId);
             Configuration.setIoState(face, buttonId == 0 ? this.Configuration.getNextIoState(face) : this.Configuration.getPreviousIoState(face));
+        } else if(type == 1) {
+            int directionId = item.first();
+            if(directionId > 1) return false;
+
+            QuarryBlockEntity quarryBlockEntity = this.getQuarryBlockEntity();
+            if(quarryBlockEntity == null) return false;
+
+            if(directionId == 0) {
+                quarryBlockEntity.previousChunk();
+            } else {
+                quarryBlockEntity.nextChunk();
+            }
         }
 
         return true;

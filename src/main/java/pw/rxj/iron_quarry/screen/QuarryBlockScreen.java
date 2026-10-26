@@ -20,6 +20,7 @@ import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.compat.Compat;
 import pw.rxj.iron_quarry.data.QuarryOwnerComponent;
+import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.records.IoOption;
 import pw.rxj.iron_quarry.records.TexturePosition;
 import pw.rxj.iron_quarry.render.RenderUtil;
@@ -38,9 +39,14 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
     public static final Identifier OPTIONS_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/options.png");
     public static final Identifier OPTIONS_CONFIGURATION_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/options_configuration.png");
     public static final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/augmentation_configuration.png");
+    public static final Identifier BUTTON_SPRITE = Identifier.withDefaultNamespace("widget/button");
+    public static final Identifier BUTTON_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("widget/button_highlighted");
+    public static final Identifier BUTTON_DISABLED_SPRITE = Identifier.withDefaultNamespace("widget/button_disabled");
 
     private final TrackableZone InfoDisplay = TrackableZone.empty();
     private final TrackableZone EnergyDisplay = TrackableZone.empty();
+    private final TrackableZone PreviousChunkButton = TrackableZone.empty();
+    private final TrackableZone NextChunkButton = TrackableZone.empty();
     private final TrackableZone AugmentsConfig = TrackableZone.empty()
             .onTickDelta(2.5F, (zone, ticks) -> {
                 zone.width = (int) Math.min(22 + ticks * 31.2F, 100);
@@ -171,6 +177,13 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
 
             RenderUtil.drawTexture(context, INVENTORY_LOCATION, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, warnings.isEmpty() ? 182 : 185, 5, 3, 9, 256, 256, RenderUtil.whiteWithAlpha(alpha));
         }
+
+        //Blueprint Buttons
+        PreviousChunkButton.consume(TrackableZone.Zone.from(backgroundX + 58, backgroundY + 26, 18, 18), mouseX, mouseY);
+        NextChunkButton.consume(TrackableZone.Zone.from(backgroundX + 100, backgroundY + 26, 18, 18), mouseX, mouseY);
+
+        this.drawChunkButton(context, PreviousChunkButton, this.hasPreviousChunk(), 180, mouseX, mouseY);
+        this.drawChunkButton(context, NextChunkButton, this.hasNextChunk(), 197, mouseX, mouseY);
 
         //Augmentation Configuration
         TrackableZone.Zone augmentsMenuZone = AugmentsConfig.zone;
@@ -312,6 +325,10 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
             context.setTooltipForNextFrame(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.drill_info"), mouseX, mouseY);
         } else if(BATTERY_SLOT.getItem().isEmpty() && TrackableZone.isMouseOver(BATTERY_SLOT, this.leftPos, this.topPos, mouseX, mouseY)) {
             context.setTooltipForNextFrame(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.battery_info"), mouseX, mouseY);
+        } else if(PreviousChunkButton.isMouseOver(mouseX, mouseY)) {
+            context.setTooltipForNextFrame(this.font, ReadableString.translatable(this.hasPreviousChunk() ? "screen.iron_quarry.quarry_block.tooltip.previous_chunk" : "screen.iron_quarry.quarry_block.tooltip.previous_chunk.disabled"), mouseX, mouseY);
+        } else if(NextChunkButton.isMouseOver(mouseX, mouseY)) {
+            context.setTooltipForNextFrame(this.font, ReadableString.translatable(this.hasNextChunk() ? "screen.iron_quarry.quarry_block.tooltip.next_chunk" : "screen.iron_quarry.quarry_block.tooltip.next_chunk.disabled"), mouseX, mouseY);
         } else if(AugmentsConfig.isMouseOver()) {
             for (ManagedSlot slot : AUGMENT_SLOTS) {
                 if(slot.isLocked() && TrackableZone.isMouseOver(slot, this.leftPos, this.topPos, mouseX, mouseY)) {
@@ -358,6 +375,17 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
         if(this.minecraft.gameMode == null) return false;
         if(this.minecraft.getCameraEntity() == null) return false;
 
+        if(button == 0 && PreviousChunkButton.isMouseOver((int) mouseX, (int) mouseY)) {
+            if(this.hasPreviousChunk()) this.pressChunkButton(0);
+
+            return true;
+        }
+        if(button == 0 && NextChunkButton.isMouseOver((int) mouseX, (int) mouseY)) {
+            if(this.hasNextChunk()) this.pressChunkButton(1);
+
+            return true;
+        }
+
         if(IoConfig.isUsed()) {
             IO_OPTIONS.forEach(ioOption -> {
                 TrackableZone.Zone ioButtonZone = TrackableZone.Zone.from(
@@ -388,6 +416,31 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
         super.init();
         this.leftPos = (this.width - this.realBackgroundWidth) / 2;
         this.topPos = (this.height - this.realBackgroundHeight) / 2;
+    }
+
+    private boolean hasPreviousChunk() {
+        ItemStack blueprintStack = BLUEPRINT_SLOT.getItem();
+
+        return blueprintStack.getItem() instanceof BlueprintItem blueprintItem && blueprintItem.hasPreviousChunk(blueprintStack);
+    }
+    private boolean hasNextChunk() {
+        ItemStack blueprintStack = BLUEPRINT_SLOT.getItem();
+
+        return blueprintStack.getItem() instanceof BlueprintItem blueprintItem && blueprintItem.hasNextChunk(blueprintStack);
+    }
+    private void drawChunkButton(GuiGraphicsExtractor context, TrackableZone chunkButton, boolean active, int iconU, int mouseX, int mouseY) {
+        Identifier sprite = !active ? BUTTON_DISABLED_SPRITE : chunkButton.isMouseOver(mouseX, mouseY) ? BUTTON_HIGHLIGHTED_SPRITE : BUTTON_SPRITE;
+
+        RenderUtil.drawSprite(context, sprite, chunkButton.zone.x, chunkButton.zone.y, 18, 18);
+        RenderUtil.drawTexture(context, INVENTORY_LOCATION, chunkButton.zone.x + 1, chunkButton.zone.y + 1, iconU, active ? 78 : 95, 16, 16);
+    }
+    private void pressChunkButton(int directionId) {
+        if(this.minecraft.gameMode == null || this.minecraft.getCameraEntity() == null) return;
+
+        this.minecraft.getCameraEntity().playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.2F, 1.0F);
+
+        Optional<Byte> buttonId = QuarryBlockScreenHandler.Buttons.toByte(1, directionId, 0);
+        buttonId.ifPresent(id -> this.minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id));
     }
 
     public static void drawIoHighlight(GuiGraphicsExtractor context, int x, int y) {

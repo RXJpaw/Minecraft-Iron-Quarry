@@ -59,12 +59,7 @@ import team.reborn.energy.api.EnergyStorage;
 import team.reborn.energy.api.EnergyStorageUtil;
 import team.reborn.energy.impl.EnergyImpl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvider<QuarryBlockScreenData> {
@@ -298,7 +293,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
         thisBlockEntity.attemptPushIo(IoState.ORANGE);
 
         ItemStack blueprintStack = thisBlockEntity.BlueprintInventory.getItem(0);
-        int blueprintHash = blueprintStack.hashCode();
+        int blueprintHash = ItemStack.hashItemAndComponents(blueprintStack);
         ItemStack drillStack = thisBlockEntity.DrillInventory.getItem(0);
         int drillHash = drillStack.isEmpty() ? 0 : drillStack.hashCode();
 
@@ -368,7 +363,9 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
         if(MiningQueue.isEmpty()) {
             if(thisBlockEntity.currentChunk != null) {
                 ChunkLoadingManager.removeTicket(serverWorldToBreak, thisBlockEntity.currentChunk, thisServerWorld, thisPos);
+
                 blueprintItem.increaseMinedChunks(blueprintStack);
+                thisBlockEntity.blueprintHash = ItemStack.hashItemAndComponents(blueprintStack);
 
                 thisBlockEntity.currentChunk = null;
             }
@@ -456,6 +453,23 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
         this.setChanged();
         this.updateListeners();
     }
+    public void nextChunk() {
+        ItemStack blueprintStack = this.BlueprintInventory.getItem(0);
+        if(!(blueprintStack.getItem() instanceof BlueprintItem blueprintItem)) return;
+        if(!blueprintItem.hasNextChunk(blueprintStack)) return;
+
+        blueprintItem.increaseMinedChunks(blueprintStack);
+        this.setChanged();
+    }
+    public void previousChunk() {
+        ItemStack blueprintStack = this.BlueprintInventory.getItem(0);
+        if(!(blueprintStack.getItem() instanceof BlueprintItem blueprintItem)) return;
+        if(!blueprintItem.hasPreviousChunk(blueprintStack)) return;
+
+        blueprintItem.increaseMinedChunks(blueprintStack, -1);
+        this.setChanged();
+    }
+
     private boolean canDrill(BlockActress blockActress, MachineUpgradesUtil upgradesUtil) {
         return this.canDrill(() -> blockActress.blockEntity, blockActress.blockState, upgradesUtil);
     }
@@ -682,7 +696,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
-        return new QuarryBlockScreenHandler(syncId, playerInventory, OutputInventory, BatteryInputInventory, MachineUpgradesInventory, BlueprintInventory, DrillInventory, EnergyContainer, Configuration, this.getQuarryBlock());
+        return new QuarryBlockScreenHandler(syncId, playerInventory, OutputInventory, BatteryInputInventory, MachineUpgradesInventory, BlueprintInventory, DrillInventory, EnergyContainer, Configuration, this.getQuarryBlock(), this.worldPosition);
     }
 
     @Override
