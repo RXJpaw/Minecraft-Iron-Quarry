@@ -2,6 +2,10 @@ package pw.rxj.iron_quarry.util;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.records.IndexedValue;
@@ -12,10 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 
 public class MachineConfiguration {
     private final HashMap<Face, IoState> SidedIoConfig;
@@ -124,6 +124,7 @@ public class MachineConfiguration {
         return config;
     }
     public void read(CompoundTag config) {
+        HashMap<Face, IoState> previousSidedIoConfig = new HashMap<>(this.SidedIoConfig);
         CompoundTag sidedIoConfig = config.getCompoundOrEmpty("SidedIo");
 
         this.SidedIoConfig.clear();
@@ -137,7 +138,14 @@ public class MachineConfiguration {
             if(ioState == null) continue;
 
             SidedIoConfig.put(face, ioState);
-            onIoUpdated(face, ioState);
+        }
+
+        for (Face face : Face.values()) {
+            IoState ioState = this.getIoState(face);
+
+            if(!ioState.equals(previousSidedIoConfig.getOrDefault(face, IoState.BLOCKED))) {
+                onIoUpdated(face, ioState);
+            }
         }
     }
 
