@@ -123,6 +123,8 @@
     "item.iron_quarry.warning.quarry_inv_90": "§{RGB_TAB_TITLE ⚠ Output inventory full}",
     "item.iron_quarry.warning.quarry_inv_70": "§{RGB_TAB_TITLE ⚠ Output inventory almost full | >70%%}",
     "item.iron_quarry.warning.quarry_drill_empty": "§{RGB_TAB_TITLE ⚠ Drill slot empty}",
+    "item.iron_quarry.warning.quarry_owner_missing": "§{RGB_TAB_TITLE ⚠ Quarry has no owner; place it again}",
+    "item.iron_quarry.warning.quarry_mining_denied": "§{RGB_TAB_TITLE ⚠ Not allowed to mine %s at %s, %s, %s}",
 
     "screen.iron_quarry.quarry_block.tooltip.locked_augment_slot": "§{RGB_TAB_TITLE Upgrade the quarry to unlock this augment slot!}",
     "screen.iron_quarry.quarry_block.tooltip.blueprint_info": "§{RGB_TAB_TITLE Insert §lSealed Blueprint§r to start the quarry.}",
@@ -130,7 +132,8 @@
     "screen.iron_quarry.quarry_block.tooltip.drill_info": "§{RGB_TAB_TITLE Insert §lany Drill§r to start the quarry.}",
     "screen.iron_quarry.quarry_block.title.configuration": "§{RGB_TAB_TITLE Configuration}",
     "screen.iron_quarry.quarry_block.title.augmentation": "§{RGB_TAB_TITLE Augmentation}",
-    "screen.iron_quarry.quarry_block.title.info_display": "§{RGB_WEAK_HIGHLIGHT Quarry Details}",
+    "screen.iron_quarry.quarry_block.title.info_display": "§{RGB_WEAK_HIGHLIGHT Quarry of %s}",
+    "screen.iron_quarry.quarry_block.title.info_display.no_owner": "§{RGB_WEAK_HIGHLIGHT Quarry Details}",
 
     "screen.iron_quarry.client_config.title": "Iron Quarry: Client Config",
     "screen.iron_quarry.client_config.block_break_volume": "Block Break Volume: %s%%",

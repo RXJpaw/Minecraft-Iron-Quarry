@@ -1,5 +1,8 @@
 package pw.rxj.iron_quarry.blockentity;
 
+import com.mojang.authlib.GameProfile;
+import net.fabricmc.fabric.api.entity.FakePlayer;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
@@ -21,6 +24,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -41,6 +45,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.data.QuarryBlockScreenData;
+import pw.rxj.iron_quarry.data.QuarryBlockedDataComponent;
+import pw.rxj.iron_quarry.data.QuarryOwnerComponent;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.DrillItem;
 import pw.rxj.iron_quarry.network.PacketQuarryBlockBreak;
@@ -56,7 +62,9 @@ import team.reborn.energy.impl.EnergyImpl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvider<QuarryBlockScreenData> {
@@ -232,12 +240,47 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
         }
     }
 
+    //Ownership
+    private @Nullable QuarryOwnerComponent owner;
+
+    public void setOwner(UUID uuid, String name) {
+        this.owner = QuarryOwnerComponent.of(uuid, name);
+
+        this.setChanged();
+        this.updateListeners();
+    }
+    public @Nullable QuarryOwnerComponent getOwner() {
+        return this.owner;
+    }
+    public void refreshOwnerName() {
+        if(this.owner == null || !(this.level instanceof ServerLevel serverWorld)) return;
+
+        NameAndId nameAndId = serverWorld.getServer().services().nameToIdCache().get(this.owner.getUuid()).orElse(null);
+        if(nameAndId != null && !nameAndId.name().equals(this.owner.getName())) {
+            this.setOwner(this.owner.getUuid(), nameAndId.name());
+        }
+    }
+    public @Nullable QuarryBlockedDataComponent getBlocked() {
+        return this.blocked;
+    }
+    public List<Component> getWarnings() {
+        List<Component> warnings = new ArrayList<>();
+
+        if(this.owner == null) warnings.add(ReadableString.translatable("item.iron_quarry.warning.quarry_owner_missing"));
+        if(this.blocked != null) warnings.add(this.blocked.getText());
+
+        return warnings;
+    }
+
     //World Ticking
     private final ArrayList<BlockPos> MiningQueue = new ArrayList<>();
     private ChunkPos currentChunk;
     private int blueprintHash = 0;
     private int drillHash = 0;
     private int cooldown = 0;
+    private static final int BLOCKED_RETRY_TICKS = 100;
+    private int blockedCooldown = 0;
+    private @Nullable QuarryBlockedDataComponent blocked;
 
     public static void tick(Level thisWorld, BlockPos thisPos, BlockState thisBlockState, QuarryBlockEntity thisBlockEntity) {
         if(thisWorld == null) return;
@@ -265,6 +308,7 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
 
             thisBlockEntity.currentChunk = null;
             thisBlockEntity.MiningQueue.clear();
+            thisBlockEntity.setBlocked(null);
 
             ChunkLoadingManager.removeTickets(thisServerWorld, thisPos);
 
@@ -286,10 +330,15 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
         ResourceKey<Level> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack).orElse(null);
         ServerLevel serverWorldToBreak = minecraftServer.getLevel(worldRegistryKey);
         if(serverWorldToBreak == null) return;
+        if(thisBlockEntity.owner == null) return;
 
         MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(thisBlockEntity.getMachineUpgradeStacks());
         long minimumEnergyConsumption = thisBlock.getEnergyConsumption(upgradesUtil, Blocks.STONE);
         if(thisBlockEntity.EnergyContainer.getStored() < minimumEnergyConsumption) return;
+
+        if(thisBlockEntity.blockedCooldown > 0) {
+            thisBlockEntity.blockedCooldown--; return;
+        }
 
         int threads = 1;
 
@@ -384,6 +433,29 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
         }
     }
 
+    private boolean canModify(ServerLevel world, BlockActress blockActress) {
+        if(this.owner == null) return false;
+
+        FakePlayer fakePlayer = FakePlayer.get(world, new GameProfile(this.owner.getUuid(), this.owner.getName()));
+        boolean allowed = PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, fakePlayer, blockActress.blockPos, blockActress.blockState, blockActress.blockEntity);
+
+        if(allowed) {
+            this.setBlocked(null);
+        } else {
+            this.setBlocked(QuarryBlockedDataComponent.of(blockActress.block, blockActress.blockPos));
+        }
+
+        return allowed;
+    }
+    private void setBlocked(@Nullable QuarryBlockedDataComponent blocked) {
+        this.blockedCooldown = blocked == null ? 0 : BLOCKED_RETRY_TICKS;
+        if(Objects.equals(this.blocked, blocked)) return;
+
+        this.blocked = blocked;
+
+        this.setChanged();
+        this.updateListeners();
+    }
     private boolean canDrill(BlockActress blockActress, MachineUpgradesUtil upgradesUtil) {
         return this.canDrill(() -> blockActress.blockEntity, blockActress.blockState, upgradesUtil);
     }
@@ -427,6 +499,8 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
             BlockActress blockActress = testActress.get().with(true, 0, 2);
 
             if(blockActress.isLiquidBlock()) {
+                if(!quarryBlockEntity.canModify(serverWorldToBreak, blockActress)) return drillResults;
+
                 blockActress.setBlockState(Blocks.AIR);
                 MiningQueue.remove(miningQueueIndex);
                 continue;
@@ -434,6 +508,8 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
 
             //handle special block entities
             if(this.canDrill(blockActress, upgradesUtil)) {
+                if(!quarryBlockEntity.canModify(serverWorldToBreak, blockActress)) return drillResults;
+
                 //will only work if canDrill conditions are met! like if the container is not empty
                 if(blockActress.blockEntity instanceof RandomizableContainerBlockEntity lootableContainer) {
                     for (int slot = 0; slot < lootableContainer.getContainerSize(); slot++) {
@@ -553,6 +629,12 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
         //Config
         CompoundTag Config = view.read("rxj.pw/Config", CompoundTag.CODEC).orElseGet(CompoundTag::new);
         Configuration.read(Config);
+
+        //Owner
+        this.owner = view.read("rxj.pw/Owner", QuarryOwnerComponent.CODEC).orElse(null);
+
+        //Blocked
+        this.blocked = view.read("rxj.pw/Blocked", QuarryBlockedDataComponent.CODEC).orElse(null);
     }
     @Override
     public void saveAdditional(ValueOutput view) {
@@ -572,6 +654,12 @@ public class QuarryBlockEntity extends BlockEntity implements ExtendedMenuProvid
         //Config
         CompoundTag Config = Configuration.write();
         view.store("rxj.pw/Config", CompoundTag.CODEC, Config);
+
+        //Owner
+        if(this.owner != null) view.store("rxj.pw/Owner", QuarryOwnerComponent.CODEC, this.owner);
+
+        //Blocked
+        if(this.blocked != null) view.store("rxj.pw/Blocked", QuarryBlockedDataComponent.CODEC, this.blocked);
     }
 
     @Nullable

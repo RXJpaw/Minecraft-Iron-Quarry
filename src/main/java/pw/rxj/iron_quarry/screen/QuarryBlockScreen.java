@@ -1,21 +1,5 @@
 package pw.rxj.iron_quarry.screen;
 
-import org.joml.Matrix3x2fStack;
-import pw.rxj.iron_quarry.Global;
-import pw.rxj.iron_quarry.Main;
-import pw.rxj.iron_quarry.block.QuarryBlock;
-import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
-import pw.rxj.iron_quarry.compat.Compat;
-import pw.rxj.iron_quarry.records.IoOption;
-import pw.rxj.iron_quarry.records.TexturePosition;
-import pw.rxj.iron_quarry.render.RenderUtil;
-import pw.rxj.iron_quarry.types.Face;
-import pw.rxj.iron_quarry.types.IoState;
-import pw.rxj.iron_quarry.util.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -30,6 +14,23 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import org.joml.Matrix3x2fStack;
+import pw.rxj.iron_quarry.Global;
+import pw.rxj.iron_quarry.Main;
+import pw.rxj.iron_quarry.block.QuarryBlock;
+import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
+import pw.rxj.iron_quarry.compat.Compat;
+import pw.rxj.iron_quarry.data.QuarryOwnerComponent;
+import pw.rxj.iron_quarry.records.IoOption;
+import pw.rxj.iron_quarry.records.TexturePosition;
+import pw.rxj.iron_quarry.render.RenderUtil;
+import pw.rxj.iron_quarry.types.Face;
+import pw.rxj.iron_quarry.types.IoState;
+import pw.rxj.iron_quarry.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreenHandler> {
     //A path to the gui texture. In this example we use the texture from the dispenser
@@ -119,6 +120,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
         ComplexEnergyContainer EnergyContainer = blockEntity.EnergyContainer;
         MachineConfiguration MachineConfiguration = blockEntity.Configuration;
         MachineUpgradesUtil machineUpgradesUtil = MachineUpgradesUtil.from(block.getMachineUpgradeStacks(stack));
+        List<Component> warnings = blockEntity.getWarnings();
 
         int backgroundX = this.leftPos;
         int backgroundY = this.topPos;
@@ -148,19 +150,28 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
         InfoDisplay.supplyText(() -> {
             List<Component> tooltip = new ArrayList<>();
 
-            tooltip.add(ReadableString.translatable("screen.iron_quarry.quarry_block.title.info_display"));
+            QuarryOwnerComponent owner = blockEntity.getOwner();
+            tooltip.add(owner != null
+                    ? ReadableString.translatable("screen.iron_quarry.quarry_block.title.info_display", owner.getName())
+                    : ReadableString.translatable("screen.iron_quarry.quarry_block.title.info_display.no_owner"));
             block.appendTooltip(stack, Item.TooltipContext.of(minecraftClient.level), tooltip::add, TooltipFlag.NORMAL);
 
             int conflictAmount = machineUpgradesUtil.getConflictAmount();
 
-            return tooltip.subList(0, conflictAmount > 0 ? 5 + conflictAmount : 4);
+            List<Component> infoTooltip = new ArrayList<>(tooltip.subList(0, conflictAmount > 0 ? 5 + conflictAmount : 4));
+            if(!warnings.isEmpty()) {
+                infoTooltip.add(ReadableString.space());
+                infoTooltip.addAll(warnings);
+            }
+
+            return infoTooltip;
         });
 
         RenderUtil.drawTexture(context, INVENTORY_LOCATION, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, 179, 5, 3, 9);
-        if(machineUpgradesUtil.getConflictAmount() > 0) {
+        if(!warnings.isEmpty() || machineUpgradesUtil.getConflictAmount() > 0) {
             double alpha = Math.sin(System.currentTimeMillis() / 100.0) + 0.5;
 
-            RenderUtil.drawTexture(context, INVENTORY_LOCATION, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, 182, 5, 3, 9, 256, 256, RenderUtil.whiteWithAlpha(alpha));
+            RenderUtil.drawTexture(context, INVENTORY_LOCATION, InfoDisplay.zone.x + 5, InfoDisplay.zone.y + 2, warnings.isEmpty() ? 182 : 185, 5, 3, 9, 256, 256, RenderUtil.whiteWithAlpha(alpha));
         }
 
         //Augmentation Configuration

@@ -13,6 +13,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -246,6 +247,8 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
                 return InteractionResult.PASS;
             } else if(!player.isSecondaryUseActive()) {
                 if (!world.isClientSide()) {
+                    quarryBlockEntity.refreshOwnerName();
+
                     MenuProvider screenHandlerFactory = blockState.getMenuProvider(world, blockPos);
                     if (screenHandlerFactory != null) player.openMenu(screenHandlerFactory);
                 }
@@ -280,6 +283,16 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
                 stack.mineBlock(world, blockState, blockPos, player);
                 this.playerDestroy(world, player, blockPos, blockState, blockEntity, stack.copy());
             }
+        }
+    }
+
+    @Override
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        super.setPlacedBy(world, pos, state, placer, itemStack);
+        if(world.isClientSide()) return;
+
+        if(placer instanceof Player player && world.getBlockEntity(pos) instanceof QuarryBlockEntity quarryBlockEntity) {
+            quarryBlockEntity.setOwner(player.getUUID(), player.getGameProfile().name());
         }
     }
 

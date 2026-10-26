@@ -64,6 +64,12 @@ public class ZComponents {
     public static DataComponentType<Long> QUARRY_MONITOR_CACHED_TIMESTAMP = register("quarry_monitor_cached_timestamp", (builder) -> builder
             .persistent(Codec.LONG)
             .networkSynchronized(ByteBufCodecs.VAR_LONG));
+    public static DataComponentType<QuarryOwnerComponent> QUARRY_MONITOR_CACHED_OWNER = register("quarry_monitor_cached_owner", (builder) -> builder
+            .persistent(QuarryOwnerComponent.CODEC)
+            .networkSynchronized(QuarryOwnerComponent.PACKET_CODEC));
+    public static DataComponentType<QuarryBlockedDataComponent> QUARRY_MONITOR_CACHED_BLOCKED_DATA = register("quarry_monitor_cached_blocked_data", (builder) -> builder
+            .persistent(QuarryBlockedDataComponent.CODEC)
+            .networkSynchronized(QuarryBlockedDataComponent.PACKET_CODEC));
 
 
     /**

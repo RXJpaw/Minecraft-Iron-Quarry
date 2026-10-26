@@ -30,6 +30,8 @@ import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.blockentity.ZBlockEntities;
+import pw.rxj.iron_quarry.data.QuarryBlockedDataComponent;
+import pw.rxj.iron_quarry.data.QuarryOwnerComponent;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
 import pw.rxj.iron_quarry.interfaces.ITickingInventoryItem;
@@ -144,6 +146,14 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
                         if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_DRILL_EMPTY)) {
                             textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_drill_empty"));
+                        }
+
+                        if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_OWNER_MISSING)) {
+                            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_owner_missing"));
+                        }
+                        if(QuarryMonitorItem.hasWarning(warningFlag, QuarryMonitorItem.WARNING_MINING_DENIED)) {
+                            QuarryBlockedDataComponent blockedData = stack.get(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
+                            if(blockedData != null) textConsumer.accept(blockedData.getText());
                         }
                     }
                 }
@@ -262,6 +272,20 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
         stack.set(ZComponents.QUARRY_MONITOR_CACHED_QUARRY, ItemStackTemplate.fromNonEmptyStack(itemStack));
         stack.set(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, System.currentTimeMillis());
+
+        QuarryOwnerComponent owner = blockEntity.getOwner();
+        if(owner != null) {
+            stack.set(ZComponents.QUARRY_MONITOR_CACHED_OWNER, owner);
+        } else {
+            stack.remove(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
+        }
+
+        QuarryBlockedDataComponent blockedData = blockEntity.getBlocked();
+        if(blockedData != null) {
+            stack.set(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA, blockedData);
+        } else {
+            stack.remove(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
+        }
     }
 
     public @NotNull ItemStack getCachedQuarryStack(ItemStack stack) {
@@ -279,6 +303,8 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         if(quarryStack.isEmpty()) return;
 
         stack.remove(ZComponents.QUARRY_MONITOR_CACHED_QUARRY);
+        stack.remove(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
+        stack.remove(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
         stack.set(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, System.currentTimeMillis());
     }
     private @Nullable QuarryBlock getCachedQuarryBlock(ItemStack quarryStack) {
@@ -349,6 +375,8 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     public static final int WARNING_ENERGY_30 = 3;
     public static final int WARNING_ENERGY_10 = 4;
     public static final int WARNING_DRILL_EMPTY = 5;
+    public static final int WARNING_OWNER_MISSING = 6;
+    public static final int WARNING_MINING_DENIED = 7;
 
     public static boolean hasWarnings(int flag) {
         return flag != 0;
@@ -365,7 +393,10 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         boolean hasDrillStack = this.getCachedDrillStack(stack).getItem() instanceof DrillItem;
         ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
 
-        return new boolean[] { quarryBlockStack.isEmpty(), invPct >= 0.7F, invPct >= 0.9F, energyPct <= 0.3F, energyPct <= 0.1F, !hasDrillStack };
+        boolean ownerMissing = !quarryBlockStack.isEmpty() && !stack.has(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
+        boolean miningDenied = stack.has(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
+
+        return new boolean[] { quarryBlockStack.isEmpty(), invPct >= 0.7F, invPct >= 0.9F, energyPct <= 0.3F, energyPct <= 0.1F, !hasDrillStack, ownerMissing, miningDenied };
     }
     public int getWarningAmount(ItemStack stack) {
         int amount = 0;
@@ -386,6 +417,8 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         if(list[WARNING_ENERGY_30]) flag += 1 << WARNING_ENERGY_30;
         if(list[WARNING_ENERGY_10]) flag += 1 << WARNING_ENERGY_10;
         if(list[WARNING_DRILL_EMPTY]) flag += 1 << WARNING_DRILL_EMPTY;
+        if(list[WARNING_OWNER_MISSING]) flag += 1 << WARNING_OWNER_MISSING;
+        if(list[WARNING_MINING_DENIED]) flag += 1 << WARNING_MINING_DENIED;
 
         return flag;
     }
