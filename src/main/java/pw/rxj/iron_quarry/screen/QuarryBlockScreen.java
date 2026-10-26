@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.screen;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -105,8 +104,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
     public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         super.extractBackground(context, mouseX, mouseY, delta);
 
-        Minecraft minecraftClient = Minecraft.getInstance();
-        if(minecraftClient.level == null) return;
+        if(this.minecraft.level == null) return;
 
         QuarryBlockEntity blockEntity = menu.getQuarryBlockEntity();
         if(blockEntity == null) return;
@@ -154,7 +152,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
             tooltip.add(owner != null
                     ? ReadableString.translatable("screen.iron_quarry.quarry_block.title.info_display", owner.getName())
                     : ReadableString.translatable("screen.iron_quarry.quarry_block.title.info_display.no_owner"));
-            block.appendTooltip(stack, Item.TooltipContext.of(minecraftClient.level), tooltip::add, TooltipFlag.NORMAL);
+            block.appendTooltip(stack, Item.TooltipContext.of(this.minecraft.level), tooltip::add, TooltipFlag.NORMAL);
 
             int conflictAmount = machineUpgradesUtil.getConflictAmount();
 
@@ -349,8 +347,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
         double mouseY = click.y();
         int button = click.button();
 
-        Minecraft minecraftClient = Minecraft.getInstance();
-        if(minecraftClient.level == null) return false;
+        if(this.minecraft.level == null) return false;
 
         QuarryBlockEntity blockEntity = menu.getQuarryBlockEntity();
         if(blockEntity == null) return false;
@@ -358,9 +355,8 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
         QuarryBlock block = blockEntity.getQuarryBlock();
         if(block == null) return false;
 
-        if(this.minecraft == null) return false;
         if(this.minecraft.gameMode == null) return false;
-        if(minecraftClient.getCameraEntity() == null) return false;
+        if(this.minecraft.getCameraEntity() == null) return false;
 
         if(IoConfig.isUsed()) {
             IO_OPTIONS.forEach(ioOption -> {
@@ -374,7 +370,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
                 TrackableZone ioButton = TrackableZone.bake(ioButtonZone, (int) mouseX, (int) mouseY);
 
                 if(ioButton.isMouseOver()) {
-                    minecraftClient.getCameraEntity().playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.2F, 1.0F);
+                    this.minecraft.getCameraEntity().playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.2F, 1.0F);
 
                     Optional<Byte> id = QuarryBlockScreenHandler.Buttons.toByte(0, ioOption.frontFace().getId(), button);
                     if(id.isEmpty()) return;
