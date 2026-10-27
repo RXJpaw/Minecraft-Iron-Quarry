@@ -1,7 +1,6 @@
 package pw.rxj.iron_quarry.model;
 
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
-import net.minecraft.client.renderer.item.ItemModels;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.block.ZBlocks;
 
@@ -20,10 +19,8 @@ public class ZModels {
     public static void register() {
         ModelLoadingPlugin.register(pluginContext -> {
             for (QuarryBlock quarryBlock : quarryBlockList) {
-                QuarryModel.register(pluginContext, quarryBlock);
+                FabricQuarryModel.register(pluginContext, quarryBlock);
             }
         });
-
-        ItemModels.ID_MAPPER.put(QuarryItemModel.ID, QuarryItemModel.Unbaked.CODEC);
     }
 }

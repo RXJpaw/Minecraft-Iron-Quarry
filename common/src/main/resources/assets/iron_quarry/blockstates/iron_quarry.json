@@ -1,5 +1,5 @@
 {
     "variants": {
-        "": { "model": "iron_quarry:block/iron_quarry" }
+        "": { "model": "iron_quarry:block/iron_quarry", "type": "iron_quarry:quarry", "block": "iron_quarry:iron_quarry" }
     }
 }

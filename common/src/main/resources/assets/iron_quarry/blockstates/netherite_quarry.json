@@ -1,5 +1,5 @@
 {
     "variants": {
-        "": { "model": "iron_quarry:block/netherite_quarry" }
+        "": { "model": "iron_quarry:block/netherite_quarry", "type": "iron_quarry:quarry", "block": "iron_quarry:netherite_quarry" }
     }
 }

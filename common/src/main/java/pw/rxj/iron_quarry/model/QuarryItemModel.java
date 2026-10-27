@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4fc;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
+import pw.rxj.iron_quarry.platform.Platform;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.List;
@@ -58,6 +59,10 @@ public class QuarryItemModel implements ItemModel {
         List<BakedQuad> quads = this.model.getItemQuads(stack);
         layer.prepareQuadList().addAll(quads);
         layer.setExtents(() -> CuboidItemModelWrapper.computeExtents(quads));
+    }
+
+    public static void register() {
+        Platform.CLIENT.registerItemModel(ID, Unbaked.CODEC);
     }
 
     public static class Unbaked implements ItemModel.Unbaked {

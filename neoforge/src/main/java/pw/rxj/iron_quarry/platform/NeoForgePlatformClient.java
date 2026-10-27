@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
+import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -11,6 +12,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterRangeSelectItemModelPropertyEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
@@ -24,6 +26,7 @@ import java.util.function.Function;
 public class NeoForgePlatformClient implements IPlatformClient {
     private static final List<Consumer<RegisterMenuScreensEvent>> MENU_SCREENS = new ArrayList<>();
     private static final List<Consumer<AddClientReloadListenersEvent>> RELOAD_LISTENERS = new ArrayList<>();
+    private static final List<Consumer<RegisterItemModelsEvent>> ITEM_MODELS = new ArrayList<>();
     private static final List<Consumer<RegisterRangeSelectItemModelPropertyEvent>> RANGE_SELECT_PROPERTIES = new ArrayList<>();
 
     @Override
@@ -34,6 +37,11 @@ public class NeoForgePlatformClient implements IPlatformClient {
     @Override
     public void registerReloadListener(Identifier id, PreparableReloadListener listener) {
         RELOAD_LISTENERS.add(event -> event.addListener(id, listener));
+    }
+
+    @Override
+    public void registerItemModel(Identifier id, MapCodec<? extends ItemModel.Unbaked> codec) {
+        ITEM_MODELS.add(event -> event.register(id, codec));
     }
 
     @Override
@@ -53,6 +61,9 @@ public class NeoForgePlatformClient implements IPlatformClient {
     }
     public static void registerReloadListeners(AddClientReloadListenersEvent event) {
         RELOAD_LISTENERS.forEach(reloadListener -> reloadListener.accept(event));
+    }
+    public static void registerItemModels(RegisterItemModelsEvent event) {
+        ITEM_MODELS.forEach(itemModel -> itemModel.accept(event));
     }
     public static void registerRangeSelectItemModelProperties(RegisterRangeSelectItemModelPropertyEvent event) {
         RANGE_SELECT_PROPERTIES.forEach(property -> property.accept(event));

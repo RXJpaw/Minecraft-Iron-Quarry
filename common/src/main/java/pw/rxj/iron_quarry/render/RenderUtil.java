@@ -15,6 +15,8 @@ import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Direction;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -230,15 +232,52 @@ public class RenderUtil {
         int color(int vertex);
         boolean diffuseShade();
         Direction lightFace();
+
+        static PreviewQuad of(BakedQuad quad) {
+            return new PreviewQuad() {
+                @Override
+                public float x(int vertex) {
+                    return quad.position(vertex).x();
+                }
+                @Override
+                public float y(int vertex) {
+                    return quad.position(vertex).y();
+                }
+                @Override
+                public float z(int vertex) {
+                    return quad.position(vertex).z();
+                }
+                @Override
+                public float u(int vertex) {
+                    return UVPair.unpackU(quad.packedUV(vertex));
+                }
+                @Override
+                public float v(int vertex) {
+                    return UVPair.unpackV(quad.packedUV(vertex));
+                }
+                @Override
+                public int color(int vertex) {
+                    return -1;
+                }
+                @Override
+                public boolean diffuseShade() {
+                    return quad.materialInfo().shade();
+                }
+                @Override
+                public Direction lightFace() {
+                    return quad.direction();
+                }
+            };
+        }
     }
 
-    public static void drawPreviewMesh(PoseStack matrices, Consumer<Consumer<PreviewQuad>> mesh, CardinalLighting cardinalLighting, float alpha, boolean occludedOnly) {
+    public static void drawPreviewMesh(PoseStack matrices, Iterable<? extends PreviewQuad> mesh, CardinalLighting cardinalLighting, float alpha, boolean occludedOnly) {
         RenderType renderLayer = occludedOnly ? Previews.OCCLUDED_PREVIEW : Previews.OVERLAY_PREVIEW;
         Matrix4f positionMatrix = matrices.last().pose();
 
         BufferBuilder buffer = Tesselator.getInstance().begin(renderLayer.mode(), renderLayer.format());
 
-        mesh.accept(quad -> {
+        mesh.forEach(quad -> {
             float shade = quad.diffuseShade() ? cardinalLighting.byFace(quad.lightFace()) : 1.0F;
 
             for (int vertex = 0; vertex < 4; vertex++) {

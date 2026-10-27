@@ -2,15 +2,12 @@ package pw.rxj.iron_quarry.render;
 
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.fabricmc.fabric.api.client.renderer.v1.Renderer;
-import net.fabricmc.fabric.api.client.renderer.v1.mesh.Mesh;
-import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableMesh;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,6 +29,9 @@ import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.model.QuarryModel;
 import pw.rxj.iron_quarry.util.ItemStackUtil;
 import pw.rxj.iron_quarry.util.ZUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class QuarryMonitorPreviewRenderer {
     private static final double MIN_PREVIEW_DEPTH = 1.0;
@@ -77,7 +77,7 @@ public class QuarryMonitorPreviewRenderer {
         ItemStack quarryStack = quarryMonitorItem.getCachedQuarryStack(quarryMonitorStack);
         BlockStateModelSet blockStateModelSet = minecraftClient.getModelManager().getBlockStateModelSet();
 
-        final Mesh mesh;
+        final List<RenderUtil.PreviewQuad> quads;
         final boolean coversRealBlock;
 
         if(ZUtil.getBlockOrItem(quarryStack) instanceof QuarryBlock quarryBlock) {
@@ -87,13 +87,13 @@ public class QuarryMonitorPreviewRenderer {
             coversRealBlock = blockState.getBlock() instanceof QuarryBlock && depth <= maxDepth && enlargement <= 1.0F;
             Direction frontDirection = coversRealBlock ? blockState.getValue(QuarryBlock.FACING) : quarryMonitorItem.getCachedFacing(quarryMonitorStack);
 
-            mesh = quarryModel.getPreviewMesh(quarryStack, frontDirection);
+            quads = quarryModel.getPreviewQuads(quarryStack, frontDirection);
         } else {
             coversRealBlock = false;
-            mesh = getMissingQuarryMesh(blockStateModelSet);
+            quads = getMissingQuarryQuads(blockStateModelSet);
         }
 
-        if(mesh == null) return;
+        if(quads.isEmpty()) return;
 
         float approach = coversRealBlock ? (float) (1.0 - 0.001 - depth * 5.0E-6) : 1.0F;
         float scale = depthScale * enlargement * approach;
@@ -105,49 +105,25 @@ public class QuarryMonitorPreviewRenderer {
         matrices.scale(scale, scale, scale);
         matrices.translate(-0.5F, -0.5F, -0.5F);
 
-        RenderUtil.drawPreviewMesh(matrices, consumer -> mesh.forEach(quad -> consumer.accept(new RenderUtil.PreviewQuad() {
-            @Override
-            public float x(int vertex) {
-                return quad.x(vertex);
-            }
-            @Override
-            public float y(int vertex) {
-                return quad.y(vertex);
-            }
-            @Override
-            public float z(int vertex) {
-                return quad.z(vertex);
-            }
-            @Override
-            public float u(int vertex) {
-                return quad.u(vertex);
-            }
-            @Override
-            public float v(int vertex) {
-                return quad.v(vertex);
-            }
-            @Override
-            public int color(int vertex) {
-                return quad.color(vertex);
-            }
-            @Override
-            public boolean diffuseShade() {
-                return quad.diffuseShade();
-            }
-            @Override
-            public Direction lightFace() {
-                return quad.lightFace();
-            }
-        })), world.cardinalLighting(), PREVIEW_ALPHA, coversRealBlock);
+        RenderUtil.drawPreviewMesh(matrices, quads, world.cardinalLighting(), PREVIEW_ALPHA, coversRealBlock);
     }
 
-    private static Mesh getMissingQuarryMesh(BlockStateModelSet blockStateModelSet) {
+    private static List<RenderUtil.PreviewQuad> getMissingQuarryQuads(BlockStateModelSet blockStateModelSet) {
         BlockState blockState = MISSING_QUARRY_BLOCK.defaultBlockState();
-        MutableMesh mesh = Renderer.get().mutableMesh();
+        List<BlockStateModelPart> parts = new ArrayList<>();
+        List<RenderUtil.PreviewQuad> quads = new ArrayList<>();
 
-        blockStateModelSet.get(blockState).emitQuads(mesh.emitter(), BlockAndTintGetter.EMPTY, BlockPos.ZERO, blockState, RandomSource.create(0L), direction -> false);
+        blockStateModelSet.get(blockState).collectParts(RandomSource.create(0L), parts);
 
-        return mesh.immutableCopy();
+        for (BlockStateModelPart part : parts) {
+            for (Direction direction : Direction.values()) {
+                part.getQuads(direction).forEach(quad -> quads.add(RenderUtil.PreviewQuad.of(quad)));
+            }
+
+            part.getQuads(null).forEach(quad -> quads.add(RenderUtil.PreviewQuad.of(quad)));
+        }
+
+        return quads;
     }
 
     public static void register() {

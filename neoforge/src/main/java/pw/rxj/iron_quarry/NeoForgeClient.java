@@ -4,6 +4,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
+import pw.rxj.iron_quarry.model.NeoForgeQuarryModel;
 import pw.rxj.iron_quarry.platform.NeoForgeEventBridge;
 import pw.rxj.iron_quarry.platform.NeoForgePlatformClient;
 import pw.rxj.iron_quarry.platform.NeoForgePlatformNetwork;
@@ -14,7 +15,9 @@ public class NeoForgeClient {
     public NeoForgeClient(IEventBus modEventBus) {
         modEventBus.addListener(NeoForgePlatformClient::registerMenuScreens);
         modEventBus.addListener(NeoForgePlatformClient::registerReloadListeners);
+        modEventBus.addListener(NeoForgePlatformClient::registerItemModels);
         modEventBus.addListener(NeoForgePlatformClient::registerRangeSelectItemModelProperties);
+        modEventBus.addListener(NeoForgeQuarryModel::register);
         modEventBus.addListener(NeoForgePlatformNetwork::registerClient);
         NeoForge.EVENT_BUS.addListener(NeoForgePlatformRecipe::receiveRecipes);
         NeoForgeEventBridge.registerClient();
