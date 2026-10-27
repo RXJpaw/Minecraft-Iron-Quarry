@@ -1,13 +1,12 @@
 plugins {
 	id 'java-library'
-	id 'maven-publish'
 }
 
 version = mod_version
 group = maven_group
 
 base {
-	archivesName = "${archives_base_name}-${project.name}"
+	archivesName = archives_base_name
 }
 
 repositories {
@@ -35,6 +34,8 @@ java {
 }
 
 tasks.withType(Jar).configureEach {
+	archiveVersion = "${project.version}-${project.name}-${minecraft_version}"
+
 	from(rootProject.file('LICENSE.md')) {
 		rename { "${it}_${base.archivesName.get()}" }
 	}
@@ -45,14 +46,5 @@ processResources {
 
 	filesMatching(['fabric.mod.json', 'META-INF/neoforge.mods.toml']) {
 		expand 'version': project.version
-	}
-}
-
-publishing {
-	publications {
-		register('mavenJava', MavenPublication) {
-			artifactId = base.archivesName.get()
-			from components.java
-		}
 	}
 }

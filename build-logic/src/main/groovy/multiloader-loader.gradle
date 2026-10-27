@@ -1,5 +1,6 @@
 plugins {
 	id 'multiloader-common'
+	id 'maven-publish'
 }
 
 configurations {
@@ -32,4 +33,13 @@ tasks.named('sourcesJar', Jar) {
 	from(configurations.commonJava)
 	dependsOn(configurations.commonResources)
 	from(configurations.commonResources)
+}
+
+publishing {
+	publications {
+		register('mavenJava', MavenPublication) {
+			artifactId = "${base.archivesName.get()}-${project.name}"
+			from components.java
+		}
+	}
 }

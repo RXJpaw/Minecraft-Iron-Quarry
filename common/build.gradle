@@ -17,6 +17,14 @@ dependencies {
 	compileOnly("maven.modrinth:iris:${iris_version}")
 }
 
+tasks.named('jar') {
+	enabled = false
+}
+
+tasks.named('sourcesJar') {
+	enabled = false
+}
+
 configurations {
 	commonJava {
 		canBeResolved = false
