@@ -19,11 +19,10 @@
     "environment": "*",
     "entrypoints": {
         "main": [
-            "pw.rxj.iron_quarry.Main",
-            "pw.rxj.iron_quarry.compat.Compat"
+            "pw.rxj.iron_quarry.FabricMain"
         ],
         "client": [
-            "pw.rxj.iron_quarry.Client"
+            "pw.rxj.iron_quarry.FabricClient"
         ],
         "rei_client": [
             "pw.rxj.iron_quarry.compat.rei.ReiClient"

@@ -105,7 +105,40 @@ public class QuarryMonitorPreviewRenderer {
         matrices.scale(scale, scale, scale);
         matrices.translate(-0.5F, -0.5F, -0.5F);
 
-        RenderUtil.drawPreviewMesh(matrices, mesh, world.cardinalLighting(), PREVIEW_ALPHA, coversRealBlock);
+        RenderUtil.drawPreviewMesh(matrices, consumer -> mesh.forEach(quad -> consumer.accept(new RenderUtil.PreviewQuad() {
+            @Override
+            public float x(int vertex) {
+                return quad.x(vertex);
+            }
+            @Override
+            public float y(int vertex) {
+                return quad.y(vertex);
+            }
+            @Override
+            public float z(int vertex) {
+                return quad.z(vertex);
+            }
+            @Override
+            public float u(int vertex) {
+                return quad.u(vertex);
+            }
+            @Override
+            public float v(int vertex) {
+                return quad.v(vertex);
+            }
+            @Override
+            public int color(int vertex) {
+                return quad.color(vertex);
+            }
+            @Override
+            public boolean diffuseShade() {
+                return quad.diffuseShade();
+            }
+            @Override
+            public Direction lightFace() {
+                return quad.lightFace();
+            }
+        })), world.cardinalLighting(), PREVIEW_ALPHA, coversRealBlock);
     }
 
     private static Mesh getMissingQuarryMesh(BlockStateModelSet blockStateModelSet) {

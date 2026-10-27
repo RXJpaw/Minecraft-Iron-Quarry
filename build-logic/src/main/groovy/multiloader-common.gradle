@@ -11,6 +11,7 @@ base {
 }
 
 repositories {
+	maven { url 'https://maven.fabricmc.net/' }
 	maven { url 'https://maven.shedaniel.me/' }
 	maven { url 'https://maven.nucleoid.xyz/' }
 	maven { url 'https://maven.terraformersmc.com/' }

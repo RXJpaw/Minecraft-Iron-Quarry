@@ -10,6 +10,12 @@ displayName = "Iron Quarry"
 authors = "RXJpaw"
 description = '''Ever wanted to excavate 5 Chunks in a minute? No? Well.. now you can!'''
 
+[[accessTransformers]]
+file = "META-INF/accesstransformer.cfg"
+
+[[mixins]]
+config = "iron_quarry.mixins.json"
+
 [[dependencies.iron_quarry]]
 modId = "neoforge"
 type = "required"

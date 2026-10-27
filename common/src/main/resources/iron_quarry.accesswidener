@@ -1,0 +1,21 @@
+accessWidener v2 official
+accessible field net/minecraft/client/KeyMapping key Lcom/mojang/blaze3d/platform/InputConstants$Key;
+accessible field net/minecraft/client/gui/screens/inventory/tooltip/ClientTextTooltip text Lnet/minecraft/util/FormattedCharSequence;
+accessible field net/minecraft/server/level/ChunkMap playerMap Lnet/minecraft/server/level/PlayerMap;
+extendable method net/minecraft/client/gui/screens/inventory/AbstractContainerScreen extractSlot (Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/world/inventory/Slot;II)V
+accessible class net/minecraft/world/item/component/ItemContainerContents$Slot
+accessible method net/minecraft/world/item/component/ItemContainerContents$Slot <init> (ILnet/minecraft/world/item/ItemStackTemplate;)V
+accessible field net/minecraft/client/renderer/item/ItemModels ID_MAPPER Lnet/minecraft/util/ExtraCodecs$LateBoundIdMapper;
+accessible field net/minecraft/client/renderer/item/properties/numeric/RangeSelectItemModelProperties ID_MAPPER Lnet/minecraft/util/ExtraCodecs$LateBoundIdMapper;
+accessible field net/minecraft/client/renderer/GameRenderer fogRenderer Lnet/minecraft/client/renderer/fog/FogRenderer;
+accessible field net/minecraft/client/Minecraft rightClickDelay I
+accessible method net/minecraft/world/level/block/entity/BlockEntityType <init> (Lnet/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier;Ljava/util/Set;)V
+accessible class net/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier
+accessible class net/minecraft/world/item/CreativeModeTab$Output
+accessible field net/minecraft/world/SimpleContainer items Lnet/minecraft/core/NonNullList;
+accessible method net/minecraft/world/item/Item$Properties itemIdOrThrow ()Lnet/minecraft/resources/ResourceKey;
+accessible method net/minecraft/client/renderer/RenderPipelines register (Lcom/mojang/blaze3d/pipeline/RenderPipeline;)Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+accessible field net/minecraft/client/renderer/RenderPipelines LINES_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible field net/minecraft/client/renderer/RenderPipelines GUI_TEXTURED_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible method net/minecraft/client/renderer/rendertype/RenderType create (Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)Lnet/minecraft/client/renderer/rendertype/RenderType;
+accessible class net/minecraft/client/gui/screens/MenuScreens$ScreenConstructor

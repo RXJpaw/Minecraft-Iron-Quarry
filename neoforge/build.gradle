@@ -5,6 +5,7 @@ plugins {
 
 neoForge {
 	version = neoforge_version
+	accessTransformers.from(project(':common').file('src/main/resources/META-INF/accesstransformer.cfg'))
 
 	runs {
 		client {
@@ -24,4 +25,8 @@ neoForge {
 			sourceSet sourceSets.main
 		}
 	}
+}
+
+dependencies {
+	compileOnly("net.fabricmc:fabric-loader:${loader_version}") { transitive = false }
 }

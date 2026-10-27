@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
+import pw.rxj.iron_quarry.records.TexturePosition;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.types.IoState;
 import pw.rxj.iron_quarry.util.MachineConfiguration;
@@ -61,6 +62,18 @@ public class QuarryModel implements BlockStateModel {
                 bakeSprite(materialBaker, quarryBlock.getSpriteId(), modelSource),
                 bakeSprite(materialBaker, IoState.getSpriteId(), modelSource));
     }
+    private static void applySprite(TexturePosition texturePosition, QuadEmitter emitter, int spriteIndex, int spriteSize) {
+        int u = texturePosition.u();
+        int v = texturePosition.v();
+        int width = texturePosition.width();
+        int height = texturePosition.height();
+
+        emitter.uv(0, (float) (u) / spriteSize,         (float) (v) / spriteSize);          //top left
+        emitter.uv(1, (float) (u) / spriteSize,         (float) (v + height) / spriteSize); //bottom left
+        emitter.uv(2, (float) (u + width) / spriteSize, (float) (v + height) / spriteSize); //bottom right
+        emitter.uv(3, (float) (u + width) / spriteSize, (float) (v) / spriteSize);          //top right
+    }
+
     private static Material.Baked bakeSprite(MaterialBaker materialBaker, SpriteId spriteId, ModelDebugName modelSource) {
         return materialBaker.get(new Material(spriteId.texture()), modelSource);
     }
@@ -140,7 +153,7 @@ public class QuarryModel implements BlockStateModel {
             Boolean isOpen = !configuration.getIoState(face).equals(IoState.BLOCKED);
 
             emitter.square(direction, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F);
-            this.quarryBlock.getTexturePosition(face, isOpen).applySprite(emitter, 0, 256);
+            applySprite(this.quarryBlock.getTexturePosition(face, isOpen), emitter, 0, 256);
             emitter.materialBake(QUARRY_SPRITE, MutableQuadView.BAKE_NORMALIZED);
             emitter.color(-1, -1, -1, -1);
             emitter.emit();
@@ -148,7 +161,7 @@ public class QuarryModel implements BlockStateModel {
             if(!isOpen) continue;
 
             emitter.square(direction, 0.25F, 0.25F, 0.75F, 0.75F, 0.0F);
-            IoState.getTexturePosition(configuration.getIoState(face)).applySprite(emitter, 0, 256);
+            applySprite(IoState.getTexturePosition(configuration.getIoState(face)), emitter, 0, 256);
             emitter.materialBake(IO_SPRITE, MutableQuadView.BAKE_NORMALIZED);
             emitter.color(-1, -1, -1, -1);
             emitter.emit();
@@ -158,7 +171,7 @@ public class QuarryModel implements BlockStateModel {
             // black backing so sodium's UV inset doesn't reveal the world around the IO overlay
             emitter.square(direction, 0.0F, 0.0F, 1.0F, 1.0F, 0.0625F);
             emitter.cullFace(direction);
-            IoState.getTexturePosition(configuration.getIoState(face)).applySprite(emitter, 0, 256);
+            applySprite(IoState.getTexturePosition(configuration.getIoState(face)), emitter, 0, 256);
             emitter.materialBake(IO_SPRITE, MutableQuadView.BAKE_NORMALIZED);
             emitter.color(0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
             emitter.emit();
