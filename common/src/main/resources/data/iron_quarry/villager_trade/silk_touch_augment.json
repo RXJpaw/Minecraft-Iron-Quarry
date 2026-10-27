@@ -1,9 +1,4 @@
 {
-    "fabric:load_conditions": [
-        {
-            "condition": "iron_quarry:silk_touch_trading_enabled"
-        }
-    ],
     "wants": {
         "id": "minecraft:emerald",
         "count": {
@@ -25,5 +20,8 @@
     },
     "max_uses": 3,
     "xp": 50,
-    "reputation_discount": 0.25
+    "reputation_discount": 0.25,
+    "merchant_predicate": {
+        "condition": "iron_quarry:silk_touch_trading_enabled"
+    }
 }

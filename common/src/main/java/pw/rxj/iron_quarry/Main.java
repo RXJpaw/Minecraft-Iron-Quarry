@@ -37,6 +37,7 @@ import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.platform.Platform;
 import pw.rxj.iron_quarry.recipe.HandledCraftingRecipe;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
+import pw.rxj.iron_quarry.resource.SilkTouchTradingCondition;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigSide;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreenHandler;
@@ -138,6 +139,8 @@ public class Main {
 
 		Platform.REGISTRY.register(Registries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "handled_crafting_recipe"), () -> HandledCraftingRecipe.SERIALIZER);
 		Platform.REGISTRY.register(Registries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "handled_smithing_recipe"), () -> HandledSmithingRecipe.SERIALIZER);
+
+		Platform.REGISTRY.register(Registries.LOOT_CONDITION_TYPE, SilkTouchTradingCondition.ID, () -> SilkTouchTradingCondition.CODEC);
 
 		Platform.REGISTRY.register(Registries.CREATIVE_MODE_TAB, ITEM_GROUP.identifier(), () -> Platform.REGISTRY.createCreativeTabBuilder()
 				.title(Component.translatable("itemGroup.iron_quarry.universal"))
