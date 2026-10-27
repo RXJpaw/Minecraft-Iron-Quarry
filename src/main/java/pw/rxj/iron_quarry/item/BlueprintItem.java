@@ -31,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.data.BlueprintPositionComponent;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.interfaces.*;
+import pw.rxj.iron_quarry.network.PacketBlueprintSelect;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.render.Cuboid;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
@@ -228,7 +229,7 @@ public class BlueprintItem extends Item implements IHandledAttackOnBlock, IHandl
                     Component KEY_SPRINT = ReadableString.textFrom(gameOptions.keySprint);
                     Component KEY_SNEAK = ReadableString.textFrom(gameOptions.keyShift);
 
-                    List<MutableComponent> LORE_MANUAL_SELECT = ReadableString.translatableLines("item.iron_quarry.blueprint.lore.manual.select", KEY_ATTACK, KEY_INTERACT);
+                    List<MutableComponent> LORE_MANUAL_SELECT = ReadableString.translatableLines("item.iron_quarry.blueprint.lore.manual.select", ReadableString.intFrom(PacketBlueprintSelect.MAX_DISTANCE), KEY_ATTACK, KEY_INTERACT);
                     List<MutableComponent> LORE_MANUAL_EXPAND = ReadableString.translatableLines("item.iron_quarry.blueprint.lore.manual.expand", KEY_SNEAK);
                     List<MutableComponent> LORE_MANUAL_EXPAND_FASTER = ReadableString.translatableLines("item.iron_quarry.blueprint.lore.manual.expand_faster", KEY_SPRINT);
 

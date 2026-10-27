@@ -74,7 +74,7 @@
     "item.iron_quarry.blueprint.lore.first_pos": "§{RGB_LIGHT_GRAY First Position:} %s",
     "item.iron_quarry.blueprint.lore.second_pos": "§{RGB_LIGHT_GRAY Second Position:} %s",
     "item.iron_quarry.blueprint.lore.empty": "<unset>",
-    "item.iron_quarry.blueprint.lore.manual.select": "§{RGB_STRONG_HIGHLIGHT §n1:} §{RGB_LIGHT_GRAY Press §n%s/%s§r on blocks to mark positions.}",
+    "item.iron_quarry.blueprint.lore.manual.select": "§{RGB_STRONG_HIGHLIGHT §n1:} §{RGB_LIGHT_GRAY Aim at any block, up to %s blocks away,}\n   §{RGB_LIGHT_GRAY and press §n%s/%s§r to mark positions.}",
     "item.iron_quarry.blueprint.lore.manual.expand": "§{RGB_STRONG_HIGHLIGHT §n2:} §{RGB_LIGHT_GRAY Hold §n%s§r and use your §nMouse Wheel§r to}\n   §{RGB_LIGHT_GRAY expand selection in your facing direction.}",
     "item.iron_quarry.blueprint.lore.manual.expand_faster": "   §{RGB_DARK_GRAY Additionally §n%s§r can be held to}\n   §{RGB_DARK_GRAY expand selection 16 times faster.}",
     "item.iron_quarry.blueprint.overlay.first_pos_set": "First position set to: %s",
