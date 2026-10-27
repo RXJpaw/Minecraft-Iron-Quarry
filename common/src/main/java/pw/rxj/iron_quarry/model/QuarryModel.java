@@ -18,6 +18,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
 import pw.rxj.iron_quarry.block.QuarryBlock;
+import pw.rxj.iron_quarry.platform.Platform;
 import pw.rxj.iron_quarry.records.TexturePosition;
 import pw.rxj.iron_quarry.render.RenderUtil;
 import pw.rxj.iron_quarry.types.Face;
@@ -215,12 +216,12 @@ public class QuarryModel implements BlockStateModel {
         }
 
         public BakedQuad toBakedQuad() {
-            return new BakedQuad(
-                    this.positions[0], this.positions[1], this.positions[2], this.positions[3],
-                    UVPair.pack(this.us[0], this.vs[0]), UVPair.pack(this.us[1], this.vs[1]), UVPair.pack(this.us[2], this.vs[2]), UVPair.pack(this.us[3], this.vs[3]),
-                    this.direction,
-                    BakedQuad.MaterialInfo.of(this.material, this.computeTransparency(), -1, true, 0)
-            );
+            long[] packedUVs = new long[4];
+            for (int vertex = 0; vertex < 4; vertex++) {
+                packedUVs[vertex] = UVPair.pack(this.us[vertex], this.vs[vertex]);
+            }
+
+            return Platform.MODEL.createBakedQuad(this.positions, packedUVs, this.direction, BakedQuad.MaterialInfo.of(this.material, this.computeTransparency(), -1, true, 0));
         }
         private Transparency computeTransparency() {
             if(this.material.forceTranslucent()) return Transparency.TRANSLUCENT;

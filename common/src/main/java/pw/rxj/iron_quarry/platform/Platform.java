@@ -12,6 +12,7 @@ public class Platform {
     public static final IPlatformItemTransfer ITEM_TRANSFER = load(IPlatformItemTransfer.class);
     public static final IPlatformBlockBreak BLOCK_BREAK = load(IPlatformBlockBreak.class);
     public static final IPlatformClient CLIENT = LOADER.isDedicatedServer() ? null : load(IPlatformClient.class);
+    public static final IPlatformModel MODEL = LOADER.isDedicatedServer() ? null : load(IPlatformModel.class);
 
     private static <T> T load(Class<T> clazz) {
         return ServiceLoader.load(clazz, Platform.class.getClassLoader())
