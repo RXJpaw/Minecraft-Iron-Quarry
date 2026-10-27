@@ -4,8 +4,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Function;
+
 public class ComplexEnergyContainer {
     protected long amount = 0;
+    private @Nullable Object platformStorage = null;
 
     public long getCapacity() {
         return 0;
@@ -57,5 +60,12 @@ public class ComplexEnergyContainer {
         data.putLong("Stored", this.amount);
 
         return data;
+    }
+
+    @SuppressWarnings("unchecked")
+    public synchronized <T> T getPlatformStorage(Function<ComplexEnergyContainer, T> factory) {
+        if(this.platformStorage == null) this.platformStorage = factory.apply(this);
+
+        return (T) this.platformStorage;
     }
 }

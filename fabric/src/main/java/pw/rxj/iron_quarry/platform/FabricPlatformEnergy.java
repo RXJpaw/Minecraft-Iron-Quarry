@@ -17,16 +17,12 @@ import team.reborn.energy.api.EnergyStorage;
 import team.reborn.energy.api.EnergyStorageUtil;
 import team.reborn.energy.impl.EnergyImpl;
 
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class FabricPlatformEnergy implements IPlatformEnergy {
-    private static final Map<ComplexEnergyContainer, SidedEnergyStorage> SIDED_STORAGES = Collections.synchronizedMap(new WeakHashMap<>());
-
     @Override
     public <T extends BlockEntity> void registerBlockEntity(Supplier<BlockEntityType<T>> blockEntityType, Function<T, ComplexEnergyContainer> energyContainer) {
         EnergyStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> getSideStorage(energyContainer.apply(blockEntity), direction), blockEntityType.get());
@@ -55,7 +51,7 @@ public class FabricPlatformEnergy implements IPlatformEnergy {
     }
 
     private static EnergyStorage getSideStorage(ComplexEnergyContainer container, @Nullable Direction side) {
-        return SIDED_STORAGES.computeIfAbsent(container, SidedEnergyStorage::new).getSideStorage(side);
+        return container.getPlatformStorage(SidedEnergyStorage::new).getSideStorage(side);
     }
 
     private static class SidedEnergyStorage extends SnapshotParticipant<Long> {
