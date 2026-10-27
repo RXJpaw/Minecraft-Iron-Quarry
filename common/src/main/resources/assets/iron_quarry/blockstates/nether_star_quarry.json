@@ -1,5 +1,5 @@
 {
     "variants": {
-        "": { "model": "iron_quarry:block/nether_star_quarry", "type": "iron_quarry:quarry", "block": "iron_quarry:nether_star_quarry" }
+        "": { "model": "iron_quarry:block/nether_star_quarry", "fabric:type": "iron_quarry:quarry", "type": "iron_quarry:quarry", "block": "iron_quarry:nether_star_quarry" }
     }
 }
