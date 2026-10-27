@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.FormattedMessageFactory;
@@ -139,6 +140,8 @@ public class Main {
 
 		Platform.REGISTRY.register(Registries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "handled_crafting_recipe"), () -> HandledCraftingRecipe.SERIALIZER);
 		Platform.REGISTRY.register(Registries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "handled_smithing_recipe"), () -> HandledSmithingRecipe.SERIALIZER);
+		Platform.RECIPE.synchronizeRecipes(HandledCraftingRecipe.SERIALIZER, RecipeType.CRAFTING);
+		Platform.RECIPE.synchronizeRecipes(HandledSmithingRecipe.SERIALIZER, RecipeType.SMITHING);
 
 		Platform.REGISTRY.register(Registries.LOOT_CONDITION_TYPE, SilkTouchTradingCondition.ID, () -> SilkTouchTradingCondition.CODEC);
 

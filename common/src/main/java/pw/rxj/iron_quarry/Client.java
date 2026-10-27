@@ -5,6 +5,8 @@ import net.fabricmc.api.Environment;
 import net.minecraft.world.item.ItemStack;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.block.ZBlocks;
+import pw.rxj.iron_quarry.compat.Compat;
+import pw.rxj.iron_quarry.compat.iris.IrisClient;
 import pw.rxj.iron_quarry.event.ClientInteractionCallback;
 import pw.rxj.iron_quarry.event.GameLifecycleCallback;
 import pw.rxj.iron_quarry.interfaces.IHandledMainHandAttack;
@@ -15,6 +17,7 @@ import pw.rxj.iron_quarry.render.BlueprintPreviewRenderer;
 import pw.rxj.iron_quarry.render.QuarryMonitorOverlayRenderer;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.resource.config.ConfigSide;
+import pw.rxj.iron_quarry.screen.ClientConfigScreen;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
 import pw.rxj.iron_quarry.types.IoState;
 import pw.rxj.iron_quarry.util.ZUtil;
@@ -39,11 +42,13 @@ public class Client {
         });
 
         BlueprintPreviewRenderer.register();
+        if(Compat.IRIS_LOADED) IrisClient.register();
         QuarryMonitorOverlayRenderer.register();
         ResourceReloadListener.register();
         HandledModelPredicateProperty.register();
 
         Platform.CLIENT.registerMenuScreen(Main.QUARRY_BLOCK_SCREEN_HANDLER, QuarryBlockScreen::new);
+        Platform.CLIENT.registerConfigScreen(ClientConfigScreen::new);
 
         ZNetwork.registerClient();
     }

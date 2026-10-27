@@ -13,7 +13,11 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 
+import java.util.function.Function;
+
 public class FabricPlatformClient implements IPlatformClient {
+    private static Function<Screen, Screen> configScreenFactory = parent -> null;
+
     @Override
     public <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void registerMenuScreen(MenuType<? extends M> menuType, MenuScreens.ScreenConstructor<M, U> screenConstructor) {
         MenuScreens.register(menuType, screenConstructor);
@@ -27,5 +31,14 @@ public class FabricPlatformClient implements IPlatformClient {
     @Override
     public void registerRangeSelectItemModelProperty(Identifier id, MapCodec<? extends RangeSelectItemModelProperty> codec) {
         RangeSelectItemModelProperties.ID_MAPPER.put(id, codec);
+    }
+
+    @Override
+    public void registerConfigScreen(Function<Screen, Screen> configScreenFactory) {
+        FabricPlatformClient.configScreenFactory = configScreenFactory;
+    }
+
+    public static Screen createConfigScreen(Screen parent) {
+        return configScreenFactory.apply(parent);
     }
 }

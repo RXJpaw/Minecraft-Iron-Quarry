@@ -9,13 +9,17 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterRangeSelectItemModelPropertyEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import pw.rxj.iron_quarry.Main;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class NeoForgePlatformClient implements IPlatformClient {
     private static final List<Consumer<RegisterMenuScreensEvent>> MENU_SCREENS = new ArrayList<>();
@@ -35,6 +39,13 @@ public class NeoForgePlatformClient implements IPlatformClient {
     @Override
     public void registerRangeSelectItemModelProperty(Identifier id, MapCodec<? extends RangeSelectItemModelProperty> codec) {
         RANGE_SELECT_PROPERTIES.add(event -> event.register(id, codec));
+    }
+
+    @Override
+    public void registerConfigScreen(Function<Screen, Screen> configScreenFactory) {
+        ModList.get().getModContainerById(Main.MOD_ID).ifPresent(container -> {
+            container.registerExtensionPoint(IConfigScreenFactory.class, (modContainer, parent) -> configScreenFactory.apply(parent));
+        });
     }
 
     public static void registerMenuScreens(RegisterMenuScreensEvent event) {

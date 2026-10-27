@@ -16,6 +16,9 @@ file = "META-INF/accesstransformer.cfg"
 [[mixins]]
 config = "iron_quarry.mixins.json"
 
+[[mixins]]
+config = "iron_quarry.neoforge.mixins.json"
+
 [[dependencies.iron_quarry]]
 modId = "neoforge"
 type = "required"

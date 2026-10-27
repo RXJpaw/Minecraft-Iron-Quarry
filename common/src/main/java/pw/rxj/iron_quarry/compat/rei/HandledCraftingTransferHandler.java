@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.platform.Platform;
 import pw.rxj.iron_quarry.recipe.HandledCraftingRecipe;
 
 import java.util.ArrayList;
@@ -89,7 +90,7 @@ public class HandledCraftingTransferHandler implements SimpleTransferHandler {
         Optional<Identifier> location = context.getDisplay().getDisplayLocation();
         if(location.isEmpty()) return null;
 
-        RecipeHolder<?> recipeHolder = world.recipeAccess().getSynchronizedRecipes().get(ResourceKey.create(Registries.RECIPE, location.get()));
+        RecipeHolder<?> recipeHolder = Platform.RECIPE.getSynchronizedRecipe(ResourceKey.create(Registries.RECIPE, location.get()));
         if(recipeHolder == null || !(recipeHolder.value() instanceof HandledCraftingRecipe recipe)) return null;
 
         return recipe;

@@ -10,8 +10,11 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 
+import java.util.function.Function;
+
 public interface IPlatformClient {
     <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void registerMenuScreen(MenuType<? extends M> menuType, MenuScreens.ScreenConstructor<M, U> screenConstructor);
     void registerReloadListener(Identifier id, PreparableReloadListener listener);
     void registerRangeSelectItemModelProperty(Identifier id, MapCodec<? extends RangeSelectItemModelProperty> codec);
+    void registerConfigScreen(Function<Screen, Screen> configScreenFactory);
 }

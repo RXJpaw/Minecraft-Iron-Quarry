@@ -8,6 +8,9 @@ neoForge {
 	accessTransformers.from(project(':common').file('src/main/resources/META-INF/accesstransformer.cfg'))
 
 	runs {
+		configureEach {
+			systemProperty 'neoforge.warnings.onlyin.hide', 'true'
+		}
 		client {
 			client()
 			gameDirectory = project.file('../run/neoforge-client')
@@ -29,4 +32,8 @@ neoForge {
 
 dependencies {
 	compileOnly("net.fabricmc:fabric-loader:${loader_version}") { transitive = false }
+
+	implementation("me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}")
+	compileOnly("me.shedaniel.cloth:basic-math:0.6.1")
+	compileOnly("maven.modrinth:iris:${iris_neoforge_version}")
 }

@@ -4,6 +4,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
@@ -56,5 +57,7 @@ public class NeoForgeEventBridge {
 
     public static void registerClient() {
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> ClientConnectionCallback.DISCONNECT.invoker().onDisconnect());
+
+        NeoForge.EVENT_BUS.addListener((RenderLevelStageEvent.AfterTranslucentParticles event) -> WorldRenderCallback.END_MAIN.invoker().endMain(event.getLevelRenderState().cameraRenderState, event.getPoseStack()));
     }
 }
