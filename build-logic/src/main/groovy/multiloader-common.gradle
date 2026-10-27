@@ -1,0 +1,57 @@
+plugins {
+	id 'java-library'
+	id 'maven-publish'
+}
+
+version = mod_version
+group = maven_group
+
+base {
+	archivesName = "${archives_base_name}-${project.name}"
+}
+
+repositories {
+	maven { url 'https://maven.shedaniel.me/' }
+	maven { url 'https://maven.nucleoid.xyz/' }
+	maven { url 'https://maven.terraformersmc.com/' }
+	maven { url 'https://api.modrinth.com/maven' }
+}
+
+dependencies {
+	compileOnly 'org.projectlombok:lombok:1.18.48'
+	annotationProcessor 'org.projectlombok:lombok:1.18.48'
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+}
+
+java {
+	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}
+
+tasks.withType(Jar).configureEach {
+	from(rootProject.file('LICENSE.md')) {
+		rename { "${it}_${base.archivesName.get()}" }
+	}
+}
+
+processResources {
+	inputs.property 'version', project.version
+
+	filesMatching(['fabric.mod.json', 'META-INF/neoforge.mods.toml']) {
+		expand 'version': project.version
+	}
+}
+
+publishing {
+	publications {
+		register('mavenJava', MavenPublication) {
+			artifactId = base.archivesName.get()
+			from components.java
+		}
+	}
+}

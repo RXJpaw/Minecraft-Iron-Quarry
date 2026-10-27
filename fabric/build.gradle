@@ -1,0 +1,46 @@
+plugins {
+	id 'multiloader-loader'
+	id 'net.fabricmc.fabric-loom'
+}
+
+loom {
+	accessWidenerPath = file("src/main/resources/iron_quarry.accesswidener")
+
+	runs {
+		client {
+			runDir '../run/fabric-client'
+		}
+		server {
+			runDir '../run/fabric-server'
+		}
+	}
+}
+
+dependencies {
+	// To change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Fabric API. This is technically optional, but you probably want it anyway.
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	// Uncomment the following line to enable the deprecated Fabric API modules. 
+	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
+
+	// implementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
+
+	include api("teamreborn:energy:${project.energy_api_version}") { transitive = false }
+
+	api("com.terraformersmc:modmenu:${project.modmenu_version}")
+	api("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
+	api("dev.architectury:architectury-fabric:${project.architectury_version}")
+	compileOnly("me.shedaniel.cloth:basic-math:0.6.1")
+	compileOnly("maven.modrinth:iris:${project.iris_version}")
+
+}
+
+configurations.all {
+	resolutionStrategy {
+		force("net.fabricmc:fabric-loader:$loader_version")
+	}
+}

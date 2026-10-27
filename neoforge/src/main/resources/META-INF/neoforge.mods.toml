@@ -1,0 +1,25 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "Apache-2.0"
+issueTrackerURL = "https://github.com/RXJpaw/Minecraft-Iron-Quarry/issues"
+
+[[mods]]
+modId = "iron_quarry"
+version = "${version}"
+displayName = "Iron Quarry"
+authors = "RXJpaw"
+description = '''Ever wanted to excavate 5 Chunks in a minute? No? Well.. now you can!'''
+
+[[dependencies.iron_quarry]]
+modId = "neoforge"
+type = "required"
+versionRange = "[26.1.2.124,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.iron_quarry]]
+modId = "minecraft"
+type = "required"
+versionRange = "[26.1.2,26.2)"
+ordering = "NONE"
+side = "BOTH"

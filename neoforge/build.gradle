@@ -1,0 +1,27 @@
+plugins {
+	id 'multiloader-loader'
+	id 'net.neoforged.moddev'
+}
+
+neoForge {
+	version = neoforge_version
+
+	runs {
+		client {
+			client()
+			gameDirectory = project.file('../run/neoforge-client')
+			disableIdeRun()
+		}
+		server {
+			server()
+			gameDirectory = project.file('../run/neoforge-server')
+			disableIdeRun()
+		}
+	}
+
+	mods {
+		iron_quarry {
+			sourceSet sourceSets.main
+		}
+	}
+}
