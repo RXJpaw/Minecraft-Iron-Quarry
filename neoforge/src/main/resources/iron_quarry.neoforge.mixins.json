@@ -7,7 +7,8 @@
         "NeoForgeItemEnchantabilityMixin"
     ],
     "client": [
-        "NeoForgeClientPreAttackMixin"
+        "NeoForgeClientPreAttackMixin",
+        "NeoForgeTooltipRenderMixin"
     ],
     "injectors": {
         "defaultRequire": 1
