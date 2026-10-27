@@ -13,13 +13,14 @@ neoForge {
 		}
 		client {
 			client()
+			ideName = 'neoforge - Client'
 			gameDirectory = project.file('../run/neoforge-client')
-			disableIdeRun()
 		}
 		server {
 			server()
+			programArgument '--nogui'
+			ideName = 'neoforge - Server'
 			gameDirectory = project.file('../run/neoforge-server')
-			disableIdeRun()
 		}
 	}
 

@@ -8,9 +8,15 @@ loom {
 
 	runs {
 		client {
+			name 'fabric - Client'
+			ideConfigGenerated true
+			appendProjectPathToDisplayName = false
 			runDir '../run/fabric-client'
 		}
 		server {
+			name 'fabric - Server'
+			ideConfigGenerated true
+			appendProjectPathToDisplayName = false
 			runDir '../run/fabric-server'
 		}
 	}
