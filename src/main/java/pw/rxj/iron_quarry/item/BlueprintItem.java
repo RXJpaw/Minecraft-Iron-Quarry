@@ -10,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.HashedStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
@@ -20,24 +19,18 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.TooltipDisplay;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.SmithingRecipeInput;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.data.BlueprintPositionComponent;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.interfaces.*;
-import pw.rxj.iron_quarry.network.PacketBlueprintExpand;
-import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.render.Cuboid;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
@@ -51,7 +44,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmithing, IHandledGrinding, IHandledItemEntity, IHandledMainHandScrolling, IAlwaysRenderItemName, IModifyItemGroupEntries {
+public class BlueprintItem extends Item implements IBlockAttackable, IBlockUsable, IHandledSmithing, IHandledGrinding, IHandledItemEntity, IHandledMainHandScrolling, IHandledMainHandAttack, IAlwaysRenderItemName, IModifyItemGroupEntries {
     public BlueprintItem(Properties settings) {
         super(settings);
     }
@@ -115,24 +108,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     @Override
     @Environment(EnvType.CLIENT)
     public boolean handleMainHandScrolling(LocalPlayer player, ItemStack stack, ScrollDirection scrollDirection) {
-        if(!Minecraft.getInstance().options.keyShift.isDown() || this.isSealed(stack)) return false;
-
-        Direction direction = ZUtil.getFacingDirection(player.getYRot(), player.getXRot());
-        int multiplier = Minecraft.getInstance().options.keySprint.isDown() ? 16 : 1;
-
-        int amount = switch(scrollDirection) {
-            case FORWARDS -> multiplier;
-            case BACKWARDS -> -multiplier;
-            default -> 0;
-        };
-
-        if(this.expandInDirection(stack, player, direction, amount)) {
-            ZNetwork.sendToServer(PacketBlueprintExpand.bake(direction, (byte) amount, HashedStack.create(stack, player.connection.decoratedHashOpsGenenerator())));
-
-            return true;
-        }
-
-        return false;
+        return BlueprintSelection.scroll(this, player, stack, scrollDirection);
     }
     public boolean expandInDirection(ItemStack stack, Player player, Direction direction, int amount) {
         Level playerWorld = player.level();
@@ -300,6 +276,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
         return !this.isSealed(stack) && this.getFirstPos(stack).isPresent() && this.getSecondPos(stack).isPresent() && !this.allChunksMined(stack);
     }
 
+    @Override
     public boolean isFoil(ItemStack stack) {
         return this.isSealed(stack);
     }
@@ -313,35 +290,34 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext context) {
-        Player player = context.getPlayer();
-        if(player == null) return InteractionResult.FAIL;
-
-        if(!context.getHand().equals(InteractionHand.MAIN_HAND)) return InteractionResult.PASS;
+    public InteractionResult useOnBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
+        if(!hand.equals(InteractionHand.MAIN_HAND)) return InteractionResult.PASS;
         if(player.isCreative() && player.isSecondaryUseActive()) return InteractionResult.PASS;
 
-        ItemStack stack = context.getItemInHand();
-        if(this.isSealed(stack)) return InteractionResult.FAIL;
+        ItemStack stack = player.getItemInHand(hand);
+        if(this.isSealed(stack)) return InteractionResult.PASS;
 
-        BlockPos targetedPos = context.getClickedPos();
-        this.setSecondPos(stack, context.getLevel(), targetedPos);
-        Component secondPosText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
+        if(world.isClientSide()) BlueprintSelection.use(this, player);
 
-        player.sendOverlayMessage(ReadableString.translatable("item.iron_quarry.blueprint.overlay.second_pos_set", secondPosText));
-
-        return InteractionResult.SUCCESS;
+        return InteractionResult.FAIL;
     }
     @Override
     public InteractionResult use(Level world, Player user, InteractionHand hand) {
-        ItemStack stack = user.getItemInHand(hand);
-//        Main.LOGGER.info(user.shouldCancelInteraction());
-        if(!hand.equals(InteractionHand.MAIN_HAND) || !user.isCreative()) return InteractionResult.FAIL;
-        if(!user.isSecondaryUseActive()) return InteractionResult.PASS;
+        if(!hand.equals(InteractionHand.MAIN_HAND)) return InteractionResult.FAIL;
 
-        if(!world.isClientSide()) {
-            this.setSealed(stack, !this.isSealed(stack));
-            this.resetMinedChunks(stack);
+        ItemStack stack = user.getItemInHand(hand);
+
+        if(user.isCreative() && user.isSecondaryUseActive()) {
+            if(!world.isClientSide()) {
+                this.setSealed(stack, !this.isSealed(stack));
+                this.resetMinedChunks(stack);
+            }
+
+            return InteractionResult.CONSUME;
         }
+
+        if(this.isSealed(stack)) return InteractionResult.FAIL;
+        if(world.isClientSide()) BlueprintSelection.use(this, user);
 
         return InteractionResult.CONSUME;
     }
@@ -349,16 +325,12 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     public InteractionResult attackOnBlock(Player player, Level world, InteractionHand hand, BlockPos targetedPos, Direction direction) {
         if(!hand.equals(InteractionHand.MAIN_HAND)) return InteractionResult.PASS;
 
-        ItemStack stack = player.getItemInHand(hand);
-        if(this.isSealed(stack)) return InteractionResult.FAIL;
-
-        this.setFirstPos(stack, world, targetedPos);
-
-        Component firstPosText = ReadableString.textFrom(targetedPos).orElse(ReadableString.ERROR);
-
-        player.sendOverlayMessage(ReadableString.translatable("item.iron_quarry.blueprint.overlay.first_pos_set", firstPosText));
-
-        return InteractionResult.SUCCESS;
+        return InteractionResult.FAIL;
+    }
+    @Override
+    @Environment(EnvType.CLIENT)
+    public boolean handleMainHandAttack(LocalPlayer player, ItemStack stack, int clickCount) {
+        return BlueprintSelection.attack(this, player, stack, clickCount);
     }
 
     public void setWorld(ItemStack stack, Level world) {
@@ -386,7 +358,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IHandledSmi
     public void setSecondPos(ItemStack stack, @Nullable Level world, BlockPos blockPos) {
         this.setPosition(DualPosition.SECOND, stack, world, blockPos);
     }
-    private void setPosition(DualPosition position, ItemStack stack, @Nullable Level world, BlockPos blockPos) {
+    public void setPosition(DualPosition position, ItemStack stack, @Nullable Level world, BlockPos blockPos) {
         if(world != null) {
             this.setWorld(stack, world);
             blockPos = ZUtil.limitInsideWorldBounds(blockPos, world);

@@ -8,3 +8,4 @@ accessible method net/minecraft/world/item/component/ItemContainerContents$Slot 
 accessible field net/minecraft/client/renderer/item/ItemModels ID_MAPPER Lnet/minecraft/util/ExtraCodecs$LateBoundIdMapper;
 accessible field net/minecraft/client/renderer/item/properties/numeric/RangeSelectItemModelProperties ID_MAPPER Lnet/minecraft/util/ExtraCodecs$LateBoundIdMapper;
 accessible field net/minecraft/client/renderer/GameRenderer fogRenderer Lnet/minecraft/client/renderer/fog/FogRenderer;
+accessible field net/minecraft/client/Minecraft rightClickDelay I

@@ -39,6 +39,7 @@ import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.event.GameLifecycleCallback;
 import pw.rxj.iron_quarry.factory.ZLootTables;
 import pw.rxj.iron_quarry.interfaces.IBlockAttackable;
+import pw.rxj.iron_quarry.interfaces.IBlockUsable;
 import pw.rxj.iron_quarry.interfaces.ICustomEnchantabilityProvider;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
 import pw.rxj.iron_quarry.interfaces.IHandledUseBlock;
@@ -104,10 +105,15 @@ public class Main implements ModInitializer {
 
 		UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
 			if(world.getBlockState(hitResult.getBlockPos()).getBlock() instanceof IHandledUseBlock block) {
-				return block.useOnBlock(player, world, hand, hitResult);
-			} else {
-				return InteractionResult.PASS;
+				InteractionResult result = block.useOnBlock(player, world, hand, hitResult);
+				if(!result.equals(InteractionResult.PASS)) return result;
 			}
+
+			if(ZUtil.getBlockOrItem(player.getItemInHand(hand)) instanceof IBlockUsable item) {
+				return item.useOnBlock(player, world, hand, hitResult);
+			}
+
+			return InteractionResult.PASS;
 		});
 
 		EnchantmentEvents.ALLOW_ENCHANTING.register((enchantment, target, enchantingContext) -> {
