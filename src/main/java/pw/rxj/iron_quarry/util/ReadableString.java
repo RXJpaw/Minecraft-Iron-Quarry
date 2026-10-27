@@ -8,6 +8,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -131,10 +133,14 @@ public class ReadableString {
     }
 
     public static MutableComponent translatable(String key, Object... args) {
-        MutableComponent translation = Component.translatable(key, args);
+        return parse(Component.translatable(key, args).getString());
+    }
+    public static List<MutableComponent> translatableLines(String key, Object... args) {
+        return Arrays.stream(Component.translatable(key, args).getString().split("\n")).map(ReadableString::parse).toList();
+    }
+    public static MutableComponent parse(String string) {
         MutableComponent parsed = Component.empty();
 
-        String string = translation.getString();
         Pattern pattern = Pattern.compile("(.*?)§\\{(.*?) (.*?)\\}");
         Matcher matcher = pattern.matcher(string);
 

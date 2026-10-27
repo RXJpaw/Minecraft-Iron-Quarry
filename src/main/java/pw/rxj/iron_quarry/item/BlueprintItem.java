@@ -228,18 +228,14 @@ public class BlueprintItem extends Item implements IHandledAttackOnBlock, IHandl
                     Component KEY_SPRINT = ReadableString.textFrom(gameOptions.keySprint);
                     Component KEY_SNEAK = ReadableString.textFrom(gameOptions.keyShift);
 
-                    MutableComponent LORE_MANUAL_0 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.0", KEY_ATTACK, KEY_INTERACT);
-                    MutableComponent LORE_MANUAL_1 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.1", KEY_SNEAK);
-                    MutableComponent LORE_MANUAL_2 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.2");
-                    MutableComponent LORE_MANUAL_3 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.3", KEY_SPRINT);
-                    MutableComponent LORE_MANUAL_4 = ReadableString.translatable("item.iron_quarry.blueprint.lore.manual.4");
+                    List<MutableComponent> LORE_MANUAL_SELECT = ReadableString.translatableLines("item.iron_quarry.blueprint.lore.manual.select", KEY_ATTACK, KEY_INTERACT);
+                    List<MutableComponent> LORE_MANUAL_EXPAND = ReadableString.translatableLines("item.iron_quarry.blueprint.lore.manual.expand", KEY_SNEAK);
+                    List<MutableComponent> LORE_MANUAL_EXPAND_FASTER = ReadableString.translatableLines("item.iron_quarry.blueprint.lore.manual.expand_faster", KEY_SPRINT);
 
-                    textConsumer.accept(LORE_MANUAL_0);
+                    LORE_MANUAL_SELECT.forEach(textConsumer);
                     textConsumer.accept(ReadableString.space());
-                    textConsumer.accept(LORE_MANUAL_1);
-                    textConsumer.accept(LORE_MANUAL_2);
-                    textConsumer.accept(LORE_MANUAL_3);
-                    textConsumer.accept(LORE_MANUAL_4);
+                    LORE_MANUAL_EXPAND.forEach(textConsumer);
+                    LORE_MANUAL_EXPAND_FASTER.forEach(textConsumer);
                 } else {
                     MutableComponent LORE_INSTRUCTIONS = ReadableString.translatable("item.iron_quarry.lore.instructions");
 
