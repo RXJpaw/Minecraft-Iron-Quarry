@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import pw.rxj.iron_quarry.interfaces.IHandledMainHandScrolling;
+import pw.rxj.iron_quarry.interfaces.IHandledMainHandScroll;
 import pw.rxj.iron_quarry.types.ScrollDirection;
 import pw.rxj.iron_quarry.util.ZUtil;
 
@@ -24,8 +24,8 @@ public abstract class MouseScrollMixin {
         assert this.minecraft.player != null;
 
         ItemStack stack = this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (ZUtil.getBlockOrItem(stack) instanceof IHandledMainHandScrolling handledMainHandScrolling) {
-            if(handledMainHandScrolling.handleMainHandScrolling(this.minecraft.player, stack, ScrollDirection.from(vertical))) ci.cancel();
+        if (ZUtil.getBlockOrItem(stack) instanceof IHandledMainHandScroll handledMainHandScroll) {
+            if(handledMainHandScroll.handleMainHandScroll(this.minecraft.player, stack, ScrollDirection.from(vertical))) ci.cancel();
         }
     }
 }

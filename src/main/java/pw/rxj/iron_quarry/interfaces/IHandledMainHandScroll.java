@@ -6,8 +6,8 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.ItemStack;
 import pw.rxj.iron_quarry.types.ScrollDirection;
 
-public interface IHandledMainHandScrolling {
+public interface IHandledMainHandScroll {
     /**  Other mouse wheel events will be canceled if true is returned. */
     @Environment(EnvType.CLIENT)
-    boolean handleMainHandScrolling(LocalPlayer player, ItemStack stack, ScrollDirection scrollDirection);
+    boolean handleMainHandScroll(LocalPlayer player, ItemStack stack, ScrollDirection scrollDirection);
 }

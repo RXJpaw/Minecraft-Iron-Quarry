@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class BlueprintItem extends Item implements IBlockAttackable, IBlockUsable, IHandledSmithing, IHandledGrinding, IHandledItemEntity, IHandledMainHandScrolling, IHandledMainHandAttack, IAlwaysRenderItemName, IModifyItemGroupEntries {
+public class BlueprintItem extends Item implements IHandledAttackOnBlock, IHandledUseOnBlock, IHandledSmithing, IHandledGrinding, IHandledItemEntity, IHandledMainHandScroll, IHandledMainHandAttack, IAlwaysRenderItemName, IModifyCreativeTabEntries {
     public BlueprintItem(Properties settings) {
         super(settings);
     }
@@ -107,7 +107,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IBlockUsabl
 
     @Override
     @Environment(EnvType.CLIENT)
-    public boolean handleMainHandScrolling(LocalPlayer player, ItemStack stack, ScrollDirection scrollDirection) {
+    public boolean handleMainHandScroll(LocalPlayer player, ItemStack stack, ScrollDirection scrollDirection) {
         return BlueprintSelection.scroll(this, player, stack, scrollDirection);
     }
     public boolean expandInDirection(ItemStack stack, Player player, Direction direction, int amount) {
@@ -290,7 +290,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IBlockUsabl
     }
 
     @Override
-    public InteractionResult useOnBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
+    public InteractionResult handleUseOnBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
         if(!hand.equals(InteractionHand.MAIN_HAND)) return InteractionResult.PASS;
         if(player.isCreative() && player.isSecondaryUseActive()) return InteractionResult.PASS;
 
@@ -322,7 +322,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IBlockUsabl
         return InteractionResult.CONSUME;
     }
     @Override
-    public InteractionResult attackOnBlock(Player player, Level world, InteractionHand hand, BlockPos targetedPos, Direction direction) {
+    public InteractionResult handleAttackOnBlock(Player player, Level world, InteractionHand hand, BlockPos targetedPos, Direction direction) {
         if(!hand.equals(InteractionHand.MAIN_HAND)) return InteractionResult.PASS;
 
         return InteractionResult.FAIL;
@@ -468,7 +468,7 @@ public class BlueprintItem extends Item implements IBlockAttackable, IBlockUsabl
     }
 
     @Override
-    public void onModifyItemGroupEntry(FabricCreativeModeTabOutput entries) {
+    public void modifyCreativeTabEntries(FabricCreativeModeTabOutput entries) {
         entries.accept(this);
 
         ItemStack stack = new ItemStack(this);

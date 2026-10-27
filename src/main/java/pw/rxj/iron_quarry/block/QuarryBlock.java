@@ -44,7 +44,7 @@ import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
 import pw.rxj.iron_quarry.gui.TooltipQuarryInventoryData;
 import pw.rxj.iron_quarry.interfaces.IBlockTooltipAppender;
 import pw.rxj.iron_quarry.interfaces.IEnergyContainer;
-import pw.rxj.iron_quarry.interfaces.IHandledUseBlock;
+import pw.rxj.iron_quarry.interfaces.IHandledBlockUse;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.item.ZItemTags;
 import pw.rxj.iron_quarry.records.TexturePosition;
@@ -58,7 +58,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, ITooltipDataProvider, IHandledUseBlock, IBlockTooltipAppender {
+public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, ITooltipDataProvider, IHandledBlockUse, IBlockTooltipAppender {
     private final String textureReference;
     private int ticksPerOperation;
     private int baseConsumption;
@@ -185,7 +185,7 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
      * @see net.minecraft.server.level.ServerPlayerGameMode#destroyBlock(BlockPos)
      */
     @Override
-    public InteractionResult useOnBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
+    public InteractionResult handleBlockUse(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
         BlockPos blockPos = hitResult.getBlockPos();
         Direction side = hitResult.getDirection();
 

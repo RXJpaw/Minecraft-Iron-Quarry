@@ -8,7 +8,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import pw.rxj.iron_quarry.Main;
-import pw.rxj.iron_quarry.interfaces.IModifyItemGroupEntries;
+import pw.rxj.iron_quarry.interfaces.IModifyCreativeTabEntries;
 import pw.rxj.iron_quarry.resource.config.server.QuarryDrillStatsConfig;
 import pw.rxj.iron_quarry.resource.config.server.QuarryMonitorConfig;
 import pw.rxj.iron_quarry.types.AugmentType;
@@ -100,8 +100,8 @@ public class ZItems {
             itemEntryList.forEach(blockItemBlockEntry -> {
                 Item item = blockItemBlockEntry.getItem();
 
-                if(item instanceof IModifyItemGroupEntries itemGroupModifier) {
-                    itemGroupModifier.onModifyItemGroupEntry(entries);
+                if(item instanceof IModifyCreativeTabEntries creativeTabModifier) {
+                    creativeTabModifier.modifyCreativeTabEntries(entries);
                 } else {
                     entries.accept(item);
                 }

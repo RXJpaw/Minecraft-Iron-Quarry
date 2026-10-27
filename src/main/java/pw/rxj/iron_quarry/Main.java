@@ -38,11 +38,11 @@ import pw.rxj.iron_quarry.data.QuarryBlockScreenData;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.event.GameLifecycleCallback;
 import pw.rxj.iron_quarry.factory.ZLootTables;
-import pw.rxj.iron_quarry.interfaces.IBlockAttackable;
-import pw.rxj.iron_quarry.interfaces.IBlockUsable;
 import pw.rxj.iron_quarry.interfaces.ICustomEnchantabilityProvider;
+import pw.rxj.iron_quarry.interfaces.IHandledAttackOnBlock;
+import pw.rxj.iron_quarry.interfaces.IHandledBlockUse;
 import pw.rxj.iron_quarry.interfaces.IHandledItemEntity;
-import pw.rxj.iron_quarry.interfaces.IHandledUseBlock;
+import pw.rxj.iron_quarry.interfaces.IHandledUseOnBlock;
 import pw.rxj.iron_quarry.interfaces.ITickingInventoryItem;
 import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.network.ZNetwork;
@@ -96,21 +96,21 @@ public class Main implements ModInitializer {
 		ResourceConditions.register(SilkTouchTradingCondition.TYPE);
 
 		AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
-			if(ZUtil.getBlockOrItem(player.getItemInHand(hand)) instanceof IBlockAttackable itemStack) {
-				return itemStack.attackOnBlock(player, world, hand, pos, direction);
+			if(ZUtil.getBlockOrItem(player.getItemInHand(hand)) instanceof IHandledAttackOnBlock item) {
+				return item.handleAttackOnBlock(player, world, hand, pos, direction);
 			} else {
 				return InteractionResult.PASS;
 			}
 		});
 
 		UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-			if(world.getBlockState(hitResult.getBlockPos()).getBlock() instanceof IHandledUseBlock block) {
-				InteractionResult result = block.useOnBlock(player, world, hand, hitResult);
+			if(world.getBlockState(hitResult.getBlockPos()).getBlock() instanceof IHandledBlockUse block) {
+				InteractionResult result = block.handleBlockUse(player, world, hand, hitResult);
 				if(!result.equals(InteractionResult.PASS)) return result;
 			}
 
-			if(ZUtil.getBlockOrItem(player.getItemInHand(hand)) instanceof IBlockUsable item) {
-				return item.useOnBlock(player, world, hand, hitResult);
+			if(ZUtil.getBlockOrItem(player.getItemInHand(hand)) instanceof IHandledUseOnBlock item) {
+				return item.handleUseOnBlock(player, world, hand, hitResult);
 			}
 
 			return InteractionResult.PASS;

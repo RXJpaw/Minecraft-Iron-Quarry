@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class AugmentItem extends Item implements IHandledSmithing, IHandledItemEntity, IModelPredicateProvider, IDynamicItemName, IModifyItemGroupEntries {
+public class AugmentItem extends Item implements IHandledSmithing, IHandledItemEntity, IModelPredicateProvider, IDynamicItemName, IModifyCreativeTabEntries {
     public static int CAPACITY_UPGRADE_SLOTS = 7;
     public static int UNIQUE_SET_AMOUNT = 1;
 
@@ -438,7 +438,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     @Override
-    public void onModifyItemGroupEntry(FabricCreativeModeTabOutput entries) {
+    public void modifyCreativeTabEntries(FabricCreativeModeTabOutput entries) {
         if (this.getUniqueType().isDisabled()) return;
 
         entries.accept(this);

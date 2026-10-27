@@ -6,6 +6,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 
-public interface IHandledUseBlock {
-    InteractionResult useOnBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult);
+public interface IHandledUseOnBlock {
+    InteractionResult handleUseOnBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult);
 }
