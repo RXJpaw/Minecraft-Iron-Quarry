@@ -85,9 +85,11 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
     }
 
     public QuarryBlockScreen(QuarryBlockScreenHandler handler, Inventory inventory, Component title) {
-        super(handler, inventory, title, 176 + (Compat.REI_LOADED ? 0 : 100), 226);
+        int expandableMenuWidth = Compat.REI_LOADED || Compat.JEI_LOADED ? 0 : 100;
 
-        this.expandableMenuWidth = Compat.REI_LOADED ? 0 : 100;
+        super(handler, inventory, title, 176 + expandableMenuWidth, 226);
+
+        this.expandableMenuWidth = expandableMenuWidth;
         this.realBackgroundWidth = 176;
         this.realBackgroundHeight = 226;
 

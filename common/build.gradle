@@ -15,6 +15,7 @@ dependencies {
 	compileOnly("me.shedaniel:RoughlyEnoughItems-default-plugin:${rei_version}")
 	compileOnly("me.shedaniel.cloth:basic-math:0.6.1")
 	compileOnly("maven.modrinth:iris:${iris_version}")
+	compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
 }
 
 tasks.named('jar') {

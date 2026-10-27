@@ -42,6 +42,7 @@ dependencies {
 	api("dev.architectury:architectury-fabric:${project.architectury_version}")
 	compileOnly("me.shedaniel.cloth:basic-math:0.6.1")
 	compileOnly("maven.modrinth:iris:${project.iris_version}")
+	compileOnly("mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}")
 
 }
 
