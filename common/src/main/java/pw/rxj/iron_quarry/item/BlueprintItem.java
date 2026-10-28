@@ -21,6 +21,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -430,6 +431,24 @@ public class BlueprintItem extends Item implements IHandledAttackOnBlock, IHandl
         int currentChunkZ = minChunkZ + offsetChunkZ;
 
         return new ChunkPos(currentChunkX, currentChunkZ);
+    }
+    public Optional<BoundingBox> getChunkBox(ItemStack stack, ChunkPos chunkPos) {
+        BlockPos firstPos = this.getFirstPos(stack).orElse(null);
+        if(firstPos == null) return Optional.empty();
+        BlockPos secondPos = this.getSecondPos(stack).orElse(null);
+        if(secondPos == null) return Optional.empty();
+
+        //General Max/Min
+        BoundingBox blueprintBox = BoundingBox.fromCorners(firstPos, secondPos);
+
+        //Max/Min within the current Chunk
+        BoundingBox chunkBox = new BoundingBox(chunkPos.x() << 4, blueprintBox.minY(), chunkPos.z() << 4, (chunkPos.x() << 4) + 15, blueprintBox.maxY(), (chunkPos.z() << 4) + 15);
+        if(!blueprintBox.intersects(chunkBox)) return Optional.empty();
+
+        return Optional.of(new BoundingBox(
+                Math.max(blueprintBox.minX(), chunkBox.minX()), blueprintBox.minY(), Math.max(blueprintBox.minZ(), chunkBox.minZ()),
+                Math.min(blueprintBox.maxX(), chunkBox.maxX()), blueprintBox.maxY(), Math.min(blueprintBox.maxZ(), chunkBox.maxZ())
+        ));
     }
 
     @Override

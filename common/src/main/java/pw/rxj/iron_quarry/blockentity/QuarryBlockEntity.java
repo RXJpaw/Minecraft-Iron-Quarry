@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
@@ -219,12 +220,17 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     //World Ticking
-    private final ArrayList<BlockPos> MiningQueue = new ArrayList<>();
+    private Iterator<BlockPos> miningIterator = Collections.emptyIterator();
+    private static final int SCAN_BLOCKS_PER_TICK = 10_000;
+    private int scanBudget = 0;
+
+    private final ArrayDeque<BlockPos> MiningQueue = new ArrayDeque<>();
     private List<ChunkPos> loadedChunks = List.of();
     private ChunkPos currentChunk;
     private int blueprintHash = 0;
     private int drillHash = 0;
     private int cooldown = 0;
+
     private static final int BLOCKED_RETRY_TICKS = 100;
     private int blockedCooldown = 0;
     private @Nullable QuarryBlockedDataComponent blocked;
@@ -253,6 +259,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             thisBlockEntity.blueprintHash = blueprintHash;
             thisBlockEntity.drillHash = drillHash;
 
+            thisBlockEntity.miningIterator = Collections.emptyIterator();
             thisBlockEntity.currentChunk = null;
             thisBlockEntity.MiningQueue.clear();
             thisBlockEntity.setBlocked(null);
@@ -307,61 +314,38 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             thisBlockEntity.cooldown = ceiled_tpo - 1;
         }
 
-        ArrayList<BlockPos> MiningQueue = thisBlockEntity.MiningQueue;
+        if(thisBlockEntity.isCurrentChunkFinished()) {
+            thisBlockEntity.loadedChunks = List.of();
 
-        if(MiningQueue.isEmpty()) {
-            if(thisBlockEntity.currentChunk != null) {
-                thisBlockEntity.loadedChunks = List.of();
+            blueprintItem.increaseMinedChunks(blueprintStack);
+            thisBlockEntity.blueprintHash = ItemStack.hashItemAndComponents(blueprintStack);
 
-                blueprintItem.increaseMinedChunks(blueprintStack);
-                thisBlockEntity.blueprintHash = ItemStack.hashItemAndComponents(blueprintStack);
+            thisBlockEntity.miningIterator = Collections.emptyIterator();
+            thisBlockEntity.currentChunk = null;
+        }
 
-                thisBlockEntity.currentChunk = null;
-            }
-
+        if(thisBlockEntity.currentChunk == null) {
             List<ChunkPos> chunkPosList = blueprintItem.getNextChunkPos(blueprintStack, 2);
             if(chunkPosList.isEmpty()) return;
 
-            ChunkPos chunkPos = chunkPosList.get(0);
+            ChunkPos chunkPos = chunkPosList.getFirst();
             if(chunkPos == null) return;
+            BoundingBox chunkBox = blueprintItem.getChunkBox(blueprintStack, chunkPos).orElse(null);
+            if(chunkBox == null) return;
 
             thisBlockEntity.loadedChunks = List.copyOf(chunkPosList);
 
-            LevelChunk worldChunk = serverWorldToBreak.getChunkSource().getChunkNow(chunkPos.x(), chunkPos.z());
-            if(worldChunk == null) return;
-
+            thisBlockEntity.miningIterator = ColumnMiningIterator.of(chunkBox);
             thisBlockEntity.currentChunk = chunkPos;
+        }
 
-            //General Max/Min
-            int minX = Math.min(firstPos.getX(), secondPos.getX());
-            int minZ = Math.min(firstPos.getZ(), secondPos.getZ());
+        ChunkPos currentChunk = thisBlockEntity.currentChunk;
+        LevelChunk worldChunk = serverWorldToBreak.getChunkSource().getChunkNow(currentChunk.x(), currentChunk.z());
+        if(worldChunk == null) return;
 
-            int maxX = Math.max(firstPos.getX(), secondPos.getX());
-            int maxZ = Math.max(firstPos.getZ(), secondPos.getZ());
-
-            //Max/Min within the current Chunk
-            int minChunkBlockX = Math.max(chunkPos.x() << 4, minX);
-            int minChunkBlockY = Math.min(firstPos.getY(), secondPos.getY());
-            int minChunkBlockZ = Math.max(chunkPos.z() << 4, minZ);
-
-            int maxChunkBlockX = Math.min((chunkPos.x() << 4) + 15, maxX);
-            int maxChunkBlockY = Math.max(firstPos.getY(), secondPos.getY());
-            int maxChunkBlockZ = Math.min((chunkPos.z() << 4) + 15, maxZ);
-
-            for (int x = minChunkBlockX; x <= maxChunkBlockX; x++) {
-                for (int z = minChunkBlockZ; z <= maxChunkBlockZ; z++) {
-                    for (int y = minChunkBlockY; y <= maxChunkBlockY; y++) {
-                        BlockPos blockPos = new BlockPos(x, y, z);
-                        BlockState blockState = worldChunk.getBlockState(blockPos);
-
-                        if(thisBlockEntity.canDrill(worldChunk, blockState, blockPos, upgradesUtil)) {
-                            MiningQueue.add(blockPos);
-                        }
-                    }
-                }
-            }
-
-            return;
+        thisBlockEntity.scanBudget = SCAN_BLOCKS_PER_TICK;
+        if(!thisBlockEntity.fillMiningQueue(worldChunk, threads, upgradesUtil)) {
+            thisBlockEntity.cooldown = 0; return;
         }
 
         List<BlockPosState> drillResults = thisBlockEntity.drillQueue(threads, thisBlock, thisBlockState, thisPos, thisBlockEntity, serverWorldToBreak, drillStack, drillItem, upgradesUtil);
@@ -416,6 +400,23 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         this.setChanged();
     }
 
+    private boolean isCurrentChunkFinished() {
+        return this.currentChunk != null && this.MiningQueue.isEmpty() && !this.miningIterator.hasNext();
+    }
+    private boolean fillMiningQueue(LevelChunk worldChunk, int target, MachineUpgradesUtil upgradesUtil) {
+        while(this.MiningQueue.size() < target && this.scanBudget > 0 && this.miningIterator.hasNext()) {
+            BlockPos blockPos = this.miningIterator.next();
+            BlockState blockState = worldChunk.getBlockState(blockPos);
+            this.scanBudget--;
+
+            if(this.canDrill(worldChunk, blockState, blockPos, upgradesUtil)) {
+                this.MiningQueue.addLast(blockPos);
+            }
+        }
+
+        return !this.MiningQueue.isEmpty();
+    }
+
     private boolean canDrill(BlockActress blockActress, MachineUpgradesUtil upgradesUtil) {
         return this.canDrill(() -> blockActress.blockEntity, blockActress.blockState, upgradesUtil);
     }
@@ -446,14 +447,13 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
         ComplexEnergyContainer EnergyContainer = quarryBlockEntity.EnergyContainer;
         ComplexInventory OutputInventory = quarryBlockEntity.OutputInventory;
-        ArrayList<BlockPos> MiningQueue = quarryBlockEntity.MiningQueue;
+        ArrayDeque<BlockPos> MiningQueue = quarryBlockEntity.MiningQueue;
 
         for (int threadIndex = 0; threadIndex < threads; threadIndex++) {
             if(drillStack.isEmpty()) return drillResults;
             if(MiningQueue.isEmpty()) return drillResults;
-            int miningQueueIndex = MiningQueue.size() - 1;
 
-            BlockPos blockPosToBreak = MiningQueue.get(miningQueueIndex);
+            BlockPos blockPosToBreak = MiningQueue.getFirst();
             Optional<BlockActress> testActress = BlockActress.of(serverWorldToBreak, blockPosToBreak);
             if(testActress.isEmpty()) return drillResults;
 
@@ -461,7 +461,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             BlockActress blockActress = testActress.get().with(true, 0, 2);
 
             if(!this.canDrill(blockActress, upgradesUtil)) {
-                MiningQueue.remove(miningQueueIndex);
+                MiningQueue.removeFirst();
                 continue;
             }
 
@@ -469,7 +469,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
             if(blockActress.isLiquidBlock()) {
                 blockActress.setBlockState(Blocks.AIR);
-                MiningQueue.remove(miningQueueIndex);
+                MiningQueue.removeFirst();
                 continue;
             }
 
@@ -532,7 +532,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             boolean drillBroke = drillItem.cdamage(drillStack, 1, serverWorldToBreak, null);
             if(drillBroke) drillItem.triggerBreakEvent(drillStack, quarryPos.getCenter(), serverWorldToBreak);
 
-            MiningQueue.remove(miningQueueIndex);
+            MiningQueue.removeFirst();
             drillResults.add(blockPosState);
         }
 
