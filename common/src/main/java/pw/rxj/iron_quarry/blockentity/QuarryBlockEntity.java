@@ -83,15 +83,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
-    @Override
-    public void setRemoved() {
-        if(this.level instanceof ServerLevel serverLevel) {
-            ChunkLoadingManager.removeTickets(serverLevel, this.worldPosition);
-        }
-
-        super.setRemoved();
-    }
-
     //Machine Configuration
     public MachineConfiguration Configuration = new MachineConfiguration() {
         @Override
@@ -229,6 +220,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
     //World Ticking
     private final ArrayList<BlockPos> MiningQueue = new ArrayList<>();
+    private List<ChunkPos> loadedChunks = List.of();
     private ChunkPos currentChunk;
     private int blueprintHash = 0;
     private int drillHash = 0;
@@ -265,12 +257,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             thisBlockEntity.MiningQueue.clear();
             thisBlockEntity.setBlocked(null);
 
-            ChunkLoadingManager.removeTickets(thisServerWorld, thisPos);
-
-            //Unlike what the name "removeTickets" might suggest, chunk tickets are NOT instantly removed,
-            //but instead are removed at the start of the next tick aka they only get "marked for removal".
-            //If this tick isn't skipped after this, the quarry will show abnormal behaviour.
-            return;
+            thisBlockEntity.loadedChunks = List.of();
         }
 
         if(!(drillStack.getItem() instanceof DrillItem drillItem)) return;
@@ -286,6 +273,8 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         ServerLevel serverWorldToBreak = minecraftServer.getLevel(worldRegistryKey);
         if(serverWorldToBreak == null) return;
         if(thisBlockEntity.owner == null) return;
+
+        ChunkLoadingManager.keepLoaded(serverWorldToBreak, thisBlockEntity.loadedChunks);
 
         MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(thisBlockEntity.getMachineUpgradeStacks());
         long minimumEnergyConsumption = thisBlock.getEnergyConsumption(upgradesUtil, Blocks.STONE);
@@ -322,7 +311,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
         if(MiningQueue.isEmpty()) {
             if(thisBlockEntity.currentChunk != null) {
-                ChunkLoadingManager.removeTicket(serverWorldToBreak, thisBlockEntity.currentChunk, thisServerWorld, thisPos);
+                thisBlockEntity.loadedChunks = List.of();
 
                 blueprintItem.increaseMinedChunks(blueprintStack);
                 thisBlockEntity.blueprintHash = ItemStack.hashItemAndComponents(blueprintStack);
@@ -336,9 +325,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             ChunkPos chunkPos = chunkPosList.get(0);
             if(chunkPos == null) return;
 
-            for (ChunkPos chunkPosToLoad : chunkPosList) {
-                ChunkLoadingManager.addTicket(serverWorldToBreak, chunkPosToLoad, thisServerWorld, thisPos);
-            }
+            thisBlockEntity.loadedChunks = List.copyOf(chunkPosList);
 
             LevelChunk worldChunk = serverWorldToBreak.getChunkSource().getChunkNow(chunkPos.x(), chunkPos.z());
             if(worldChunk == null) return;
