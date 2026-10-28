@@ -7,12 +7,18 @@ import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
 import me.shedaniel.rei.api.client.registry.screen.ExclusionZones;
 import me.shedaniel.rei.api.client.registry.transfer.TransferHandlerRegistry;
 import me.shedaniel.rei.api.client.registry.transfer.simple.SimpleTransferHandler;
+import me.shedaniel.rei.api.common.util.EntryStacks;
+import me.shedaniel.rei.plugin.client.BuiltinClientPlugin;
 import me.shedaniel.rei.plugin.common.BuiltinPlugin;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import pw.rxj.iron_quarry.item.BlueprintItem;
+import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.platform.Platform;
 import pw.rxj.iron_quarry.recipe.SmithingAugmentCapacityRecipe;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
@@ -48,6 +54,16 @@ public class ReiClient implements REIClientPlugin {
             if(recipeHolder == null || !(recipeHolder.value() instanceof SmithingAugmentCapacityRecipe)) return EventResult.pass();
 
             return EventResult.interruptFalse();
+        });
+
+        BlueprintItem blueprintItem = ZItems.BLUEPRINT.getItem();
+        ItemStack sealedBlueprint = new ItemStack(blueprintItem);
+        blueprintItem.setSealed(sealedBlueprint, true);
+
+        BuiltinClientPlugin.getInstance().registerInformation(EntryStacks.of(sealedBlueprint), Component.translatable("item.iron_quarry.blueprint.sealed"), (lines) -> {
+            lines.add(Component.translatable("item.iron_quarry.blueprint.info.unsealing"));
+
+            return lines;
         });
     }
 
