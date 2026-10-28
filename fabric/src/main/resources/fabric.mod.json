@@ -24,6 +24,9 @@
         "client": [
             "pw.rxj.iron_quarry.FabricClient"
         ],
+        "rei_common": [
+            "pw.rxj.iron_quarry.compat.rei.ReiCommon"
+        ],
         "rei_client": [
             "pw.rxj.iron_quarry.compat.rei.ReiClient"
         ],
