@@ -85,10 +85,9 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
     @Override
     public void setRemoved() {
-        if(level == null) return;
-        if(level.isClientSide()) return;
-
-        ChunkLoadingManager.removeTickets((ServerLevel) this.level, this.worldPosition);
+        if(this.level instanceof ServerLevel serverLevel) {
+            ChunkLoadingManager.removeTickets(serverLevel, this.worldPosition);
+        }
 
         super.setRemoved();
     }
