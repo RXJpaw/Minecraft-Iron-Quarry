@@ -37,7 +37,9 @@ import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.platform.Platform;
 import pw.rxj.iron_quarry.recipe.HandledCraftingRecipe;
-import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
+import pw.rxj.iron_quarry.recipe.SmithingAugmentCapacityRecipe;
+import pw.rxj.iron_quarry.recipe.SmithingAugmentRecipe;
+import pw.rxj.iron_quarry.recipe.SmithingBlueprintSealRecipe;
 import pw.rxj.iron_quarry.resource.SilkTouchTradingCondition;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigSide;
@@ -139,9 +141,13 @@ public class Main {
 		Platform.REGISTRY.register(Registries.MENU, Identifier.fromNamespaceAndPath(MOD_ID, "quarry_block_screen_handler"), () -> QUARRY_BLOCK_SCREEN_HANDLER);
 
 		Platform.REGISTRY.register(Registries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "handled_crafting_recipe"), () -> HandledCraftingRecipe.SERIALIZER);
-		Platform.REGISTRY.register(Registries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "handled_smithing_recipe"), () -> HandledSmithingRecipe.SERIALIZER);
+		Platform.REGISTRY.register(Registries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "smithing_augment"), () -> SmithingAugmentRecipe.SERIALIZER);
+		Platform.REGISTRY.register(Registries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "smithing_augment_capacity"), () -> SmithingAugmentCapacityRecipe.SERIALIZER);
+		Platform.REGISTRY.register(Registries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath(MOD_ID, "smithing_blueprint_seal"), () -> SmithingBlueprintSealRecipe.SERIALIZER);
 		Platform.RECIPE.synchronizeRecipes(HandledCraftingRecipe.SERIALIZER, RecipeType.CRAFTING);
-		Platform.RECIPE.synchronizeRecipes(HandledSmithingRecipe.SERIALIZER, RecipeType.SMITHING);
+		Platform.RECIPE.synchronizeRecipes(SmithingAugmentRecipe.SERIALIZER, RecipeType.SMITHING);
+		Platform.RECIPE.synchronizeRecipes(SmithingAugmentCapacityRecipe.SERIALIZER, RecipeType.SMITHING);
+		Platform.RECIPE.synchronizeRecipes(SmithingBlueprintSealRecipe.SERIALIZER, RecipeType.SMITHING);
 
 		Platform.REGISTRY.register(Registries.LOOT_CONDITION_TYPE, SilkTouchTradingCondition.ID, () -> SilkTouchTradingCondition.CODEC);
 

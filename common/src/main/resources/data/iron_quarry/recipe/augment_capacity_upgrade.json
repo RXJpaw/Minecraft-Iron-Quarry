@@ -1,5 +1,5 @@
 {
-    "type": "iron_quarry:handled_smithing_recipe",
+    "type": "iron_quarry:smithing_augment_capacity",
     "template": "iron_quarry:augmenting_template",
     "base": "iron_quarry:augment",
     "addition": "#iron_quarry:augment_capacity_enhancers",

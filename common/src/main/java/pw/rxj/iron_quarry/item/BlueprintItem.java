@@ -13,15 +13,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.TooltipDisplay;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.SmithingRecipeInput;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
@@ -31,7 +28,6 @@ import pw.rxj.iron_quarry.data.BlueprintPositionComponent;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.interfaces.*;
 import pw.rxj.iron_quarry.network.PacketBlueprintSelect;
-import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.render.Cuboid;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
 import pw.rxj.iron_quarry.types.DualPosition;
@@ -44,7 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class BlueprintItem extends Item implements IHandledAttackOnBlock, IHandledUseOnBlock, IHandledSmithing, IHandledGrinding, IHandledItemEntity, IHandledMainHandScroll, IHandledMainHandAttack, IAlwaysRenderItemName, IModifyCreativeTabEntries {
+public class BlueprintItem extends Item implements IHandledAttackOnBlock, IHandledUseOnBlock, IHandledGrinding, IHandledItemEntity, IHandledMainHandScroll, IHandledMainHandAttack, IAlwaysRenderItemName, IModifyCreativeTabEntries {
     public BlueprintItem(Properties settings) {
         super(settings);
     }
@@ -54,29 +50,6 @@ public class BlueprintItem extends Item implements IHandledAttackOnBlock, IHandl
     }
     public static boolean isNotOf(ItemStack stack){
         return !isOf(stack);
-    }
-
-    @Override
-    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input) {
-        ItemStack output = handler.getResultStack();
-        if(BlueprintItem.isNotOf(output)) return ItemStack.EMPTY;
-        ItemStack base = input.getItem(1).copy();
-
-        if(this.isSealed(base)) return ItemStack.EMPTY;
-        if(this.getFirstPos(base).isEmpty()) return ItemStack.EMPTY;
-        if(this.getSecondPos(base).isEmpty()) return ItemStack.EMPTY;
-
-        this.setSealed(base, true);
-
-        return base.transmuteCopy(output.getItem(), output.getCount());
-    }
-    @Override
-    public ItemStack getSmithingOutputPreview(Optional<Ingredient> base, Optional<Ingredient> addition, @Nullable TagKey<Item> additionTag, ItemStack output) {
-        ItemStack preview = output.copy();
-
-        this.setSealed(preview, true);
-
-        return preview;
     }
 
     @Override

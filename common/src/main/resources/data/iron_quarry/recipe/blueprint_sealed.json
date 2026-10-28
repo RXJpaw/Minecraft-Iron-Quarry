@@ -1,5 +1,5 @@
 {
-    "type": "iron_quarry:handled_smithing_recipe",
+    "type": "iron_quarry:smithing_blueprint_seal",
     "template": "iron_quarry:circuit_mk1",
     "base": "iron_quarry:blueprint",
     "addition": "#c:gems/amethyst",

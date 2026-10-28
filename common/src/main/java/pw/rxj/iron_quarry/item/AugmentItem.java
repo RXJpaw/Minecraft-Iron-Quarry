@@ -20,16 +20,12 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.SmithingRecipeInput;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
-import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.gui.CustomTooltipData;
 import pw.rxj.iron_quarry.gui.TooltipInventoryData;
 import pw.rxj.iron_quarry.interfaces.*;
-import pw.rxj.iron_quarry.recipe.HandledSmithingRecipe;
 import pw.rxj.iron_quarry.records.AugmentStack;
 import pw.rxj.iron_quarry.types.AugmentType;
 import pw.rxj.iron_quarry.types.DynamicText;
@@ -198,25 +194,6 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         return super.isFoil(stack);
     }
 
-    @Override
-    public ItemStack getSmithingOutput(HandledSmithingRecipe handler, SmithingRecipeInput input) {
-        ItemStack template = input.getItem(0).copy();
-        if(DamageableSmithingTemplateItem.isNotOf(template)) return ItemStack.EMPTY;
-
-        ItemStack base = input.getItem(1).copy();
-        if(AugmentItem.isNotOf(base)) return ItemStack.EMPTY;
-
-        ItemStack addition = input.getItem(2).copy();
-        AugmentStack augmentStack = AugmentStack.from(addition.copy());
-
-        if(augmentStack == null) {
-            boolean result = this.putUpgrade(base, addition);
-            return result ? base : ItemStack.EMPTY;
-        } else {
-            Container outcome = this.getSmithingOutcome(template, base, addition);
-            return outcome.getItem(3);
-        }
-    }
     public Container getSmithingOutcome(ItemStack template, ItemStack input, ItemStack addition) {
         DamageableSmithingTemplateItem templateItem = DamageableSmithingTemplateItem.instanceFrom(template);
         if(templateItem == null) return new SimpleContainer(template, input, addition, ItemStack.EMPTY);
@@ -245,32 +222,6 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         } else {
             return new SimpleContainer(template, ItemStack.EMPTY, addition, input);
         }
-    }
-    @Override
-    public ItemStack getSmithingOutputPreview(Optional<Ingredient> base, Optional<Ingredient> addition, @Nullable TagKey<Item> additionTag, ItemStack output) {
-        if(output.getItem() instanceof AugmentItem augmentItem && additionTag != null) {
-            ItemStack stack = output.copy();
-
-            if(additionTag.equals(ZItemTags.AUGMENT_CAPACITY_ENHANCERS)) {
-                augmentItem.makeSmithingPreview(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
-
-                return stack;
-            } else {
-                for (TagKey<Item> itemTagKey : ZItemTags.AUGMENT_ENHANCERS) {
-                    if(!additionTag.equals(itemTagKey)) continue;
-
-                    AugmentStack augmentStack = AugmentStack.from(itemTagKey);
-                    if(augmentStack == null) continue;
-
-                    augmentItem.setType(stack, augmentStack.type());
-                    augmentItem.setAmount(stack, augmentStack.amount());
-
-                    return stack;
-                }
-            }
-        }
-
-        return IHandledSmithing.super.getSmithingOutputPreview(base, addition, additionTag, output);
     }
     @Override
     public Boolean handleSmithingTakeOutput(Player player, Container inputInv, ResultContainer outputInv, ContainerLevelAccess context) {
