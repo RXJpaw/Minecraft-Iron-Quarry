@@ -101,13 +101,13 @@ public class Cuboid {
     public Cuboid limitInside(Cuboid other) {
         Vec3 lowPos = new Vec3(
                 Math.min(Math.max(this.lowPos.x, other.lowPos.x), other.highPos.x),
-                Math.min(Math.max(this.lowPos.y, other.lowPos.y), other.highPos.x),
-                Math.min(Math.max(this.lowPos.z, other.lowPos.z), other.highPos.x)
+                Math.min(Math.max(this.lowPos.y, other.lowPos.y), other.highPos.y),
+                Math.min(Math.max(this.lowPos.z, other.lowPos.z), other.highPos.z)
         );
         Vec3 highPos = new Vec3(
                 Math.min(Math.max(this.highPos.x, other.lowPos.x), other.highPos.x),
-                Math.min(Math.max(this.highPos.y, other.lowPos.y), other.highPos.x),
-                Math.min(Math.max(this.highPos.z, other.lowPos.z), other.highPos.x)
+                Math.min(Math.max(this.highPos.y, other.lowPos.y), other.highPos.y),
+                Math.min(Math.max(this.highPos.z, other.lowPos.z), other.highPos.z)
         );
 
         return Cuboid.fromProcessed(lowPos, highPos);
