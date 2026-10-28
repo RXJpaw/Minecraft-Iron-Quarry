@@ -6,9 +6,9 @@
         "BCB"
     ],
     "key": {
-        "M": "minecraft:chest",
+        "M": "#c:chests/wooden",
         "C": "iron_quarry:circuit_mk1",
-        "B": "minecraft:copper_block"
+        "B": "#c:storage_blocks/copper"
     },
     "result": {
         "count": 1,

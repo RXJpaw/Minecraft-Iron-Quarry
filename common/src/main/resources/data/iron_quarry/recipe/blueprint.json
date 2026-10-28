@@ -6,8 +6,8 @@
         "SLR"
     ],
     "key": {
-        "R": "minecraft:redstone",
-        "L": "minecraft:lapis_lazuli",
+        "R": "#c:dusts/redstone",
+        "L": "#c:gems/lapis",
         "S": "#minecraft:signs",
         "P": "minecraft:paper"
     },

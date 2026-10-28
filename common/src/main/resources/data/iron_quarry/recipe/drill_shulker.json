@@ -6,7 +6,7 @@
         " M "
     ],
     "key": {
-        "S": "minecraft:blaze_rod",
+        "S": "#c:rods/blaze",
         "A": "iron_quarry:netherite_drill",
         "M": "minecraft:shulker_shell"
     },

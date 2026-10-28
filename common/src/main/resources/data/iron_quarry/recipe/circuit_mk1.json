@@ -7,8 +7,8 @@
     ],
     "key": {
         "M": "iron_quarry:circuit_blank",
-        "P": "minecraft:copper_ingot",
-        "S": "minecraft:redstone"
+        "P": "#c:ingots/copper",
+        "S": "#c:dusts/redstone"
     },
     "result": {
         "count": 4,

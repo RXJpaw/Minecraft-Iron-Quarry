@@ -8,7 +8,7 @@
     "key": {
         "M": "iron_quarry:diamond_quarry",
         "C": "iron_quarry:circuit_mk4",
-        "B": "minecraft:netherite_block"
+        "B": "#c:storage_blocks/netherite"
     },
     "source": "M",
     "result": {

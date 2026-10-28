@@ -8,7 +8,7 @@
     "key": {
         "M": "iron_quarry:netherite_quarry",
         "C": "iron_quarry:circuit_mk5",
-        "B": "minecraft:nether_star"
+        "B": "#c:nether_stars"
     },
     "source": "M",
     "result": {

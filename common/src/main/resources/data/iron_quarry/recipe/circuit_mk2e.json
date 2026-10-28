@@ -7,7 +7,7 @@
     ],
     "key": {
         "M": "iron_quarry:circuit_mk1",
-        "P": "minecraft:gold_ingot",
+        "P": "#c:ingots/gold",
         "S": "minecraft:blaze_powder"
     },
     "result": {

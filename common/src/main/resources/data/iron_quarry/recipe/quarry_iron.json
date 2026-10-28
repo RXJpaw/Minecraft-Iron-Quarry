@@ -8,7 +8,7 @@
     "key": {
         "M": "iron_quarry:copper_quarry",
         "C": "iron_quarry:circuit_mk2",
-        "B": "minecraft:iron_block"
+        "B": "#c:storage_blocks/iron"
     },
     "source": "M",
     "result": {

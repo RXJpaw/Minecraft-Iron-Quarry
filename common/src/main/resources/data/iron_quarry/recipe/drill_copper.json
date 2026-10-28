@@ -6,9 +6,9 @@
         " M "
     ],
     "key": {
-        "S": "minecraft:stick",
+        "S": "#c:rods/wooden",
         "A": "iron_quarry:circuit_mk1",
-        "M": "minecraft:copper_ingot"
+        "M": "#c:ingots/copper"
     },
     "result": {
         "count": 1,

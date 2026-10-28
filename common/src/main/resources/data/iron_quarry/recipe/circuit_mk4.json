@@ -7,8 +7,8 @@
     ],
     "key": {
         "M": "iron_quarry:circuit_mk3",
-        "P": "minecraft:netherite_ingot",
-        "S": "minecraft:ender_pearl"
+        "P": "#c:ingots/netherite",
+        "S": "#c:ender_pearls"
     },
     "result": {
         "count": 2,

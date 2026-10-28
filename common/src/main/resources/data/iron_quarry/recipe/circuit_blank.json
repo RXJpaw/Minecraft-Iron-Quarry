@@ -7,8 +7,8 @@
     ],
     "key": {
         "U": "minecraft:dark_prismarine",
-        "M": "minecraft:copper_ingot",
-        "D": "minecraft:amethyst_shard"
+        "M": "#c:ingots/copper",
+        "D": "#c:gems/amethyst"
     },
     "result": {
         "count": 16,

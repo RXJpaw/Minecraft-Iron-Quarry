@@ -6,9 +6,9 @@
         " M "
     ],
     "key": {
-        "S": "minecraft:stick",
+        "S": "#c:rods/wooden",
         "A": "iron_quarry:circuit_mk3",
-        "M": "minecraft:diamond"
+        "M": "#c:gems/diamond"
     },
     "result": {
         "count": 1,

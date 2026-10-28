@@ -8,7 +8,7 @@
     "key": {
         "M": "iron_quarry:gold_quarry",
         "C": "iron_quarry:circuit_mk3",
-        "B": "minecraft:diamond_block"
+        "B": "#c:storage_blocks/diamond"
     },
     "source": "M",
     "result": {

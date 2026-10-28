@@ -6,7 +6,7 @@
         "BBB"
     ],
     "key": {
-        "B": "minecraft:lapis_block",
+        "B": "#c:storage_blocks/lapis",
         "A": "iron_quarry:circuit_blank"
     },
     "result": {
