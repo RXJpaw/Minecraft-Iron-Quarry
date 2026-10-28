@@ -2,6 +2,7 @@ package pw.rxj.iron_quarry.recipe;
 
 import pw.rxj.iron_quarry.item.BlueprintItem;
 
+import java.util.List;
 import java.util.Optional;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -38,13 +39,13 @@ public class SmithingBlueprintSealRecipe extends HandledSmithingRecipe {
     }
 
     @Override
-    public ItemStack getResultPreview() {
+    public List<ItemStack> getResultPreviews() {
         ItemStack preview = this.getResultStack();
 
         if(preview.getItem() instanceof BlueprintItem blueprintItem) {
             blueprintItem.setSealed(preview, true);
         }
 
-        return preview;
+        return List.of(preview);
     }
 }

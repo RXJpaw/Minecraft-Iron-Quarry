@@ -76,15 +76,19 @@ public abstract class HandledSmithingRecipe extends SmithingTransformRecipe {
         return this.result.create();
     }
 
-    public abstract ItemStack getResultPreview();
+    public abstract List<ItemStack> getResultPreviews();
 
     @Override
     public List<RecipeDisplay> display() {
+        List<SlotDisplay> previews = this.getResultPreviews().stream()
+                .<SlotDisplay>map((preview) -> new SlotDisplay.ItemStackSlotDisplay(ItemStackTemplate.fromNonEmptyStack(preview)))
+                .toList();
+
         return List.of(new SmithingRecipeDisplay(
                 Ingredient.optionalIngredientToDisplay(this.templateIngredient()),
                 this.baseIngredient().display(),
                 Ingredient.optionalIngredientToDisplay(this.additionIngredient()),
-                new SlotDisplay.ItemStackSlotDisplay(ItemStackTemplate.fromNonEmptyStack(this.getResultPreview())),
+                previews.size() == 1 ? previews.getFirst() : new SlotDisplay.Composite(previews),
                 new SlotDisplay.ItemSlotDisplay(Items.SMITHING_TABLE)
         ));
     }

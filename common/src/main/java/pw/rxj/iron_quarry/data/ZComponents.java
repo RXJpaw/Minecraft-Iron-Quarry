@@ -23,10 +23,6 @@ public class ZComponents {
             .persistent(Codec.INT)
             .networkSynchronized(ByteBufCodecs.VAR_INT));
 
-    public static DataComponentType<Identifier> SMITHING_OUTPUT_PREVIEW = register("smithing_output_preview", (builder) -> builder
-            .persistent(Identifier.CODEC)
-            .networkSynchronized(Identifier.STREAM_CODEC));
-
     public static DataComponentType<AugmentType> AUGMENT_TYPE = register("augment_type", (builder) -> builder
             .persistent(AugmentType.CODEC)
             .networkSynchronized(AugmentType.PACKET_CODEC));

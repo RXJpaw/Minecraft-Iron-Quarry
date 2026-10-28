@@ -4,6 +4,7 @@ import pw.rxj.iron_quarry.item.AugmentItem;
 import pw.rxj.iron_quarry.item.DamageableSmithingTemplateItem;
 import pw.rxj.iron_quarry.records.AugmentStack;
 
+import java.util.List;
 import java.util.Optional;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -39,21 +40,21 @@ public class SmithingAugmentRecipe extends HandledSmithingRecipe {
     }
 
     @Override
-    public ItemStack getResultPreview() {
+    public List<ItemStack> getResultPreviews() {
         ItemStack preview = this.getResultStack();
-        if(!(preview.getItem() instanceof AugmentItem augmentItem)) return preview;
+        if(!(preview.getItem() instanceof AugmentItem augmentItem)) return List.of(preview);
 
         Optional<ItemStack> addition = this.additionIngredient()
                 .flatMap((ingredient) -> ingredient.items().findFirst())
                 .map((item) -> item.value().getDefaultInstance());
-        if(addition.isEmpty()) return preview;
+        if(addition.isEmpty()) return List.of(preview);
 
         AugmentStack augmentStack = AugmentStack.from(addition.get());
-        if(augmentStack == null) return preview;
+        if(augmentStack == null) return List.of(preview);
 
         augmentItem.setType(preview, augmentStack.type());
         augmentItem.setAmount(preview, augmentStack.amount());
 
-        return preview;
+        return List.of(preview);
     }
 }

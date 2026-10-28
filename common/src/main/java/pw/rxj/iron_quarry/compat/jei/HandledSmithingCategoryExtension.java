@@ -22,6 +22,6 @@ public class HandledSmithingCategoryExtension implements ISmithingCategoryExtens
 
     @Override
     public <T extends IIngredientAcceptor<T>> void setOutput(HandledSmithingRecipe recipe, T ingredientAcceptor) {
-        ingredientAcceptor.add(recipe.getResultPreview());
+        ingredientAcceptor.addItemStacks(recipe.getResultPreviews());
     }
 }

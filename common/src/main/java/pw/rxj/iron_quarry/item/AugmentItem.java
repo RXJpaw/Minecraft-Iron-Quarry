@@ -184,7 +184,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         }
     }
     public boolean isTooltipExtended(ItemStack stack) {
-        return Minecraft.getInstance().hasShiftDown() || this.getType(stack).isEmpty() || ZItemTags.AUGMENT_CAPACITY_ENHANCERS.equals(this.getSmithingPreviewAdditionTag(stack));
+        return Minecraft.getInstance().hasShiftDown() || this.getType(stack).isEmpty();
     }
 
     @Override
@@ -341,19 +341,6 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     public List<Item> getUpgrades(@NotNull ItemStack stack) {
-        if(this.isSmithingPreview(stack)) {
-            TagKey<Item> addition = this.getSmithingPreviewAdditionTag(stack);
-            if(addition == null) return List.of();
-
-            List<Item> matchingItems = ZUtil.getItemsIn(addition);
-            if(matchingItems.isEmpty()) return List.of();
-
-            long time = System.currentTimeMillis() / 1000;
-            int stackIndex = (int) (time % matchingItems.size());
-
-            return List.of(matchingItems.get(stackIndex));
-        }
-
         List<Identifier> itemIdList = stack.getOrDefault(ZComponents.AUGMENT_UPGRADES, new ArrayList<>());
         List<Item> upgradeList = new ArrayList<>();
 

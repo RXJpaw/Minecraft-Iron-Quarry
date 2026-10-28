@@ -2,8 +2,8 @@ package pw.rxj.iron_quarry.recipe;
 
 import pw.rxj.iron_quarry.item.AugmentItem;
 import pw.rxj.iron_quarry.item.DamageableSmithingTemplateItem;
-import pw.rxj.iron_quarry.item.ZItemTags;
 
+import java.util.List;
 import java.util.Optional;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -36,11 +36,18 @@ public class SmithingAugmentCapacityRecipe extends HandledSmithingRecipe {
     }
 
     @Override
-    public ItemStack getResultPreview() {
+    public List<ItemStack> getResultPreviews() {
+        List<ItemStack> previews = this.additionIngredient()
+                .map((addition) -> addition.items().map((item) -> this.getResultPreview(item.value().getDefaultInstance())).toList())
+                .orElse(List.of());
+
+        return previews.isEmpty() ? List.of(this.getResultStack()) : previews;
+    }
+    public ItemStack getResultPreview(ItemStack addition) {
         ItemStack preview = this.getResultStack();
 
         if(preview.getItem() instanceof AugmentItem augmentItem) {
-            augmentItem.makeSmithingPreview(preview, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
+            augmentItem.putUpgrade(preview, addition);
         }
 
         return preview;
