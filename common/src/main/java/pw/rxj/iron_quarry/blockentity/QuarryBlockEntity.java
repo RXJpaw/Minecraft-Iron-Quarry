@@ -471,45 +471,43 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             //enables block entity tracking / disables neighbor- and redstone updates to reduce lag!
             BlockActress blockActress = testActress.get().with(true, 0, 2);
 
-            if(blockActress.isLiquidBlock()) {
-                if(!quarryBlockEntity.canModify(serverWorldToBreak, blockActress)) return drillResults;
+            if(!this.canDrill(blockActress, upgradesUtil)) {
+                MiningQueue.remove(miningQueueIndex);
+                continue;
+            }
 
+            if(!quarryBlockEntity.canModify(serverWorldToBreak, blockActress)) return drillResults;
+
+            if(blockActress.isLiquidBlock()) {
                 blockActress.setBlockState(Blocks.AIR);
                 MiningQueue.remove(miningQueueIndex);
                 continue;
             }
 
             //handle special block entities
-            if(this.canDrill(blockActress, upgradesUtil)) {
-                if(!quarryBlockEntity.canModify(serverWorldToBreak, blockActress)) return drillResults;
+            //will only work if canDrill conditions are met! like if the container is not empty
+            if(blockActress.blockEntity instanceof RandomizableContainerBlockEntity lootableContainer) {
+                for (int slot = 0; slot < lootableContainer.getContainerSize(); slot++) {
+                    ItemStack stack = lootableContainer.getItem(slot).copy();
+                    if(stack.isEmpty()) continue;
+                    stack.setCount(1);
 
-                //will only work if canDrill conditions are met! like if the container is not empty
-                if(blockActress.blockEntity instanceof RandomizableContainerBlockEntity lootableContainer) {
-                    for (int slot = 0; slot < lootableContainer.getContainerSize(); slot++) {
-                        ItemStack stack = lootableContainer.getItem(slot).copy();
-                        if(stack.isEmpty()) continue;
-                        stack.setCount(1);
+                    if(OutputInventory.canAddItem(stack)) {
+                        long energyConsumption = quarryBlock.getEnergyConsumption(upgradesUtil);
+                        if(EnergyContainer.getStored() < energyConsumption) return drillResults;
 
-                        if(OutputInventory.canAddItem(stack)) {
-                            long energyConsumption = quarryBlock.getEnergyConsumption(upgradesUtil);
-                            if(EnergyContainer.getStored() < energyConsumption) return drillResults;
+                        OutputInventory.addItem(lootableContainer.removeItem(slot, 1));
+                        EnergyContainer.useEnergy(energyConsumption);
 
-                            OutputInventory.addItem(lootableContainer.removeItem(slot, 1));
-                            EnergyContainer.useEnergy(energyConsumption);
-
-                            break;
-                        }
-                        //not enough space in quarry inventory
-                        return drillResults;
+                        break;
                     }
-                    //only one item per operation
-                    continue;
+                    //not enough space in quarry inventory
+                    return drillResults;
                 }
-                //non-block entities will fall through
-            } else {
-                MiningQueue.remove(miningQueueIndex);
+                //only one item per operation
                 continue;
             }
+            //non-block entities will fall through
 
             //energy consumption
             long energyConsumption = quarryBlock.getEnergyConsumption(upgradesUtil, blockActress.block);
