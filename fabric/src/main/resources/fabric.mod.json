@@ -11,8 +11,8 @@
     ],
     "contact": {
         "homepage": "https://www.curseforge.com/minecraft/mc-mods/iron-quarry",
-        "sources": "https://github.com/RXJpaw/Fabric-Iron-Quarry",
-        "issues": "https://github.com/RXJpaw/Fabric-Iron-Quarry/issues"
+        "sources": "https://github.com/RXJpaw/Minecraft-Iron-Quarry",
+        "issues": "https://github.com/RXJpaw/Minecraft-Iron-Quarry/issues"
     },
     "icon": "assets/iron_quarry/icon.png",
 
@@ -41,8 +41,8 @@
 
     "depends": {
         "team_reborn_energy": ">=5.0.0",
-        "fabricloader": ">=0.16.10",
-        "fabric-api": "*",
+        "fabricloader": ">=0.19.5",
+        "fabric-api": ">=0.155.3",
         "minecraft": "~26.1.2",
         "java": ">=25"
     },
