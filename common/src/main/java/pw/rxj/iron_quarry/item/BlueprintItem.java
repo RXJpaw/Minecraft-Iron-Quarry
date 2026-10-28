@@ -74,13 +74,9 @@ public class BlueprintItem extends Item implements IHandledAttackOnBlock, IHandl
     public ItemStack getSmithingOutputPreview(Optional<Ingredient> base, Optional<Ingredient> addition, @Nullable TagKey<Item> additionTag, ItemStack output) {
         ItemStack preview = output.copy();
 
-        if(Ingredient.testOptionalIngredient(addition, Items.AMETHYST_SHARD.getDefaultInstance())) {
-            this.setSealed(preview, true);
+        this.setSealed(preview, true);
 
-            return preview;
-        }
-
-        return null;
+        return preview;
     }
 
     @Override
