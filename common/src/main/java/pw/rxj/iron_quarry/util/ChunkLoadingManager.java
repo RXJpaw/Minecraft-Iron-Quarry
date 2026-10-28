@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
 import pw.rxj.iron_quarry.event.ServerLevelCallback;
+import pw.rxj.iron_quarry.event.ServerLifecycleCallback;
 import pw.rxj.iron_quarry.platform.Platform;
 
 import java.util.*;
@@ -82,6 +83,7 @@ public class ChunkLoadingManager {
 
             while(iterator.hasNext()) {
                 Ticket ticket = iterator.next();
+                if(ticket.getLoadedWorld() != serverWorld) continue;
 
                 if(ticket.isMarkedForRemoval()) {
                     iterator.remove();
@@ -91,8 +93,8 @@ public class ChunkLoadingManager {
             }
         });
 
-        ServerLevelCallback.UNLOAD.register(serverWorld -> LOADED_CHUNKS.clear());
-        ServerLevelCallback.LOAD.register(serverWorld -> LOADED_CHUNKS.clear());
+        ServerLevelCallback.UNLOAD.register(serverWorld -> LOADED_CHUNKS.removeIf(ticket -> ticket.getLoadedWorld() == serverWorld || ticket.getSourceWorld() == serverWorld));
+        ServerLifecycleCallback.STARTING.register(server -> LOADED_CHUNKS.clear());
     }
 
     public static class Ticket {
