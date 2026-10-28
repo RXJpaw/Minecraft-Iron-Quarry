@@ -2,10 +2,15 @@ package pw.rxj.iron_quarry.compat.jei;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
+import mezz.jei.api.recipe.category.extensions.vanilla.smithing.IExtendableSmithingRecipeCategory;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
+import mezz.jei.api.registration.IVanillaCategoryExtensionRegistration;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.Identifier;
 import pw.rxj.iron_quarry.Main;
+import pw.rxj.iron_quarry.recipe.SmithingAugmentCapacityRecipe;
+import pw.rxj.iron_quarry.recipe.SmithingAugmentRecipe;
+import pw.rxj.iron_quarry.recipe.SmithingBlueprintSealRecipe;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreen;
 import pw.rxj.iron_quarry.util.TrackableZone;
 
@@ -18,6 +23,16 @@ public class JeiClient implements IModPlugin {
     @Override
     public Identifier getPluginUid() {
         return ID;
+    }
+
+    @Override
+    public void registerVanillaCategoryExtensions(IVanillaCategoryExtensionRegistration registration) {
+        IExtendableSmithingRecipeCategory smithingCategory = registration.getSmithingCategory();
+        HandledSmithingCategoryExtension extension = new HandledSmithingCategoryExtension();
+
+        smithingCategory.addExtension(SmithingAugmentRecipe.class, extension);
+        smithingCategory.addExtension(SmithingAugmentCapacityRecipe.class, extension);
+        smithingCategory.addExtension(SmithingBlueprintSealRecipe.class, extension);
     }
 
     @Override
