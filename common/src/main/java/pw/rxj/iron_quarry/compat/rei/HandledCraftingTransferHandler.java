@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class HandledCraftingTransferHandler implements SimpleTransferHandler {
-    private static final int CENTER_DISPLAY_INDEX = 4;
+    private static final int DISPLAY_GRID_WIDTH = 3;
 
     private final SimpleTransferHandler parent;
 
@@ -42,7 +42,7 @@ public class HandledCraftingTransferHandler implements SimpleTransferHandler {
         if(!ClientHelper.getInstance().canUseMovePackets()) return ApplicabilityResult.createNotApplicable();
 
         HandledCraftingRecipe recipe = getHandledCraftingRecipe(context);
-        if(recipe == null || recipe.getWidth() != 3 || recipe.getHeight() != 3) return ApplicabilityResult.createNotApplicable();
+        if(recipe == null || recipe.getSourceIndex() < 0) return ApplicabilityResult.createNotApplicable();
 
         return applicabilityResult;
     }
@@ -60,9 +60,11 @@ public class HandledCraftingTransferHandler implements SimpleTransferHandler {
     @Override
     public List<InputIngredient<ItemStack>> getInputsIndexed(Context context) {
         List<InputIngredient<ItemStack>> inputs = new ArrayList<>();
+        HandledCraftingRecipe recipe = getHandledCraftingRecipe(context);
+        int sourceDisplayIndex = recipe == null ? -1 : getSourceDisplayIndex(recipe);
 
         for (InputIngredient<ItemStack> input : this.parent.getInputsIndexed(context)) {
-            inputs.add(input.getDisplayIndex() == CENTER_DISPLAY_INDEX ? this.withInventoryStacks(context, input) : input);
+            inputs.add(input.getDisplayIndex() == sourceDisplayIndex ? this.withInventoryStacks(context, input) : input);
         }
 
         return inputs;
@@ -81,6 +83,13 @@ public class HandledCraftingTransferHandler implements SimpleTransferHandler {
         }
 
         return InputIngredient.of(input.getIndex(), input.getDisplayIndex(), stacks);
+    }
+
+    private static int getSourceDisplayIndex(HandledCraftingRecipe recipe) {
+        int x = recipe.getSourceIndex() % recipe.getWidth();
+        int y = recipe.getSourceIndex() / recipe.getWidth();
+
+        return DISPLAY_GRID_WIDTH * y + x;
     }
 
     private static @Nullable HandledCraftingRecipe getHandledCraftingRecipe(Context context) {

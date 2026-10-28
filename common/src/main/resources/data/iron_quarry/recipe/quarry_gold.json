@@ -10,6 +10,7 @@
         "C": "iron_quarry:circuit_mk2e",
         "B": "minecraft:gold_block"
     },
+    "source": "M",
     "result": {
         "count": 1,
         "id": "iron_quarry:gold_quarry"

@@ -10,6 +10,7 @@
         "C": "iron_quarry:circuit_mk5",
         "A": "minecraft:sculk_shrieker"
     },
+    "source": "M",
     "result": {
         "count": 1,
         "id": "iron_quarry:sculk_quarry_monitor"

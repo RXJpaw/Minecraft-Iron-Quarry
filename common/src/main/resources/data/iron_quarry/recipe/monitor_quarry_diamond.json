@@ -10,6 +10,7 @@
         "C": "iron_quarry:circuit_mk3",
         "A": "minecraft:ender_eye"
     },
+    "source": "M",
     "result": {
         "count": 1,
         "id": "iron_quarry:diamond_quarry_monitor"

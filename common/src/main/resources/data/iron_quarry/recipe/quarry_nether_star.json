@@ -10,6 +10,7 @@
         "C": "iron_quarry:circuit_mk5",
         "B": "minecraft:nether_star"
     },
+    "source": "M",
     "result": {
         "count": 1,
         "id": "iron_quarry:nether_star_quarry"

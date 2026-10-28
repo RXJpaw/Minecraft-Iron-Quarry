@@ -10,6 +10,7 @@
         "C": "iron_quarry:circuit_mk4",
         "A": "minecraft:end_crystal"
     },
+    "source": "M",
     "result": {
         "count": 1,
         "id": "iron_quarry:netherite_quarry_monitor"
