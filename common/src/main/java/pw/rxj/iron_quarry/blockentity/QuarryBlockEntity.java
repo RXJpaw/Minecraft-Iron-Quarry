@@ -36,6 +36,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
+import pw.rxj.iron_quarry.block.ZBlockTags;
 import pw.rxj.iron_quarry.data.QuarryBlockScreenData;
 import pw.rxj.iron_quarry.data.QuarryBlockedDataComponent;
 import pw.rxj.iron_quarry.data.QuarryOwnerComponent;
@@ -437,9 +438,11 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     }
     //The block hardness check will render any chest looting augment useless.
     private boolean canDrill(Supplier<BlockEntity> blockEntitySupplier, BlockState blockState, MachineUpgradesUtil upgradesUtil) {
-        if(blockState.isAir()) return false;
+        if(blockState.isAir() || blockState.is(ZBlockTags.IGNORED_BY_QUARRY)) return false;
+
         Block block = blockState.getBlock();
         if(block.defaultDestroyTime() < 0) return false;
+
         BlockEntity blockEntity = blockEntitySupplier.get();
         if(blockEntity == null) return true;
 
