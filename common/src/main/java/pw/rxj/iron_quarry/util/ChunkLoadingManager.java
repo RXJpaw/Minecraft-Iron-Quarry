@@ -78,7 +78,6 @@ public class ChunkLoadingManager {
         Platform.REGISTRY.register(Registries.TICKET_TYPE, Identifier.fromNamespaceAndPath("iron_quarry", "quarry_express"), () -> QUARRY_EXPRESS);
 
         ServerLevelCallback.START_TICK.register(serverWorld -> {
-            if(!LOADED_CHUNKS.isEmpty()) serverWorld.resetEmptyTime();
             Iterator<Ticket> iterator = LOADED_CHUNKS.iterator();
 
             while(iterator.hasNext()) {
