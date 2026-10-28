@@ -4,9 +4,11 @@ import me.shedaniel.math.Rectangle;
 import dev.architectury.event.EventResult;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
+import me.shedaniel.rei.api.client.registry.entry.CollapsibleEntryRegistry;
 import me.shedaniel.rei.api.client.registry.screen.ExclusionZones;
 import me.shedaniel.rei.api.client.registry.transfer.TransferHandlerRegistry;
 import me.shedaniel.rei.api.client.registry.transfer.simple.SimpleTransferHandler;
+import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
 import me.shedaniel.rei.api.common.util.EntryStacks;
 import me.shedaniel.rei.plugin.client.BuiltinClientPlugin;
 import me.shedaniel.rei.plugin.common.BuiltinPlugin;
@@ -17,6 +19,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.platform.Platform;
@@ -65,6 +68,11 @@ public class ReiClient implements REIClientPlugin {
 
             return lines;
         });
+    }
+
+    @Override
+    public void registerCollapsibleEntries(CollapsibleEntryRegistry registry) {
+        registry.group(Identifier.fromNamespaceAndPath(Main.MOD_ID, "augment"), Component.translatable("item.iron_quarry.augment.variants"), VanillaEntryTypes.ITEM, (stack) -> stack.getValue().is(ZItems.AUGMENT.getItem()));
     }
 
     @Override

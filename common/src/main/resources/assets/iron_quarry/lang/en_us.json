@@ -53,6 +53,7 @@
     "item.iron_quarry.augment.fortune": "Fortune Augment",
     "item.iron_quarry.augment.silk_touch": "Silk Touch Augment",
     "item.iron_quarry.augment.chest_looting": "Chest Looting Augment",
+    "item.iron_quarry.augment.variants": "Augments",
     "item.iron_quarry.augment.lore.used": "§{RGB_LIGHT_GRAY Used %s/%s enhancements.}",
     "item.iron_quarry.augment.lore.capacity_upgrades": "§{RGB_STRONG_HIGHLIGHT §nCapacity Upgrades (%s/%s):}",
     "item.iron_quarry.augment.lore.benefit.speed": "§{RGB_BENEFIT +%s%% faster operation}",
