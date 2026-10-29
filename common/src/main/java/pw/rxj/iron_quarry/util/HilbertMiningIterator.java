@@ -4,10 +4,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.IntPredicate;
 
-public class HilbertMiningIterator implements Iterator<BlockPos> {
+public class HilbertMiningIterator implements IMiningIterator {
     private static final int SIZE = 16;
     private static final int CELLS = SIZE * SIZE;
     private static final int[] CELL_BY_STEP = createCells();
@@ -99,5 +99,14 @@ public class HilbertMiningIterator implements Iterator<BlockPos> {
         }
 
         return blockPos;
+    }
+    @Override
+    public boolean skipAirSection(IntPredicate hasOnlyAir) {
+        if(this.step != 0 || !IMiningIterator.isSectionTop(this.y, this.maxY)) return false;
+        if(!hasOnlyAir.test(this.y)) return false;
+
+        this.y = IMiningIterator.belowSection(this.y);
+
+        return true;
     }
 }

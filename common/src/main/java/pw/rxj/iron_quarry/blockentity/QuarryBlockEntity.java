@@ -52,6 +52,7 @@ import pw.rxj.iron_quarry.types.IoState;
 import pw.rxj.iron_quarry.util.*;
 
 import java.util.*;
+import java.util.function.IntPredicate;
 import java.util.function.Supplier;
 
 public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
@@ -220,7 +221,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     //World Ticking
-    private Iterator<BlockPos> miningIterator = Collections.emptyIterator();
+    private IMiningIterator miningIterator = IMiningIterator.EMPTY;
     private static final int SCAN_BLOCKS_PER_TICK = 10_000;
     private int scanBudget = 0;
 
@@ -259,7 +260,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             thisBlockEntity.blueprintHash = blueprintHash;
             thisBlockEntity.drillHash = drillHash;
 
-            thisBlockEntity.miningIterator = Collections.emptyIterator();
+            thisBlockEntity.miningIterator = IMiningIterator.EMPTY;
             thisBlockEntity.currentChunk = null;
             thisBlockEntity.MiningQueue.clear();
             thisBlockEntity.setBlocked(null);
@@ -320,7 +321,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             blueprintItem.increaseMinedChunks(blueprintStack);
             thisBlockEntity.blueprintHash = ItemStack.hashItemAndComponents(blueprintStack);
 
-            thisBlockEntity.miningIterator = Collections.emptyIterator();
+            thisBlockEntity.miningIterator = IMiningIterator.EMPTY;
             thisBlockEntity.currentChunk = null;
         }
 
@@ -404,10 +405,14 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         return this.currentChunk != null && this.MiningQueue.isEmpty() && !this.miningIterator.hasNext();
     }
     private boolean fillMiningQueue(LevelChunk worldChunk, int target, MachineUpgradesUtil upgradesUtil) {
+        IntPredicate hasOnlyAir = y -> ZUtil.chunkSectionHasOnlyAir(worldChunk, y);
+
         while(this.MiningQueue.size() < target && this.scanBudget > 0 && this.miningIterator.hasNext()) {
+            this.scanBudget--;
+            if(this.miningIterator.skipAirSection(hasOnlyAir)) continue;
+
             BlockPos blockPos = this.miningIterator.next();
             BlockState blockState = worldChunk.getBlockState(blockPos);
-            this.scanBudget--;
 
             if(this.canDrill(worldChunk, blockState, blockPos, upgradesUtil)) {
                 this.MiningQueue.addLast(blockPos);

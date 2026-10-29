@@ -1,7 +1,6 @@
 package pw.rxj.iron_quarry.util;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -29,10 +28,11 @@ import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.Vec3;
-import java.util.ArrayList;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 public class ZUtil {
     public static ItemLike getBlockOrItem(ItemStack stack) {
@@ -73,6 +73,13 @@ public class ZUtil {
     public static @Nullable BlockEntity getBlockEntity(LevelChunk worldChunk, BlockState blockState, BlockPos blockPos) {
         if(!blockState.hasBlockEntity()) return null;
         return worldChunk.getBlockEntity(blockPos);
+    }
+
+    public static boolean chunkSectionHasOnlyAir(LevelChunk worldChunk, int y) {
+        int sectionIndex = worldChunk.getSectionIndex(y);
+        if(sectionIndex < 0 || sectionIndex >= worldChunk.getSectionsCount()) return true;
+
+        return worldChunk.getSection(sectionIndex).hasOnlyAir();
     }
 
     public static @Nullable RandomizableContainerBlockEntity getUnlockedLootableContainer(@Nullable BlockEntity blockEntity) {
