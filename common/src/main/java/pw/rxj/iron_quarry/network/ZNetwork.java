@@ -42,10 +42,10 @@ public class ZNetwork {
         sendToAround(serverWorld, ZUtil.toVec3d(pos), maxDistance, bufFunc);
     }
     public static void sendToAround(ServerLevel serverWorld, Vec3 pos, double maxDistance, Function<ServerPlayer, @Nullable CustomPacketPayload> bufFunc) {
+        sendToAllInLevel(serverWorld, player -> pos.distanceTo(player.getEyePosition()) > maxDistance ? null : bufFunc.apply(player));
+    }
+    public static void sendToAllInLevel(ServerLevel serverWorld, Function<ServerPlayer, @Nullable CustomPacketPayload> bufFunc) {
         for (ServerPlayer player : serverWorld.players()) {
-            double blockPosToPlayerDistance = pos.distanceTo(player.getEyePosition());
-            if(blockPosToPlayerDistance > maxDistance) continue;
-
             CustomPacketPayload payload = bufFunc.apply(player);
             if(payload == null) continue;
 

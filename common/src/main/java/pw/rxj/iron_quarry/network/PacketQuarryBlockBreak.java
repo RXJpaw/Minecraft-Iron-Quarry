@@ -11,18 +11,24 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import pw.rxj.iron_quarry.Main;
-import pw.rxj.iron_quarry.network.packet.BooleanBlockPosStatePacket;
+import pw.rxj.iron_quarry.network.packet.BlockPosStateListPacket;
 import pw.rxj.iron_quarry.render.RenderUtil;
 import pw.rxj.iron_quarry.resource.config.client.BlockBreakingConfig;
+import pw.rxj.iron_quarry.util.BlockPosState;
+import pw.rxj.iron_quarry.util.ZUtil;
 
-public class PacketQuarryBlockBreak extends BooleanBlockPosStatePacket {
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+public class PacketQuarryBlockBreak extends BlockPosStateListPacket {
     public static final StreamCodec<RegistryFriendlyByteBuf, PacketQuarryBlockBreak> PACKET_CODEC = StreamCodec.ofMember(PacketQuarryBlockBreak::write, PacketQuarryBlockBreak::new);
     public static final CustomPacketPayload.Type<PacketQuarryBlockBreak> PACKET_ID = register("quarry_block_break", PACKET_CODEC);
 
     private static final BlockBreakingConfig.Handler BLOCK_BREAKING_CONFIG = Main.CONFIG.getBlockBreakingConfig();
 
-    private PacketQuarryBlockBreak(Boolean bool, BlockPos blockPos, BlockState blockState) {
-        super(bool, blockPos, blockState);
+    private PacketQuarryBlockBreak(List<BlockPosState> blockPosStates) {
+        super(blockPosStates);
     }
     private PacketQuarryBlockBreak(RegistryFriendlyByteBuf buf) {
         super(buf);
@@ -34,20 +40,30 @@ public class PacketQuarryBlockBreak extends BooleanBlockPosStatePacket {
     }
 
     @Override
-    protected void receiveFromServer(BooleanBlockPosStatePacket payload, Minecraft client, LocalPlayer player) {
+    protected void receiveFromServer(BlockPosStateListPacket payload, Minecraft client, LocalPlayer player) {
         if(client.player == null || client.level == null) return;
 
-        BlockPos blockPos = payload.blockPos;
-        BlockState blockState = payload.blockState;
+        List<BlockPosState> visibleBlockPosStates = new ArrayList<>();
+        for (BlockPosState blockPosState : payload.blockPosStates) {
+            Vec3 blockPosVec = RenderUtil.vec3dFrom(blockPosState.blockPos);
+            if(client.player.position().distanceTo(blockPosVec) > BLOCK_BREAKING_CONFIG.getDistance()) continue;
+            if(blockPosState.blockState.isAir() || !blockPosState.blockState.getFluidState().isEmpty()) continue;
 
-        Vec3 blockPosVec = RenderUtil.vec3dFrom(blockPos);
-        if(client.player.position().distanceTo(blockPosVec) > BLOCK_BREAKING_CONFIG.getDistance()) return;
-        
-        if (!blockState.isAir() && blockState.getFluidState().isEmpty()) {
+            visibleBlockPosStates.add(blockPosState);
+        }
+
+        HashSet<Integer> shouldPlaySound = ZUtil.getNSpacedIndexes(visibleBlockPosStates.size(), 10);
+
+        for (int i = 0; i < visibleBlockPosStates.size(); i++) {
+            BlockPosState blockPosState = visibleBlockPosStates.get(i);
+
+            BlockPos blockPos = blockPosState.blockPos;
+            BlockState blockState = blockPosState.blockState;
+
             SoundType blockSoundGroup = blockState.getSoundType();
             client.level.addDestroyBlockEffect(blockPos, blockState);
 
-            if(payload.bool) {
+            if(shouldPlaySound.contains(i)) {
                 float volume = ((blockSoundGroup.getVolume() + 1.0F) / 2.0F) * BLOCK_BREAKING_CONFIG.getVolume();
                 float pitch = blockSoundGroup.getPitch() * 0.8F;
 
@@ -58,7 +74,7 @@ public class PacketQuarryBlockBreak extends BooleanBlockPosStatePacket {
         }
     }
 
-    public static PacketQuarryBlockBreak bake(BlockPos blockPos, BlockState blockState, boolean sound) {
-        return new PacketQuarryBlockBreak(sound, blockPos, blockState);
+    public static PacketQuarryBlockBreak bake(List<BlockPosState> blockPosStates) {
+        return new PacketQuarryBlockBreak(blockPosStates);
     }
 }

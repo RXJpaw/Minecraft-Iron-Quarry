@@ -34,8 +34,8 @@ import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
@@ -353,16 +353,15 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         List<BlockPosState> drillResults = thisBlockEntity.drillQueue(threads, thisBlock, thisBlockState, thisPos, thisBlockEntity, serverWorldToBreak, drillStack, drillItem, upgradesUtil);
-        HashSet<Integer> shouldPlaySound = ZUtil.getNSpacedIndexes(drillResults.size(), 10);
+        if(drillResults.isEmpty()) return;
 
-        for (int i = 0; i < drillResults.size(); i++) {
-            BlockPosState drill = drillResults.get(i);
-            boolean playSound = shouldPlaySound.contains(i);
+        ZNetwork.sendToAllInLevel(serverWorldToBreak, player -> {
+            List<BlockPosState> nearbyDrillResults = drillResults.stream()
+                    .filter(drill -> ZUtil.toVec3d(drill.blockPos).distanceTo(player.getEyePosition()) <= 64.0)
+                    .toList();
 
-            ZNetwork.sendToAround(serverWorldToBreak, drill.blockPos, 64.0, player -> {
-                return PacketQuarryBlockBreak.bake(drill.blockPos, drill.blockState, playSound);
-            });
-        }
+            return nearbyDrillResults.isEmpty() ? null : PacketQuarryBlockBreak.bake(nearbyDrillResults);
+        });
     }
 
     private boolean canModify(ServerLevel world, BlockActress blockActress) {
