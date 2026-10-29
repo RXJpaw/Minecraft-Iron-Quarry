@@ -7,6 +7,7 @@ import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.data.QuarryBlockedDataComponent;
 import pw.rxj.iron_quarry.data.QuarryOwnerComponent;
+import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.DrillItem;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 
@@ -20,16 +21,20 @@ public class MachineWarningsUtil {
     public static final int WARNING_QUARRY_UNKNOWN = 0;
     public static final int WARNING_OWNER_MISSING = 1;
     public static final int WARNING_MINING_DENIED = 2;
-    public static final int WARNING_DRILL_EMPTY = 3;
-    public static final int WARNING_ENERGY_DEPLETED = 4;
-    public static final int WARNING_INV_FULL = 5;
-    public static final int WARNING_ENERGY_30 = 6;
-    public static final int WARNING_INV_70 = 7;
+    public static final int WARNING_BLUEPRINT_EMPTY = 3;
+    public static final int WARNING_BLUEPRINT_UNSEALED = 4;
+    public static final int WARNING_DRILL_EMPTY = 5;
+    public static final int WARNING_ENERGY_DEPLETED = 6;
+    public static final int WARNING_INV_FULL = 7;
+    public static final int WARNING_ENERGY_30 = 8;
+    public static final int WARNING_INV_70 = 9;
 
     public static final List<Integer> CRITICAL_FLAG_LIST = List.of(
             WARNING_QUARRY_UNKNOWN,
             WARNING_OWNER_MISSING,
             WARNING_MINING_DENIED,
+            WARNING_BLUEPRINT_EMPTY,
+            WARNING_BLUEPRINT_UNSEALED,
             WARNING_DRILL_EMPTY,
             WARNING_ENERGY_DEPLETED,
             WARNING_INV_FULL
@@ -47,7 +52,7 @@ public class MachineWarningsUtil {
         this.blocked = blocked;
         this.upgradesUtil = upgradesUtil;
     }
-    private MachineWarningsUtil(QuarryBlock quarryBlock, long energyStored, ComplexInventory outputInventory, ItemStack drillStack, List<ItemStack> machineUpgradeStacks,
+    private MachineWarningsUtil(QuarryBlock quarryBlock, long energyStored, ComplexInventory outputInventory, ItemStack blueprintStack, ItemStack drillStack, List<ItemStack> machineUpgradeStacks,
                                 @Nullable QuarryOwnerComponent owner, @Nullable QuarryBlockedDataComponent blocked) {
         MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(machineUpgradeStacks);
         long energyRequired = quarryBlock.getEnergyConsumption(upgradesUtil);
@@ -57,6 +62,13 @@ public class MachineWarningsUtil {
 
         if(owner == null) flag += 1 << WARNING_OWNER_MISSING;
         if(blocked != null) flag += 1 << WARNING_MINING_DENIED;
+
+        if(!(blueprintStack.getItem() instanceof BlueprintItem blueprintItem)) {
+            flag += 1 << WARNING_BLUEPRINT_EMPTY;
+        } else if(!blueprintItem.isSealed(blueprintStack)) {
+            flag += 1 << WARNING_BLUEPRINT_UNSEALED;
+        }
+
         if(!(drillStack.getItem() instanceof DrillItem)) flag += 1 << WARNING_DRILL_EMPTY;
 
         if(energyStored < energyRequired) {
@@ -80,7 +92,7 @@ public class MachineWarningsUtil {
         QuarryBlock quarryBlock = blockEntity.getQuarryBlock();
         if(quarryBlock == null) return UNKNOWN;
 
-        return new MachineWarningsUtil(quarryBlock, blockEntity.EnergyContainer.getStored(), blockEntity.OutputInventory, blockEntity.DrillInventory.getItem(0),
+        return new MachineWarningsUtil(quarryBlock, blockEntity.EnergyContainer.getStored(), blockEntity.OutputInventory, blockEntity.BlueprintInventory.getItem(0), blockEntity.DrillInventory.getItem(0),
                 blockEntity.getMachineUpgradeStacks(), blockEntity.getOwner(), blockEntity.getBlocked());
     }
     public static MachineWarningsUtil from(ItemStack quarryMonitorStack) {
@@ -89,7 +101,7 @@ public class MachineWarningsUtil {
         ItemStack quarryStack = quarryMonitorItem.getCachedQuarryStack(quarryMonitorStack);
         if(!(ZUtil.getBlockOrItem(quarryStack) instanceof QuarryBlock quarryBlock)) return UNKNOWN;
 
-        return new MachineWarningsUtil(quarryBlock, quarryBlock.getEnergyStored(quarryStack), quarryBlock.getOutputInventory(quarryStack), quarryBlock.getDrillStack(quarryStack),
+        return new MachineWarningsUtil(quarryBlock, quarryBlock.getEnergyStored(quarryStack), quarryBlock.getOutputInventory(quarryStack), quarryBlock.getBlueprintStack(quarryStack), quarryBlock.getDrillStack(quarryStack),
                 quarryBlock.getMachineUpgradeStacks(quarryStack), quarryMonitorItem.getCachedOwner(quarryMonitorStack), quarryMonitorItem.getCachedBlockedData(quarryMonitorStack));
     }
 
@@ -134,6 +146,12 @@ public class MachineWarningsUtil {
         }
         if(hasWarning(this.flag, WARNING_MINING_DENIED) && this.blocked != null) {
             this.blocked.appendTooltip(textConsumer);
+        }
+        if(hasWarning(this.flag, WARNING_BLUEPRINT_EMPTY)) {
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_blueprint_empty"));
+        }
+        if(hasWarning(this.flag, WARNING_BLUEPRINT_UNSEALED)) {
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_blueprint_unsealed"));
         }
         if(hasWarning(this.flag, WARNING_DRILL_EMPTY)) {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_drill_empty"));

@@ -134,6 +134,10 @@ public class QuarryInventory {
         public boolean canPlaceItem(int slot, ItemStack stack) {
             return stack.getItem() instanceof BlueprintItem;
         }
+        @Override
+        public boolean mustUpdateListeners() {
+            return true;
+        }
     }
     public static class Drill extends ReferencedQuarryInventory {
         public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_drill");

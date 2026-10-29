@@ -122,6 +122,8 @@
     "item.iron_quarry.warning.quarry_energy_30": "§{RGB_WARNING ⚠ Energy almost depleted | <30%%}",
     "item.iron_quarry.warning.quarry_inv_full": "§{RGB_CRITICAL ⚠ Output inventory full}",
     "item.iron_quarry.warning.quarry_inv_70": "§{RGB_WARNING ⚠ Output inventory almost full | >70%%}",
+    "item.iron_quarry.warning.quarry_blueprint_empty": "§{RGB_CRITICAL ⚠ Blueprint slot empty}",
+    "item.iron_quarry.warning.quarry_blueprint_unsealed": "§{RGB_CRITICAL ⚠ Blueprint not sealed}",
     "item.iron_quarry.warning.quarry_drill_empty": "§{RGB_CRITICAL ⚠ Drill slot empty}",
     "item.iron_quarry.warning.quarry_owner_missing": "§{RGB_CRITICAL ⚠ Quarry has no owner; place it again}",
     "item.iron_quarry.warning.quarry_mining_denied": "§{RGB_CRITICAL ⚠ Not allowed to mine at %s, %s, %s}",
