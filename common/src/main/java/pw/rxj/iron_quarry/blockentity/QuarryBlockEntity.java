@@ -221,6 +221,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     //World Ticking
+    private static final IMiningIterator.Factory MINING_ITERATOR_FACTORY = (box, seed) -> ColumnMiningIterator.of(box);
     private IMiningIterator miningIterator = IMiningIterator.EMPTY;
     private static final int SCAN_BLOCKS_PER_TICK = 10_000;
     private int scanBudget = 0;
@@ -336,7 +337,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
             thisBlockEntity.loadedChunks = List.copyOf(chunkPosList);
 
-            thisBlockEntity.miningIterator = ColumnMiningIterator.of(chunkBox);
+            thisBlockEntity.miningIterator = MINING_ITERATOR_FACTORY.create(chunkBox, IMiningIterator.seedOf(thisPos, chunkPos));
             thisBlockEntity.currentChunk = chunkPos;
         }
 
