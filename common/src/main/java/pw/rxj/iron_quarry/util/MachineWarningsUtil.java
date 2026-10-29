@@ -10,6 +10,7 @@ import pw.rxj.iron_quarry.data.QuarryOwnerComponent;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.DrillItem;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
+import pw.rxj.iron_quarry.screen.QuarryBlockScreenHandler;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -88,12 +89,14 @@ public class MachineWarningsUtil {
         this.upgradesUtil = upgradesUtil;
     }
 
-    public static MachineWarningsUtil from(QuarryBlockEntity blockEntity) {
+    public static MachineWarningsUtil from(QuarryBlockScreenHandler screenHandler) {
+        QuarryBlockEntity blockEntity = screenHandler.getQuarryBlockEntity();
+        if(blockEntity == null) return UNKNOWN;
         QuarryBlock quarryBlock = blockEntity.getQuarryBlock();
         if(quarryBlock == null) return UNKNOWN;
 
-        return new MachineWarningsUtil(quarryBlock, blockEntity.EnergyContainer.getStored(), blockEntity.OutputInventory, blockEntity.BlueprintInventory.getItem(0), blockEntity.DrillInventory.getItem(0),
-                blockEntity.getMachineUpgradeStacks(), blockEntity.getOwner(), blockEntity.getBlocked());
+        return new MachineWarningsUtil(quarryBlock, screenHandler.getEnergyContainer().getStored(), screenHandler.getOutputInventory(), screenHandler.getBlueprintInventory().getItem(0), screenHandler.getDrillInventory().getItem(0),
+                screenHandler.getMachineUpgradeStacks(), blockEntity.getOwner(), blockEntity.getBlocked());
     }
     public static MachineWarningsUtil from(ItemStack quarryMonitorStack) {
         if(!(quarryMonitorStack.getItem() instanceof QuarryMonitorItem quarryMonitorItem)) return UNKNOWN;

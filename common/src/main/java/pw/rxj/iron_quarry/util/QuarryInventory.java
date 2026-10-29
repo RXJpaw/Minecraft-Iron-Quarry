@@ -32,17 +32,11 @@ public class QuarryInventory {
             return quarryBlockEntity != null && quarryBlockEntity.canPlayerUse(player);
         }
 
-        public boolean mustUpdateListeners() {
-            return false;
-        }
         @Override
         public void setChanged() {
             if(ref == null) return;
 
             this.ref.setChanged();
-            if(this.mustUpdateListeners()) {
-                this.ref.updateListeners();
-            }
         }
 
         protected static DataComponentType<ComplexInventory> registerComponent(String id) {
@@ -65,11 +59,6 @@ public class QuarryInventory {
         }
         public static Output ofRef(@Nullable QuarryBlockEntity ref) {
             return new Output(ref);
-        }
-
-        @Override
-        public boolean mustUpdateListeners() {
-            return true;
         }
     }
     public static class BatteryInput extends ReferencedQuarryInventory {
@@ -112,10 +101,6 @@ public class QuarryInventory {
         public boolean canPlaceItem(int slot, ItemStack stack) {
             return stack.getItem() instanceof AugmentItem;
         }
-        @Override
-        public boolean mustUpdateListeners() {
-            return true;
-        }
     }
     public static class Blueprint extends ReferencedQuarryInventory {
         public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_blueprint");
@@ -134,10 +119,6 @@ public class QuarryInventory {
         public boolean canPlaceItem(int slot, ItemStack stack) {
             return stack.getItem() instanceof BlueprintItem;
         }
-        @Override
-        public boolean mustUpdateListeners() {
-            return true;
-        }
     }
     public static class Drill extends ReferencedQuarryInventory {
         public static DataComponentType<ComplexInventory> COMPONENT = registerComponent("quarry_inventory_drill");
@@ -155,10 +136,6 @@ public class QuarryInventory {
         @Override
         public boolean canPlaceItem(int slot, ItemStack stack) {
             return stack.getItem() instanceof DrillItem;
-        }
-        @Override
-        public boolean mustUpdateListeners() {
-            return true;
         }
     }
 }

@@ -10,6 +10,15 @@ public class ComplexEnergyContainer {
     protected long amount = 0;
     private @Nullable Object platformStorage = null;
 
+    public static ComplexEnergyContainer ofCapacity(long capacity) {
+        return new ComplexEnergyContainer() {
+            @Override
+            public long getCapacity() {
+                return capacity;
+            }
+        };
+    }
+
     public long getCapacity() {
         return 0;
     }

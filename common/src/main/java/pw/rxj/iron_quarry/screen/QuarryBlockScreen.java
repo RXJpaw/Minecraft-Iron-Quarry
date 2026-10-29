@@ -118,10 +118,10 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
         QuarryBlock block = blockEntity.getQuarryBlock();
         if(block == null) return;
 
-        ComplexEnergyContainer EnergyContainer = blockEntity.EnergyContainer;
+        ComplexEnergyContainer EnergyContainer = menu.getEnergyContainer();
         MachineConfiguration MachineConfiguration = blockEntity.Configuration;
-        MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(blockEntity.getMachineUpgradeStacks());
-        MachineWarningsUtil warningsUtil = MachineWarningsUtil.from(blockEntity);
+        MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(menu.getMachineUpgradeStacks());
+        MachineWarningsUtil warningsUtil = MachineWarningsUtil.from(menu);
 
         int backgroundX = this.leftPos;
         int backgroundY = this.topPos;

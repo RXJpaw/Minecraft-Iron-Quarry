@@ -16,6 +16,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
@@ -34,6 +35,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
@@ -114,7 +116,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         public void onFinalCommit() {
             QuarryBlockEntity.this.setChanged();
-            QuarryBlockEntity.this.updateListeners();
         }
 
         @Override
@@ -619,6 +620,9 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         DrillInventory.write(Storage.child("DrillInventory"));
         MachineUpgradesInventory.write(Storage.child("MachineUpgradesInventory"));
 
+        this.saveSyncedData(view);
+    }
+    private void saveSyncedData(ValueOutput view) {
         //Config
         CompoundTag Config = Configuration.write();
         view.store("rxj.pw/Config", CompoundTag.CODEC, Config);
@@ -637,7 +641,10 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     }
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
-        return saveWithoutMetadata(registryLookup);
+        TagValueOutput view = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registryLookup);
+        this.saveSyncedData(view);
+
+        return view.buildResult();
     }
 
     public void updateListeners(){
