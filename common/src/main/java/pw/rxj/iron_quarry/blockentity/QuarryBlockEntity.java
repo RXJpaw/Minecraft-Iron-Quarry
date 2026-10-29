@@ -336,6 +336,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             if(chunkBox == null) return;
 
             thisBlockEntity.loadedChunks = List.copyOf(chunkPosList);
+            ChunkLoadingManager.keepLoaded(serverWorldToBreak, thisBlockEntity.loadedChunks);
 
             thisBlockEntity.miningIterator = MINING_ITERATOR_FACTORY.create(chunkBox, IMiningIterator.seedOf(thisPos, chunkPos));
             thisBlockEntity.currentChunk = chunkPos;
@@ -343,7 +344,9 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
         ChunkPos currentChunk = thisBlockEntity.currentChunk;
         LevelChunk worldChunk = serverWorldToBreak.getChunkSource().getChunkNow(currentChunk.x(), currentChunk.z());
-        if(worldChunk == null) return;
+        if(worldChunk == null) {
+            thisBlockEntity.cooldown = 0; return;
+        }
 
         thisBlockEntity.scanBudget = SCAN_BLOCKS_PER_TICK;
         if(!thisBlockEntity.fillMiningQueue(worldChunk, threads, upgradesUtil)) {
