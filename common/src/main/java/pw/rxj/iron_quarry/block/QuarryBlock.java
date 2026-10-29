@@ -88,10 +88,6 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
 
     public static final EnumProperty<Direction> FACING = EnumProperty.create("facing", Direction.class);
 
-    public static QuarryBlock getFallback() {
-        return ZBlocks.COPPER_QUARRY.getBlock();
-    }
-
     public static boolean isOf(ItemStack stack){
         return ZUtil.getBlockOrItem(stack) instanceof QuarryBlock;
     }

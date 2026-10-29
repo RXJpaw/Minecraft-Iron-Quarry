@@ -26,19 +26,16 @@ public class QuarryBlockScreenHandler extends AbstractContainerMenu {
     private final ComplexInventory BatteryInputInventory;
     private final ComplexEnergyContainer EnergyContainer;
     private final ComplexInventory MachineUpgradesInventory;
-    private QuarryBlock quarryBlock;
-    private BlockPos blockPos;
-    private Level world;
+    private final QuarryBlock quarryBlock;
+    private final BlockPos blockPos;
+    private final Level world;
 
     //This constructor gets called on the client when the server wants it to open the screenHandler,
     //The client will call the other constructor with an empty Inventory and the screenHandler will automatically
     //sync this empty inventory with the inventory on the server.
     public QuarryBlockScreenHandler(int syncId, Inventory playerInventory, QuarryBlockScreenData data) {
         this(syncId, playerInventory, QuarryInventory.Output.noRef(), QuarryInventory.BatteryInput.noRef(), QuarryInventory.MachineUpgrades.noRef(),
-                QuarryInventory.Blueprint.noRef(), QuarryInventory.Drill.noRef(), new ComplexEnergyContainer(), MachineConfiguration.empty(), QuarryBlock.getFallback(), data.getBlockPos());
-
-        this.quarryBlock = (QuarryBlock) data.getBlock();
-        this.world = playerInventory.player.level();
+                QuarryInventory.Blueprint.noRef(), QuarryInventory.Drill.noRef(), new ComplexEnergyContainer(), MachineConfiguration.empty(), data.getQuarryBlock(), data.getBlockPos());
     }
 
     //This constructor gets called from the BlockEntity on the server without calling the other constructor first, the server knows the inventory of the container

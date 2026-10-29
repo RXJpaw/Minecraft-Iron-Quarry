@@ -1,33 +1,35 @@
 package pw.rxj.iron_quarry.data;
 
+import io.netty.handler.codec.DecoderException;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.resources.Identifier;
+import pw.rxj.iron_quarry.block.QuarryBlock;
 
 @Getter
 public class QuarryBlockScreenData {
-    private final Block block;
+    private final QuarryBlock quarryBlock;
     private final BlockPos blockPos;
 
-    private QuarryBlockScreenData(Block block, BlockPos blockPos) {
-        this.block = block;
+    private QuarryBlockScreenData(QuarryBlock quarryBlock, BlockPos blockPos) {
+        this.quarryBlock = quarryBlock;
         this.blockPos = blockPos;
     }
-    public static QuarryBlockScreenData of(Block block, BlockPos blockPos) {
-        return new QuarryBlockScreenData(block, blockPos);
+    public static QuarryBlockScreenData of(QuarryBlock quarryBlock, BlockPos blockPos) {
+        return new QuarryBlockScreenData(quarryBlock, blockPos);
     }
 
     private static QuarryBlockScreenData read(RegistryFriendlyByteBuf buf) {
-        return of(
-                BuiltInRegistries.BLOCK.getValue(buf.readIdentifier()),
-                buf.readBlockPos()
-        );
+        Identifier blockId = buf.readIdentifier();
+        if(!(BuiltInRegistries.BLOCK.getValue(blockId) instanceof QuarryBlock quarryBlock)) throw new DecoderException("Unknown quarry block: " + blockId);
+
+        return of(quarryBlock, buf.readBlockPos());
     }
     private void write(RegistryFriendlyByteBuf buf) {
-        buf.writeIdentifier(BuiltInRegistries.BLOCK.getKey(this.block));
+        buf.writeIdentifier(BuiltInRegistries.BLOCK.getKey(this.quarryBlock));
         buf.writeBlockPos(this.blockPos);
     }
 
