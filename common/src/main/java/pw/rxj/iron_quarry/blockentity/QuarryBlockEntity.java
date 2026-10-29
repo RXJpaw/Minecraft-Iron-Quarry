@@ -224,7 +224,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     private static final IMiningIterator.Factory MINING_ITERATOR_FACTORY = (box, seed) -> ColumnMiningIterator.of(box);
     private IMiningIterator miningIterator = IMiningIterator.EMPTY;
     private static final int SCAN_BLOCKS_PER_TICK = 10_000;
-    private int scanBudget = 0;
 
     private final ArrayDeque<BlockPos> MiningQueue = new ArrayDeque<>();
     private List<ChunkPos> loadedChunks = List.of();
@@ -348,7 +347,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             thisBlockEntity.cooldown = 0; return;
         }
 
-        thisBlockEntity.scanBudget = SCAN_BLOCKS_PER_TICK;
         if(!thisBlockEntity.fillMiningQueue(worldChunk, threads, upgradesUtil)) {
             thisBlockEntity.cooldown = 0; return;
         }
@@ -410,9 +408,10 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     }
     private boolean fillMiningQueue(LevelChunk worldChunk, int target, MachineUpgradesUtil upgradesUtil) {
         IntPredicate hasOnlyAir = y -> ZUtil.chunkSectionHasOnlyAir(worldChunk, y);
+        int scanBudget = SCAN_BLOCKS_PER_TICK;
 
-        while(this.MiningQueue.size() < target && this.scanBudget > 0 && this.miningIterator.hasNext()) {
-            this.scanBudget--;
+        while(this.MiningQueue.size() < target && scanBudget > 0 && this.miningIterator.hasNext()) {
+            scanBudget--;
             if(this.miningIterator.skipAirSection(hasOnlyAir)) continue;
 
             BlockPos blockPos = this.miningIterator.next();
