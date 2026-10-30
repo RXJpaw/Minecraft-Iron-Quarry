@@ -15,4 +15,6 @@ public interface IPlatformItemTransfer {
     <T extends BlockEntity> void registerBlockEntity(Supplier<BlockEntityType<T>> blockEntityType, BiFunction<T, Direction, @Nullable Container> container);
 
     void pushToNeighbor(Level world, BlockPos pos, Direction direction, Container inventory);
+
+    void notifyLinkedContainersChanged(BlockEntity blockEntity);
 }

@@ -44,4 +44,8 @@ public class FabricPlatformItemTransfer implements IPlatformItemTransfer {
 
         transaction.commit();
     }
+
+    @Override
+    public void notifyLinkedContainersChanged(BlockEntity blockEntity) {
+    }
 }

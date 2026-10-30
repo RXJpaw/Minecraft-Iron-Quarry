@@ -51,6 +51,11 @@ public class NeoForgePlatformItemTransfer implements IPlatformItemTransfer {
         }
     }
 
+    @Override
+    public void notifyLinkedContainersChanged(BlockEntity blockEntity) {
+        blockEntity.invalidateCapabilities();
+    }
+
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         BLOCK_ENTITY_CAPABILITIES.forEach(capability -> capability.accept(event));
     }

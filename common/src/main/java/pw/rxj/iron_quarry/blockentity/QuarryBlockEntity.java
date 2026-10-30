@@ -98,6 +98,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         public void onIoUpdated(Face face, IoState ioState) {
             QuarryBlockEntity.this.updateListeners();
+            Platform.ITEM_TRANSFER.notifyLinkedContainersChanged(QuarryBlockEntity.this);
         }
 
         @Override
