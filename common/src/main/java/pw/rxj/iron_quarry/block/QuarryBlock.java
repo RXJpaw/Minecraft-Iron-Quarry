@@ -101,7 +101,7 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
     }
 
     public @NotNull MachineConfiguration getMachineConfiguration(ItemStack stack) {
-        return stack.getOrDefault(MachineConfiguration.COMPONENT, MachineConfiguration.empty());
+        return stack.getOrDefault(MachineConfiguration.COMPONENT, MachineConfiguration.empty().snapshot());
     }
     public @NotNull ComplexInventory getAugmentInventory(ItemStack stack) {
         ComplexInventory augmentInventory = QuarryInventory.MachineUpgrades.noRef();

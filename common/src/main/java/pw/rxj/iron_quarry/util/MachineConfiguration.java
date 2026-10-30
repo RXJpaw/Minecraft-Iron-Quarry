@@ -18,10 +18,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MachineConfiguration {
-    private final HashMap<Face, IoState> SidedIoConfig;
+    private final Map<Face, IoState> SidedIoConfig;
 
     public MachineConfiguration() {
         this.SidedIoConfig = new HashMap<>();
+    }
+    private MachineConfiguration(Map<Face, IoState> sidedIoConfig) {
+        this.SidedIoConfig = sidedIoConfig;
     }
     public static MachineConfiguration empty() {
         return new MachineConfiguration();
@@ -151,10 +154,10 @@ public class MachineConfiguration {
 
     //components
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, MachineConfiguration> PACKET_CODEC = StreamCodec.ofMember(MachineConfiguration::write, MachineConfiguration::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MachineConfiguration> PACKET_CODEC = StreamCodec.ofMember(MachineConfiguration::write, buf -> new MachineConfiguration(buf).snapshot());
     public static final Codec<MachineConfiguration> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(Codec.INT.listOf().listOf().fieldOf("sided_io").forGetter(MachineConfiguration::toIntList))
-                    .apply(instance, MachineConfiguration::new)
+                    .apply(instance, intList -> new MachineConfiguration(intList).snapshot())
     );
     public static final DataComponentType<MachineConfiguration> COMPONENT = ZComponents.register("machine_configuration", (builder) -> builder
             .persistent(CODEC)
@@ -205,9 +208,6 @@ public class MachineConfiguration {
         this.SidedIoConfig.putAll(machineConfiguration.SidedIoConfig);
     }
     public MachineConfiguration snapshot() {
-        MachineConfiguration snapshot = MachineConfiguration.empty();
-        snapshot.read(this);
-
-        return snapshot;
+        return new MachineConfiguration(Map.copyOf(this.SidedIoConfig));
     }
 }
