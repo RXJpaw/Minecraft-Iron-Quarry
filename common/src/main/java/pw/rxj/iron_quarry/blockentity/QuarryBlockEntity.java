@@ -101,15 +101,21 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             Platform.ITEM_TRANSFER.notifyLinkedContainersChanged(QuarryBlockEntity.this);
         }
 
+        private @Nullable IndexedMap<IoState, Object> usedIoStates;
+
         @Override
         public IndexedMap<IoState, Object> getUsedIoStates() {
-            IndexedMap<IoState, Object> usedIo = new IndexedMap<>();
-            usedIo.put(IoState.BLOCKED, null);
-            usedIo.put(IoState.ORANGE, OutputInventory);
-            usedIo.put(IoState.RED, DrillInventory);
-            usedIo.put(IoState.PURPLE, BatteryInputInventory);
+            if(this.usedIoStates == null) {
+                IndexedMap<IoState, Object> usedIo = new IndexedMap<>();
+                usedIo.put(IoState.BLOCKED, null);
+                usedIo.put(IoState.ORANGE, OutputInventory);
+                usedIo.put(IoState.RED, DrillInventory);
+                usedIo.put(IoState.PURPLE, BatteryInputInventory);
 
-            return usedIo;
+                this.usedIoStates = usedIo;
+            }
+
+            return this.usedIoStates;
         }
     };
 
