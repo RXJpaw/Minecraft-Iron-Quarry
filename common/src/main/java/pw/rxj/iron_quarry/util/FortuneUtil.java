@@ -1,6 +1,6 @@
 package pw.rxj.iron_quarry.util;
 
-import oshi.util.tuples.Pair;
+import com.mojang.datafixers.util.Pair;
 
 import java.util.Random;
 
@@ -37,7 +37,7 @@ public class FortuneUtil {
     public static int fromProbability(double fortuneMultiplier) {
         Pair<Integer, Integer> fortuneCandidates = findFortuneLevels(fortuneMultiplier);
 
-        return getWeightedFortuneLevel(fortuneMultiplier, fortuneCandidates.getA(), fortuneCandidates.getB());
+        return getWeightedFortuneLevel(fortuneMultiplier, fortuneCandidates.getFirst(), fortuneCandidates.getSecond());
     }
 
     public static double toProbability(int level) {

@@ -1,6 +1,6 @@
 package pw.rxj.iron_quarry.gui;
 
-import oshi.util.tuples.Pair;
+import com.mojang.datafixers.util.Pair;
 
 import java.util.List;
 import net.minecraft.world.item.ItemStack;

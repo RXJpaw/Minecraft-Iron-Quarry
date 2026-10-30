@@ -1,6 +1,6 @@
 package pw.rxj.iron_quarry.gui;
 
-import oshi.util.tuples.Pair;
+import com.mojang.datafixers.util.Pair;
 import pw.rxj.iron_quarry.render.RenderUtil;
 import pw.rxj.iron_quarry.Main;
 
@@ -59,8 +59,8 @@ public class TooltipInventoryComponent implements CustomTooltipComponent {
 
     private void drawSlot(int x, int y, int index, Font textRenderer, GuiGraphicsExtractor context) {
         Pair<ItemStack, Boolean> slot = this.disableableInventory.get(index);
-        ItemStack itemStack = slot.getA();
-        Boolean disabled = slot.getB();
+        ItemStack itemStack = slot.getFirst();
+        Boolean disabled = slot.getSecond();
 
         context.item(itemStack, x + 1, y + 1, index);
         context.itemDecorations(textRenderer, itemStack, x + 1, y + 1);
