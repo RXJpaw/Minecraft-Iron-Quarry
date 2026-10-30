@@ -239,7 +239,33 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     private int blockedCooldown = 0;
     private @Nullable QuarryBlockedDataComponent blocked;
 
+    private boolean deferringChanges = false;
+    private boolean hasDeferredChanges = false;
+
+    @Override
+    public void setChanged() {
+        if(this.deferringChanges) {
+            this.hasDeferredChanges = true;
+        } else {
+            super.setChanged();
+        }
+    }
+
     public static void tick(Level thisWorld, BlockPos thisPos, BlockState thisBlockState, QuarryBlockEntity thisBlockEntity) {
+        thisBlockEntity.deferringChanges = true;
+
+        try {
+            tickMachine(thisWorld, thisPos, thisBlockState, thisBlockEntity);
+        } finally {
+            thisBlockEntity.deferringChanges = false;
+
+            if(thisBlockEntity.hasDeferredChanges) {
+                thisBlockEntity.hasDeferredChanges = false;
+                thisBlockEntity.setChanged();
+            }
+        }
+    }
+    private static void tickMachine(Level thisWorld, BlockPos thisPos, BlockState thisBlockState, QuarryBlockEntity thisBlockEntity) {
         if(thisWorld == null) return;
         if(thisWorld.isClientSide()) return;
 
@@ -323,6 +349,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
             blueprintItem.increaseMinedChunks(blueprintStack);
             thisBlockEntity.blueprintHash = ItemStack.hashItemAndComponents(blueprintStack);
+            thisBlockEntity.setChanged();
 
             thisBlockEntity.miningIterator = IMiningIterator.EMPTY;
             thisBlockEntity.currentChunk = null;
