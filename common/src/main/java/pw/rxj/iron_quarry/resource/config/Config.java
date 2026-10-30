@@ -26,11 +26,9 @@ public class Config {
     }
     protected void overrideServer(Config.Server newServerConfig){
         this.SERVER.quarryStats = newServerConfig.quarryStats;
-        this.SERVER.augmentStats = newServerConfig.augmentStats;
+        this.SERVER.augments = newServerConfig.augments;
         this.SERVER.quarryMonitor = newServerConfig.quarryMonitor;
         this.SERVER.quarryDrillStats = newServerConfig.quarryDrillStats;
-        this.SERVER.silkTouchAugment = newServerConfig.silkTouchAugment;
-        this.SERVER.chestLootingAugmentConfig = newServerConfig.chestLootingAugmentConfig;
     }
     @Override
     public int hashCode() {
@@ -50,15 +48,11 @@ public class Config {
 
         public QuarryStatsConfig quarryStats = new QuarryStatsConfig();
 
-        public AugmentStatsConfig augmentStats = new AugmentStatsConfig();
+        public AugmentsConfig augments = new AugmentsConfig();
 
         public QuarryMonitorConfig quarryMonitor = new QuarryMonitorConfig();
 
         public QuarryDrillStatsConfig quarryDrillStats = new QuarryDrillStatsConfig();
-
-        public SilkTouchAugmentConfig silkTouchAugment = new SilkTouchAugmentConfig();
-
-        public ChestLootingAugmentConfig chestLootingAugmentConfig = new ChestLootingAugmentConfig();
     }
 
 }

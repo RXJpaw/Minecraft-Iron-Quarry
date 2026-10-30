@@ -7,6 +7,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantments;
+import pw.rxj.iron_quarry.augment.ZAugments;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.item.AugmentItem;
 import pw.rxj.iron_quarry.item.DrillItem;
@@ -33,33 +34,32 @@ public class MachineUpgradesUtil {
 
             if (stack.getItem() instanceof AugmentItem augmentItem) {
                 AugmentType augmentType = augmentItem.getType(stack);
-                if(augmentType.isDisabled()) continue;
+                if(augmentType.getAugment().isDisabled()) continue;
 
-                float multiplier = augmentType.multiply(augmentItem.getAmount(stack));
-                float inefficiency = augmentType.energyIneff(multiplier);
+                float progress = augmentType.getAugment().getProgress(augmentItem.getAmount(stack));
 
                 switch (augmentType) {
-                    case SPEED -> this.speedMultiplier += multiplier/100;
-                    case FORTUNE -> this.fortuneMultiplier += multiplier/100;
+                    case SPEED -> {
+                        this.speedMultiplier += ZAugments.SPEED.getSpeedBonus(progress)/100;
+                        this.inefficiency += ZAugments.SPEED.getEnergyBonus(progress)/100;
+                    }
+                    case FORTUNE -> {
+                        this.fortuneMultiplier += ZAugments.FORTUNE.getYieldBonus(progress)/100;
+                        this.inefficiency += ZAugments.FORTUNE.getEnergyBonus(progress)/100;
+                    }
                     case SILK_TOUCH -> {
-                        if(this.hasSilkTouch) continue;
                         this.hasSilkTouch = true;
+                        this.slowness = ZAugments.SILK_TOUCH.getSlowness();
                     }
-                    case CHEST_LOOTING -> {
-                        if(this.hasChestLooting) continue;
-                        this.hasChestLooting = true;
-                    }
+                    case CHEST_LOOTING -> this.hasChestLooting = true;
                 }
-
-                this.inefficiency += inefficiency/100;
-                this.slowness = augmentType.speedIneff(this.slowness);
             } else if(stack.getItem() instanceof DrillItem) {
                 int efficiencyLevel = ZUtil.getCappedEnchantmentLevel(stack, Enchantments.EFFICIENCY);
                 if(efficiencyLevel <= 0) continue;
 
                 float speedMultiplier = (float) Math.pow(1.3, efficiencyLevel) - 1.0F;
 
-                this.inefficiency += AugmentType.SPEED.energyIneff(speedMultiplier);
+                this.inefficiency += speedMultiplier * ZAugments.SPEED.getEnergyPerSpeed();
                 this.speedMultiplier += speedMultiplier;
             }
         }

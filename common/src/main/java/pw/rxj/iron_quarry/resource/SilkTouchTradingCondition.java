@@ -5,6 +5,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import pw.rxj.iron_quarry.Main;
+import pw.rxj.iron_quarry.augment.ZAugments;
 
 //Doesn't respect minecraft's usual /reload and applies instantly after config save!
 public class SilkTouchTradingCondition implements LootItemCondition {
@@ -16,7 +17,7 @@ public class SilkTouchTradingCondition implements LootItemCondition {
 
     @Override
     public boolean test(LootContext context) {
-        return Main.CONFIG.getSilkTouchAugmentConfig().isTradingEnabled();
+        return ZAugments.SILK_TOUCH.isTradingEnabled();
     }
 
     @Override

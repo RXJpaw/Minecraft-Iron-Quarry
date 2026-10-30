@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import pw.rxj.iron_quarry.Main;
-import pw.rxj.iron_quarry.types.AugmentType;
+import pw.rxj.iron_quarry.augment.ZAugments;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,12 +24,12 @@ public abstract class RecipeManagerMixin {
 
         Set<Identifier> disabled = new HashSet<>();
 
-        if(AugmentType.SPEED.isDisabled()) {
+        if(ZAugments.SPEED.isDisabled()) {
             disabled.add(Identifier.fromNamespaceAndPath(Main.MOD_ID, "augment_speed_tier1"));
             disabled.add(Identifier.fromNamespaceAndPath(Main.MOD_ID, "augment_speed_tier2"));
             disabled.add(Identifier.fromNamespaceAndPath(Main.MOD_ID, "augment_speed_tier3"));
         }
-        if(AugmentType.FORTUNE.isDisabled()) {
+        if(ZAugments.FORTUNE.isDisabled()) {
             disabled.add(Identifier.fromNamespaceAndPath(Main.MOD_ID, "augment_fortune_tier1"));
             disabled.add(Identifier.fromNamespaceAndPath(Main.MOD_ID, "augment_fortune_tier2"));
             disabled.add(Identifier.fromNamespaceAndPath(Main.MOD_ID, "augment_fortune_tier3"));

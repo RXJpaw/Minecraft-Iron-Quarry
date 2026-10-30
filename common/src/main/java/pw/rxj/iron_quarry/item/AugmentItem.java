@@ -22,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import org.jetbrains.annotations.NotNull;
+import pw.rxj.iron_quarry.augment.ZAugments;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.gui.CustomTooltipData;
 import pw.rxj.iron_quarry.gui.TooltipInventoryData;
@@ -114,7 +115,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     public DynamicText getDynamicItemName(ItemStack stack) {
         if(this.hasDynamicName()) return this.getDynamicName();
 
-        if(getAmount(stack) >= getType(stack).getCapacity(CAPACITY_UPGRADE_SLOTS)) return DynamicText.RAINBOW;
+        if(getAmount(stack) >= getType(stack).getAugment().getCapacity(CAPACITY_UPGRADE_SLOTS)) return DynamicText.RAINBOW;
 
         return DynamicText.EMPTY;
     }
@@ -124,7 +125,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         AugmentType type = getType(stack);
 
         for (int i = 0; i < CAPACITY_UPGRADE_SLOTS; i++) {
-            if(getAmount(stack) > type.getCapacity(i)) continue;
+            if(getAmount(stack) > type.getAugment().getCapacity(i)) continue;
 
             return (type.getId() / 10.0F) + (0.01F * i);
         }
@@ -137,7 +138,6 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         AugmentType augmentType = this.getType(stack);
         int capacity = this.getCapacity(stack);
         int stored = this.getAmount(stack);
-        float multiplied = augmentType.multiply(stored);
 
         if(augmentType.isPresent()) {
             if(!this.isUnique()) {
@@ -145,15 +145,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
                 textConsumer.accept(LORE_UNUSED);
             }
 
-            MutableComponent LORE_BENEFITS = ReadableString.translatable("item.iron_quarry.augment.lore.benefit." + augmentType.getName(), ZUtil.expandableFixedFloat(multiplied));
-            textConsumer.accept(LORE_BENEFITS);
-
-            float anyIneff = augmentType.anyIneff(multiplied);
-            String drawbackKey = augmentType.getDrawbackKey();
-            String drawbackFillIn = drawbackKey.equals("energy") ? ZUtil.expandableFixedFloat(anyIneff) : ReadableString.minPrecisionFloat(anyIneff);
-
-            MutableComponent LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback." + augmentType.getDrawbackKey(), drawbackFillIn);
-            textConsumer.accept(LORE_DRAWBACK);
+            augmentType.getAugment().appendEffectTooltip(stored, textConsumer);
         } else if(!this.isUnique()) {
             MutableComponent LORE_EMPTY = ReadableString.translatable("item.iron_quarry.lore.use_rei", stored, capacity);
             textConsumer.accept(LORE_EMPTY);
@@ -176,7 +168,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             }
         }
 
-        if(augmentType.isDisabled()) {
+        if(augmentType.getAugment().isDisabled()) {
             MutableComponent LORE_DISABLED = ReadableString.translatable("item.iron_quarry.lore.disabled");
 
             textConsumer.accept(ReadableString.space());
@@ -189,7 +181,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        if(this.isUnique() || getAmount(stack) >= getType(stack).getCapacity(CAPACITY_UPGRADE_SLOTS)) return true;
+        if(this.isUnique() || getAmount(stack) >= getType(stack).getAugment().getCapacity(CAPACITY_UPGRADE_SLOTS)) return true;
 
         return super.isFoil(stack);
     }
@@ -314,7 +306,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         List<Item> upgrades = this.getUpgrades(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
         AugmentType type = this.getType(stack);
 
-        return type.getCapacity(upgrades.size());
+        return type.getAugment().getCapacity(upgrades.size());
     }
     public int getFreeSpace(@NotNull ItemStack stack){
         return this.getCapacity(stack) - this.getAmount(stack);
@@ -370,14 +362,14 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         ItemStack stack = this.withAllCapacityEnhancers();
 
         this.setType(stack, augmentType);
-        this.setAmount(stack, augmentType.getCapacity(capacityUpgrades));
+        this.setAmount(stack, augmentType.getAugment().getCapacity(capacityUpgrades));
 
         return stack;
     }
 
     @Override
     public void modifyCreativeTabEntries(CreativeModeTab.Output entries) {
-        if (this.getUniqueType().isDisabled()) return;
+        if (this.getUniqueType().getAugment().isDisabled()) return;
 
         entries.accept(this);
 
@@ -385,8 +377,8 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             entries.accept(this.withAllCapacityEnhancers());
 
             for (int i = 0; i < CAPACITY_UPGRADE_SLOTS + 1; i++) {
-                if(!AugmentType.SPEED.isDisabled()) entries.accept(this.withCapacity(AugmentType.SPEED, i));
-                if(!AugmentType.FORTUNE.isDisabled()) entries.accept(this.withCapacity(AugmentType.FORTUNE, i));
+                if(!ZAugments.SPEED.isDisabled()) entries.accept(this.withCapacity(AugmentType.SPEED, i));
+                if(!ZAugments.FORTUNE.isDisabled()) entries.accept(this.withCapacity(AugmentType.FORTUNE, i));
             }
         }
     }
