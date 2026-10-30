@@ -204,4 +204,10 @@ public class MachineConfiguration {
         this.SidedIoConfig.clear();
         this.SidedIoConfig.putAll(machineConfiguration.SidedIoConfig);
     }
+    public MachineConfiguration snapshot() {
+        MachineConfiguration snapshot = MachineConfiguration.empty();
+        snapshot.read(this);
+
+        return snapshot;
+    }
 }

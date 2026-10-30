@@ -24,6 +24,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -563,13 +564,13 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     protected void collectImplicitComponents(DataComponentMap.Builder componentMapBuilder) {
         componentMapBuilder.set(Platform.ENERGY.getEnergyComponent(), EnergyContainer.getStored());
 
-        componentMapBuilder.set(QuarryInventory.Output.COMPONENT, OutputInventory);
-        componentMapBuilder.set(QuarryInventory.BatteryInput.COMPONENT, BatteryInputInventory);
-        componentMapBuilder.set(QuarryInventory.Blueprint.COMPONENT, BlueprintInventory);
-        componentMapBuilder.set(QuarryInventory.Drill.COMPONENT, DrillInventory);
-        componentMapBuilder.set(QuarryInventory.MachineUpgrades.COMPONENT, MachineUpgradesInventory);
+        componentMapBuilder.set(QuarryInventory.Output.COMPONENT, ItemContainerContents.fromItems(OutputInventory.getItems()));
+        componentMapBuilder.set(QuarryInventory.BatteryInput.COMPONENT, ItemContainerContents.fromItems(BatteryInputInventory.getItems()));
+        componentMapBuilder.set(QuarryInventory.Blueprint.COMPONENT, ItemContainerContents.fromItems(BlueprintInventory.getItems()));
+        componentMapBuilder.set(QuarryInventory.Drill.COMPONENT, ItemContainerContents.fromItems(DrillInventory.getItems()));
+        componentMapBuilder.set(QuarryInventory.MachineUpgrades.COMPONENT, ItemContainerContents.fromItems(MachineUpgradesInventory.getItems()));
 
-        componentMapBuilder.set(MachineConfiguration.COMPONENT, Configuration);
+        componentMapBuilder.set(MachineConfiguration.COMPONENT, Configuration.snapshot());
     }
     @Override
     public void removeComponentsFromTag(ValueOutput view) {

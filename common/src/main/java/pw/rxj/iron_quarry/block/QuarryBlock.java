@@ -20,6 +20,7 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -103,10 +104,16 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
         return stack.getOrDefault(MachineConfiguration.COMPONENT, MachineConfiguration.empty());
     }
     public @NotNull ComplexInventory getAugmentInventory(ItemStack stack) {
-        return stack.getOrDefault(QuarryInventory.MachineUpgrades.COMPONENT, ComplexInventory.ofSize(this.getAugmentLimit()));
+        ComplexInventory augmentInventory = QuarryInventory.MachineUpgrades.noRef();
+        augmentInventory.read(stack.get(QuarryInventory.MachineUpgrades.COMPONENT));
+
+        return augmentInventory;
     }
     public @NotNull ComplexInventory getOutputInventory(ItemStack stack) {
-        return stack.getOrDefault(QuarryInventory.Output.COMPONENT, QuarryInventory.Output.noRef());
+        ComplexInventory outputInventory = QuarryInventory.Output.noRef();
+        outputInventory.read(stack.get(QuarryInventory.Output.COMPONENT));
+
+        return outputInventory;
     }
     public List<ItemStack> getMachineUpgradeStacks(ItemStack stack) {
         List<ItemStack> stacks = new ArrayList<>();
@@ -118,10 +125,10 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
     }
 
     public @NotNull ItemStack getDrillStack(ItemStack stack) {
-        return stack.getOrDefault(QuarryInventory.Drill.COMPONENT, ComplexInventory.ofSize(1)).getItem(0);
+        return stack.getOrDefault(QuarryInventory.Drill.COMPONENT, ItemContainerContents.EMPTY).copyOne();
     }
     public @NotNull ItemStack getBlueprintStack(ItemStack stack) {
-        return stack.getOrDefault(QuarryInventory.Blueprint.COMPONENT, ComplexInventory.ofSize(1)).getItem(0);
+        return stack.getOrDefault(QuarryInventory.Blueprint.COMPONENT, ItemContainerContents.EMPTY).copyOne();
     }
 
     @Override
