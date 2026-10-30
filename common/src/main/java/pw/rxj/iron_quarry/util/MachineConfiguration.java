@@ -169,10 +169,11 @@ public class MachineConfiguration {
 
         byte ioStates = buf.readByte();
         while (ioStates-- > 0) {
-            this.SidedIoConfig.put(
-                    Face.from(buf.readByte()),
-                    IoState.from(buf.readByte())
-            );
+            Face face = Face.from(buf.readByte());
+            IoState ioState = IoState.from(buf.readByte());
+            if(face == null || ioState == null) continue;
+
+            this.SidedIoConfig.put(face, ioState);
         }
     }
     private void write(RegistryFriendlyByteBuf buf) {
@@ -188,9 +189,13 @@ public class MachineConfiguration {
         this();
 
         for(List<Integer> pairList : intList){
-            this.SidedIoConfig.put(
-                    Face.from(pairList.get(0)),
-                    IoState.from(pairList.get(1)));
+            if(pairList.size() < 2) continue;
+
+            Face face = Face.from(pairList.get(0));
+            IoState ioState = IoState.from(pairList.get(1));
+            if(face == null || ioState == null) continue;
+
+            this.SidedIoConfig.put(face, ioState);
         }
     }
     private List<List<Integer>> toIntList() {

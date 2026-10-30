@@ -59,7 +59,7 @@ public enum IoState {
         return null;
     }
     public static IoState from(int id){
-        return ALL.get(id);
+        return id >= 0 && id < ALL.size() ? ALL.get(id) : null;
     }
 
     public static TexturePosition getTexturePosition(IoState ioState){

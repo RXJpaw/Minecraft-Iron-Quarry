@@ -60,7 +60,7 @@ public enum Face {
     }
 
     public static Face from(int id){
-        return ALL.get(id);
+        return id >= 0 && id < ALL.size() ? ALL.get(id) : null;
     }
     public static Face from(String name){
         for (Face face : ALL) {
