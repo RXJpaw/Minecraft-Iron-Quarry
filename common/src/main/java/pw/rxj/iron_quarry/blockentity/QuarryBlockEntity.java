@@ -320,7 +320,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         ChunkLoadingManager.keepLoaded(serverWorldToBreak, thisBlockEntity.loadedChunks);
 
         MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(thisBlockEntity.getMachineUpgradeStacks());
-        long minimumEnergyConsumption = thisBlock.getEnergyConsumption(upgradesUtil, Blocks.STONE);
+        long minimumEnergyConsumption = thisBlock.getMinEnergyConsumption(upgradesUtil);
         if(thisBlockEntity.EnergyContainer.getStored() < minimumEnergyConsumption) return;
 
         if(thisBlockEntity.blockedCooldown > 0) {
@@ -510,12 +510,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
             if(!quarryBlockEntity.canModify(serverWorldToBreak, blockActress)) return drillResults;
 
-            if(blockActress.isLiquidBlock()) {
-                blockActress.setBlockState(Blocks.AIR);
-                MiningQueue.removeFirst();
-                continue;
-            }
-
             //handle special block entities
             //will only work if canDrill conditions are met! like if the container is not empty
             if(blockActress.blockEntity instanceof RandomizableContainerBlockEntity lootableContainer) {
@@ -525,7 +519,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
                     stack.setCount(1);
 
                     if(OutputInventory.canAddItem(stack)) {
-                        long energyConsumption = quarryBlock.getEnergyConsumption(upgradesUtil);
+                        long energyConsumption = quarryBlock.getMinEnergyConsumption(upgradesUtil);
                         if(EnergyContainer.getStored() < energyConsumption) return drillResults;
 
                         OutputInventory.addItem(lootableContainer.removeItem(slot, 1));
@@ -542,7 +536,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             //non-block entities will fall through
 
             //energy consumption
-            long energyConsumption = quarryBlock.getEnergyConsumption(upgradesUtil, blockActress.block);
+            long energyConsumption = quarryBlock.getEnergyConsumption(upgradesUtil, blockActress.blockState);
             if(EnergyContainer.getStored() < energyConsumption) return drillResults;
 
             //loot generation
@@ -555,8 +549,10 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
                 if(fortuneLevel > 0) mockPickaxe.enchant(ZUtil.getEnchantmentEntry(serverWorldToBreak.registryAccess(), Enchantments.FORTUNE), fortuneLevel);
             }
 
+            boolean isLiquidBlock = blockActress.isLiquidBlock();
+
             //only drop item if required mining level is present
-            if(blockActress.isCorrectForDrops(drillItem.getToolComponent())) {
+            if(!isLiquidBlock && blockActress.isCorrectForDrops(drillItem.getToolComponent())) {
                 List<ItemStack> droppedStacks = blockActress.getDroppedStacks(quarryBlockState, quarryPos, mockPickaxe);
 
                 if(OutputInventory.canInsertAll(droppedStacks)) {
@@ -571,11 +567,13 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
             EnergyContainer.useEnergy(energyConsumption);
             blockActress.setBlockState(Blocks.AIR);
+            MiningQueue.removeFirst();
+
+            if(isLiquidBlock) continue;
 
             boolean drillBroke = drillItem.cdamage(drillStack, 1, serverWorldToBreak, null);
             if(drillBroke) drillItem.triggerBreakEvent(drillStack, quarryPos.getCenter(), serverWorldToBreak);
 
-            MiningQueue.removeFirst();
             drillResults.add(blockPosState);
         }
 

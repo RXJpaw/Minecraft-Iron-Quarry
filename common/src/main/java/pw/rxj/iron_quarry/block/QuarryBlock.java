@@ -23,10 +23,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -174,11 +171,15 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
         }
     }
 
-    public long getEnergyConsumption(MachineUpgradesUtil upgradesUtil) {
-        return this.getEnergyConsumption(upgradesUtil, Blocks.STONE);
+    public long getMinEnergyConsumption(MachineUpgradesUtil upgradesUtil) {
+        return this.getEnergyConsumption(upgradesUtil, Blocks.STONE.defaultBlockState());
     }
-    public long getEnergyConsumption(MachineUpgradesUtil upgradesUtil, Block block) {
-        float blockHardnessPenalty = Math.max(1.0F, Math.min(5.0F, block.defaultDestroyTime() / 10));
+    public long getEnergyConsumption(MachineUpgradesUtil upgradesUtil, BlockState blockState) {
+        if(blockState.getBlock() instanceof LiquidBlock) {
+            return blockState.getFluidState().isSource() ? this.getMinEnergyConsumption(upgradesUtil) : 0;
+        }
+
+        float blockHardnessPenalty = Math.clamp(blockState.getBlock().defaultDestroyTime() / 10, 1.0F, 5.0F);
         float inefficiencyPenalty = upgradesUtil.getInefficiency();
         float operations = (20.0F / this.ticksPerOperation) * upgradesUtil.getSpeedMultiplier();
 
