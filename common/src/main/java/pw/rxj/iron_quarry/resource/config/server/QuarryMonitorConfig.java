@@ -8,8 +8,8 @@ import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 
 @EqualsAndHashCode
 public class QuarryMonitorConfig {
-    public final Entry ironMonitor = new Entry(2_048, false);
-    public final Entry diamondMonitor = new Entry(8_192, false);
+    public final Entry ironMonitor = new Entry(1_024, false);
+    public final Entry diamondMonitor = new Entry(4_096, false);
     public final Entry netheriteMonitor = new Entry(16_384, true);
     public final Entry sculkMonitor = new Entry(65_536, true);
 
