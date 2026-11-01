@@ -60,6 +60,23 @@ public class ComplexInventory extends SimpleContainer {
         return clone;
     }
 
+    public int getInsertableCount(ItemStack stack) {
+        if(stack.isEmpty() || !this.canPlaceItem(0, stack)) return 0;
+
+        int maxStackSize = this.getMaxStackSize(stack);
+        int insertableCount = 0;
+
+        for (ItemStack target : this.items) {
+            if(target.isEmpty()) {
+                insertableCount += maxStackSize;
+            } else if(ItemStack.isSameItemSameComponents(target, stack)) {
+                insertableCount += Math.max(0, maxStackSize - target.getCount());
+            }
+        }
+
+        return insertableCount;
+    }
+
     public int occupiedSlots() {
         java.util.Iterator<ItemStack> stacks = this.items.iterator();
         int occupiedSlots = 0;

@@ -8,13 +8,10 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.ProblemReporter;
-import net.minecraft.world.LockCode;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +23,6 @@ import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -84,14 +80,7 @@ public class ZUtil {
 
     public static @Nullable RandomizableContainerBlockEntity getUnlockedLootableContainer(@Nullable BlockEntity blockEntity) {
         if(blockEntity instanceof RandomizableContainerBlockEntity lootableBlockEntity) {
-            Level world = lootableBlockEntity.getLevel();
-            if(world == null) return null;
-
-            CompoundTag nbtCompound = lootableBlockEntity.saveCustomOnly(world.registryAccess());
-            if(nbtCompound.isEmpty()) return null;
-
-            LockCode lock = LockCode.fromTag(TagValueInput.create(ProblemReporter.DISCARDING, world.registryAccess(), nbtCompound));
-            if(!lock.equals(LockCode.NO_LOCK)) return null;
+            if(lootableBlockEntity.isLocked()) return null;
 
             return lootableBlockEntity;
         }

@@ -513,24 +513,12 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             //handle special block entities
             //will only work if canDrill conditions are met! like if the container is not empty
             if(blockActress.blockEntity instanceof RandomizableContainerBlockEntity lootableContainer) {
-                for (int slot = 0; slot < lootableContainer.getContainerSize(); slot++) {
-                    ItemStack stack = lootableContainer.getItem(slot).copy();
-                    if(stack.isEmpty()) continue;
-                    stack.setCount(1);
+                int lootedItems = quarryBlockEntity.lootContainer(lootableContainer, threads - threadIndex, quarryBlock, upgradesUtil);
+                //not enough space in quarry inventory
+                if(lootedItems == 0) return drillResults;
 
-                    if(OutputInventory.canAddItem(stack)) {
-                        long energyConsumption = quarryBlock.getMinEnergyConsumption(upgradesUtil);
-                        if(EnergyContainer.getStored() < energyConsumption) return drillResults;
-
-                        OutputInventory.addItem(lootableContainer.removeItem(slot, 1));
-                        EnergyContainer.useEnergy(energyConsumption);
-
-                        break;
-                    }
-                    //not enough space in quarry inventory
-                    return drillResults;
-                }
                 //only one item per operation
+                threadIndex += lootedItems - 1;
                 continue;
             }
             //non-block entities will fall through
@@ -578,6 +566,27 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         return drillResults;
+    }
+    private int lootContainer(RandomizableContainerBlockEntity lootableContainer, int maxItems, QuarryBlock quarryBlock, MachineUpgradesUtil upgradesUtil) {
+        long energyConsumption = quarryBlock.getMinEnergyConsumption(upgradesUtil);
+        int lootedItems = 0;
+
+        for (int slot = 0; slot < lootableContainer.getContainerSize() && lootedItems < maxItems; slot++) {
+            ItemStack stack = lootableContainer.getItem(slot);
+            if(stack.isEmpty()) continue;
+
+            long affordableItems = energyConsumption > 0 ? this.EnergyContainer.getStored() / energyConsumption : Long.MAX_VALUE;
+            int items = (int) Math.min(Math.min(stack.getCount(), maxItems - lootedItems), Math.min(affordableItems, this.OutputInventory.getInsertableCount(stack)));
+            if(items <= 0) break;
+
+            this.OutputInventory.addItem(lootableContainer.removeItem(slot, items));
+            this.EnergyContainer.useEnergy(energyConsumption * items);
+            lootedItems += items;
+
+            if(!lootableContainer.getItem(slot).isEmpty()) break;
+        }
+
+        return lootedItems;
     }
 
     @Override
