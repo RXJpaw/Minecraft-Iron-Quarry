@@ -1,5 +1,6 @@
 package pw.rxj.iron_quarry.augment;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import pw.rxj.iron_quarry.resource.config.server.AugmentsConfig;
@@ -52,5 +53,9 @@ public class FortuneAugment extends AbstractAugment {
 
         textConsumer.accept(LORE_BENEFIT);
         textConsumer.accept(LORE_DRAWBACK);
+
+        if(Minecraft.getInstance().hasShiftDown()) {
+            ReadableString.translatableLines("item.iron_quarry.augment.lore.energy_factor_stacking.fortune").forEach(textConsumer);
+        }
     }
 }

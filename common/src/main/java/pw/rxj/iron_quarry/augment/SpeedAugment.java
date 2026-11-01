@@ -1,5 +1,6 @@
 package pw.rxj.iron_quarry.augment;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import pw.rxj.iron_quarry.resource.config.server.AugmentsConfig;
@@ -47,10 +48,14 @@ public class SpeedAugment extends AbstractAugment {
     public void appendEffectTooltip(int amount, Consumer<Component> textConsumer) {
         float progress = this.getProgress(amount);
 
-        MutableComponent LORE_BENEFIT = ReadableString.translatable("item.iron_quarry.augment.lore.benefit.speed", ZUtil.expandableFixedFloat(this.getSpeedBonus(progress)));
-        MutableComponent LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback.energy", ZUtil.expandableFixedFloat(this.getEnergyBonus(progress)));
+        MutableComponent LORE_BENEFIT = ReadableString.translatable("item.iron_quarry.augment.lore.benefit.speed", ZUtil.expandableFixedFloat(this.getSpeedBonus(progress) / 100));
+        MutableComponent LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback.speed_energy_factor", ZUtil.expandableFixedFloat(this.getEnergyBonus(progress) / 100));
 
         textConsumer.accept(LORE_BENEFIT);
         textConsumer.accept(LORE_DRAWBACK);
+
+        if(Minecraft.getInstance().hasShiftDown()) {
+            ReadableString.translatableLines("item.iron_quarry.augment.lore.energy_factor_stacking.speed").forEach(textConsumer);
+        }
     }
 }

@@ -163,7 +163,7 @@ public class MachineUpgradesUtil {
         int conflictFlag = this.getConflictFlag();
 
         if(hasConflict(conflictFlag, CONFLICT_SPEED)) {
-            textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.speed_limit", ZUtil.expandableFixedFloat((ZAugments.SPEED.getSpeedLimit()-1)*100)));
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.speed_limit", ZUtil.expandableFixedFloat(ZAugments.SPEED.getSpeedLimit())));
         }
         if(hasConflict(conflictFlag, CONFLICT_FORTUNE)) {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.fortune_limit", ZUtil.expandableFixedFloat(ZAugments.FORTUNE.getLevelLimit())));
