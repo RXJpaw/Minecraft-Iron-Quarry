@@ -51,5 +51,8 @@
     },
     "suggests": {
         "roughlyenoughitems": "*"
+    },
+    "breaks": {
+        "lootr": "<1.22.36.108"
     }
 }

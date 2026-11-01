@@ -3,6 +3,7 @@ package pw.rxj.iron_quarry.platform;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -14,8 +15,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class NeoForgePlatformBlockBreak implements IPlatformBlockBreak {
     @Override
+    public ServerPlayer getOwnerPlayer(ServerLevel world, GameProfile owner) {
+        return FakePlayerFactory.get(world, owner);
+    }
+
+    @Override
     public boolean canOwnerBreak(ServerLevel world, GameProfile owner, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity) {
-        return this.beforeBreak(world, FakePlayerFactory.get(world, owner), pos, state, blockEntity);
+        return this.beforeBreak(world, this.getOwnerPlayer(world, owner), pos, state, blockEntity);
     }
 
     @Override

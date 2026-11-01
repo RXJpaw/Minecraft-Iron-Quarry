@@ -42,6 +42,7 @@ dependencies {
 	compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}")
 	compileOnly("me.shedaniel.cloth:basic-math:0.6.1")
 	compileOnly("maven.modrinth:iris:${iris_neoforge_version}")
+	compileOnly("noobanidus.mods:lootr-neoforge:${lootr_version}")
 	compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
 	localRuntime("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 }

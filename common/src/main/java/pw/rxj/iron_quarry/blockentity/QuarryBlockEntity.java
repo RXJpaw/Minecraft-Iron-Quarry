@@ -41,6 +41,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.block.ZBlockTags;
+import pw.rxj.iron_quarry.compat.Compat;
+import pw.rxj.iron_quarry.compat.lootr.LootrCompat;
 import pw.rxj.iron_quarry.data.QuarryBlockScreenData;
 import pw.rxj.iron_quarry.data.QuarryBlockedDataComponent;
 import pw.rxj.iron_quarry.data.QuarryOwnerComponent;
@@ -216,6 +218,11 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     }
     public @Nullable QuarryOwnerComponent getOwner() {
         return this.owner;
+    }
+    private @Nullable ServerPlayer getOwnerPlayer(@Nullable Level world) {
+        if(this.owner == null || !(world instanceof ServerLevel serverWorld)) return null;
+
+        return Platform.BLOCK_BREAK.getOwnerPlayer(serverWorld, new GameProfile(this.owner.getUuid(), this.owner.getName()));
     }
     public void refreshOwnerName() {
         if(this.owner == null || !(this.level instanceof ServerLevel serverWorld)) return;
@@ -402,7 +409,8 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     private boolean canModify(ServerLevel world, BlockActress blockActress) {
         if(this.owner == null) return false;
 
-        boolean allowed = Platform.BLOCK_BREAK.canOwnerBreak(world, new GameProfile(this.owner.getUuid(), this.owner.getName()), blockActress.blockPos, blockActress.blockState, blockActress.blockEntity);
+        boolean modifiableWithoutBreakCheck = blockActress.blockEntity != null && blockActress.blockState.is(ZBlockTags.MODIFIABLE_WITHOUT_BREAK_CHECK);
+        boolean allowed = modifiableWithoutBreakCheck || Platform.BLOCK_BREAK.canOwnerBreak(world, new GameProfile(this.owner.getUuid(), this.owner.getName()), blockActress.blockPos, blockActress.blockState, blockActress.blockEntity);
 
         if(allowed) {
             this.setBlocked(null);
@@ -477,11 +485,22 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         if(blockEntity == null) return true;
 
         if(upgradesUtil.hasChestLooting()) {
-            RandomizableContainerBlockEntity lootableContainer = ZUtil.getUnlockedLootableContainer(blockEntity);
+            Container lootableContainer = this.getLootableContainer(blockEntity);
             return lootableContainer != null && !lootableContainer.isEmpty();
         }
 
         return false;
+    }
+    private @Nullable Container getLootableContainer(BlockEntity blockEntity) {
+        RandomizableContainerBlockEntity lootableContainer = ZUtil.getUnlockedLootableContainer(blockEntity);
+        if(lootableContainer == null || !Compat.LOOTR_LOADED) return lootableContainer;
+
+        return LootrCompat.getLootableContainer(lootableContainer, () -> this.getOwnerPlayer(lootableContainer.getLevel()));
+    }
+    private void markLooted(BlockEntity blockEntity) {
+        if(!Compat.LOOTR_LOADED) return;
+
+        LootrCompat.markOpened(blockEntity, () -> this.getOwnerPlayer(blockEntity.getLevel()));
     }
 
     private List<BlockPosState> drillQueue(int threads, QuarryBlock quarryBlock, BlockState quarryBlockState, BlockPos quarryPos, QuarryBlockEntity quarryBlockEntity, ServerLevel serverWorldToBreak,
@@ -512,11 +531,13 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
             //handle special block entities
             //will only work if canDrill conditions are met! like if the container is not empty
-            if(blockActress.blockEntity instanceof RandomizableContainerBlockEntity lootableContainer) {
-                int lootedItems = quarryBlockEntity.lootContainer(lootableContainer, threads - threadIndex, quarryBlock, upgradesUtil);
+            if(blockActress.blockEntity != null) {
+                Container lootableContainer = quarryBlockEntity.getLootableContainer(blockActress.blockEntity);
+                int lootedItems = lootableContainer == null ? 0 : quarryBlockEntity.lootContainer(lootableContainer, threads - threadIndex, quarryBlock, upgradesUtil);
                 //not enough space in quarry inventory
                 if(lootedItems == 0) return drillResults;
 
+                quarryBlockEntity.markLooted(blockActress.blockEntity);
                 //only one item per operation
                 threadIndex += lootedItems - 1;
                 continue;
@@ -567,7 +588,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
         return drillResults;
     }
-    private int lootContainer(RandomizableContainerBlockEntity lootableContainer, int maxItems, QuarryBlock quarryBlock, MachineUpgradesUtil upgradesUtil) {
+    private int lootContainer(Container lootableContainer, int maxItems, QuarryBlock quarryBlock, MachineUpgradesUtil upgradesUtil) {
         long energyConsumption = quarryBlock.getMinEnergyConsumption(upgradesUtil);
         int lootedItems = 0;
 

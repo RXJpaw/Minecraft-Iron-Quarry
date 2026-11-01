@@ -32,3 +32,10 @@ type = "required"
 versionRange = "[26.1.2,26.2)"
 ordering = "NONE"
 side = "BOTH"
+
+[[dependencies.iron_quarry]]
+modId = "lootr"
+type = "optional"
+versionRange = "[1.22.36.108,)"
+ordering = "NONE"
+side = "BOTH"

@@ -1,0 +1,7 @@
+{
+    "replace": false,
+    "values": [
+        { "id": "#lootr:containers", "required": false },
+        { "id": "#lootr:prevent_break", "required": false }
+    ]
+}
