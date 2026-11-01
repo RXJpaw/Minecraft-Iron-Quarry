@@ -29,6 +29,9 @@ public enum AbsAlignment {
     public int getId() {
         return this.id;
     }
+    public boolean isRight() {
+        return this == TOP_RIGHT || this == BOTTOM_RIGHT;
+    }
     public String getTranslationKey() {
         return this.toString().toLowerCase();
     }

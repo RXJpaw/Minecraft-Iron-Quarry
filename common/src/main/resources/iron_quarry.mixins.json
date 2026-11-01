@@ -18,6 +18,7 @@
         "EnergyBarMixin",
         "InGameHudMixin",
         "MouseScrollMixin",
+        "QuarryMonitorWarningMixin",
         "TooltipComponentMixin",
         "TooltipDataMixin",
         "TooltipRenderMixin",

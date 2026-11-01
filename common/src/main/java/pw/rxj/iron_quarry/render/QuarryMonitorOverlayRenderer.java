@@ -15,6 +15,7 @@ import pw.rxj.iron_quarry.item.DrillItem;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
 import pw.rxj.iron_quarry.resource.config.client.QuarryMonitorOverlayConfig;
+import pw.rxj.iron_quarry.util.MachineWarningsUtil;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 public class QuarryMonitorOverlayRenderer {
@@ -49,6 +50,7 @@ public class QuarryMonitorOverlayRenderer {
         float outputInvPct = quarryMonitorItem.getCachedOutputInvPct(quarryMonitorStack);
         ItemStack blueprintStack = quarryMonitorItem.getCachedBlueprintStack(quarryMonitorStack);
         ItemStack drillStack = quarryMonitorItem.getCachedDrillStack(quarryMonitorStack);
+        MachineWarningsUtil warningsUtil = MachineWarningsUtil.from(quarryMonitorStack);
 
         int x = QUARRY_MONITOR_OVERLAY_CONFIG.getComputedWindowX(minecraftClient.getWindow(), 42);
         int y = QUARRY_MONITOR_OVERLAY_CONFIG.getComputedWindowY(minecraftClient.getWindow(), 45);
@@ -70,6 +72,9 @@ public class QuarryMonitorOverlayRenderer {
             int chargedPixels = Math.max(0, Math.min(39, (int) (outputInvPct * 39)));
             RenderUtil.drawTexture(context, OVERLAY_TEXTURE, 34, 3 + 39 - chargedPixels, 47, 3 + 39 - chargedPixels, 5, chargedPixels, 128, 128);
         }
+
+        int warningX = QUARRY_MONITOR_OVERLAY_CONFIG.getAlignment().isRight() ? -4 : 43;
+        QuarryMonitorWarningRenderer.renderIcon(context, warningsUtil, warningX, 0);
 
         matrices.popMatrix();
 
