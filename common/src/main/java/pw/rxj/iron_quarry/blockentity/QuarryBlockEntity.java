@@ -545,7 +545,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             if(upgradesUtil.hasSilkTouch()) {
                 mockPickaxe.enchant(ZUtil.getEnchantmentEntry(serverWorldToBreak.registryAccess(), Enchantments.SILK_TOUCH), 1);
             } else {
-                int fortuneLevel = FortuneUtil.fromProbability(upgradesUtil.getFortuneMultiplier());
+                int fortuneLevel = FortuneUtil.rollLevel(upgradesUtil.getFortuneLevel(), serverWorldToBreak.getRandom());
                 if(fortuneLevel > 0) mockPickaxe.enchant(ZUtil.getEnchantmentEntry(serverWorldToBreak.registryAccess(), Enchantments.FORTUNE), fortuneLevel);
             }
 

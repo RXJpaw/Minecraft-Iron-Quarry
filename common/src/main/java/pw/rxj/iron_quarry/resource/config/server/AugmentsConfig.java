@@ -30,14 +30,16 @@ public class AugmentsConfig {
     public static class Fortune {
         public final boolean disabled;
         public final int baseAmount;
-        public final int maxYieldBonus;
+        public final float maxLevel;
         public final int maxEnergyBonus;
+        public final float levelLimit;
 
         public Fortune() {
             this.disabled = false;
             this.baseAmount = 1_500;
-            this.maxYieldBonus = 200;
-            this.maxEnergyBonus = 2_000;
+            this.maxLevel = 4.7F;
+            this.maxEnergyBonus = 200;
+            this.levelLimit = 4.7F;
         }
     }
     @EqualsAndHashCode

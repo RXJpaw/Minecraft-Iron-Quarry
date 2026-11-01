@@ -17,13 +17,12 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class MachineUpgradesUtil {
-    public static final float FORTUNE_LIMIT = 3.0F;
     public static final float SPEED_LIMIT = 91.0F + 2.71293F;
 
     private boolean hasSilkTouch = false;
     private boolean hasChestLooting = false;
 
-    private float fortuneMultiplier = 1;
+    private float fortuneLevel = 0;
     private float speedMultiplier = 1;
     private float inefficiency = 1;
     private float slowness = 1;
@@ -44,8 +43,7 @@ public class MachineUpgradesUtil {
                         this.inefficiency += ZAugments.SPEED.getEnergyBonus(progress)/100;
                     }
                     case FORTUNE -> {
-                        this.fortuneMultiplier += ZAugments.FORTUNE.getYieldBonus(progress)/100;
-                        this.inefficiency += ZAugments.FORTUNE.getEnergyBonus(progress)/100;
+                        this.fortuneLevel += ZAugments.FORTUNE.getLevel(progress);
                     }
                     case SILK_TOUCH -> {
                         this.hasSilkTouch = true;
@@ -75,8 +73,13 @@ public class MachineUpgradesUtil {
     public boolean hasSilkTouch() { return this.hasSilkTouch; }
     public boolean hasChestLooting() { return this.hasChestLooting; }
 
-    public float getFortuneMultiplier() {
-        return Math.min(this.fortuneMultiplier, FORTUNE_LIMIT);
+    public float getFortuneLevel() {
+        if(this.hasSilkTouch) return 0.0F;
+
+        return Math.min(this.fortuneLevel, ZAugments.FORTUNE.getLevelLimit());
+    }
+    public float getFortuneEnergyMultiplier() {
+        return 1 + this.getFortuneLevel() * ZAugments.FORTUNE.getEnergyPerLevel() / 100;
     }
     public float getSpeedMultiplier() {
         return Math.min(this.speedMultiplier / this.slowness, SPEED_LIMIT);
@@ -128,15 +131,14 @@ public class MachineUpgradesUtil {
         return this.speedMultiplier > SPEED_LIMIT;
     }
     public boolean exceedsFortuneLimit() {
-        return this.fortuneMultiplier > FORTUNE_LIMIT;
+        return this.fortuneLevel > ZAugments.FORTUNE.getLevelLimit();
     }
     public boolean conflictsWithSilkTouch() {
-        return this.hasSilkTouch && this.fortuneMultiplier > 1;
+        return this.hasSilkTouch && this.fortuneLevel > 0;
     }
 
     public void appendStatsTooltip(QuarryBlock quarryBlock, Consumer<Component> textConsumer) {
-        float yield_bonus = (this.getFortuneMultiplier() - 1) * 100.0F;
-        float energy_usage = quarryBlock.getBaseConsumption() * this.getInefficiency();
+        float energy_usage = quarryBlock.getBaseConsumption() * this.getInefficiency() * this.getFortuneEnergyMultiplier();
         float operations = (20.0F / quarryBlock.getTicksPerOperation()) * this.getSpeedMultiplier();
 
         SupplicableAlt<?> HasShiftDown = SupplicableAlt.when(Minecraft.getInstance().hasShiftDown());
@@ -154,12 +156,11 @@ public class MachineUpgradesUtil {
         MutableComponent LORE_SPEED_DETAIL = ReadableString.translatable("item.iron_quarry.lore.operation.per_second", ZUtil.expandableFixedFloat(operations));
         MutableComponent LORE_SPEED = ReadableString.translatable("item.iron_quarry.quarry_block.lore.speed", LORE_SPEED_DETAIL);
 
-        MutableComponent LORE_YIELD_DETAIL = ReadableString.translatable("item.iron_quarry.lore.percentage.positive", ZUtil.expandableFixedFloat(yield_bonus));
-        MutableComponent LORE_YIELD = ReadableString.translatable("item.iron_quarry.quarry_block.lore.yield", LORE_YIELD_DETAIL);
+        MutableComponent LORE_FORTUNE = ReadableString.translatable("item.iron_quarry.quarry_block.lore.fortune", ZUtil.expandableFixedFloat(this.getFortuneLevel()));
 
         textConsumer.accept(LORE_USAGE);
         textConsumer.accept(LORE_SPEED);
-        textConsumer.accept(LORE_YIELD);
+        textConsumer.accept(LORE_FORTUNE);
     }
     public void appendConflictTooltip(Consumer<Component> textConsumer) {
         int conflictFlag = this.getConflictFlag();
@@ -168,7 +169,7 @@ public class MachineUpgradesUtil {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.speed_limit", ZUtil.expandableFixedFloat((SPEED_LIMIT-1)*100)));
         }
         if(hasConflict(conflictFlag, CONFLICT_FORTUNE)) {
-            textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.fortune_limit", ZUtil.expandableFixedFloat((FORTUNE_LIMIT-1)*100)));
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.fortune_limit", ZUtil.expandableFixedFloat(ZAugments.FORTUNE.getLevelLimit())));
         }
         if(hasConflict(conflictFlag, CONFLICT_SILK_TOUCH)) {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.silk_touch_fortune"));

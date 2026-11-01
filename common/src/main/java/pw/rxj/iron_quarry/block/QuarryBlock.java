@@ -23,7 +23,10 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -171,8 +174,14 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
         }
     }
 
+    private float getEnergyPerOperation(MachineUpgradesUtil upgradesUtil) {
+        float inefficiencyPenalty = upgradesUtil.getInefficiency();
+        float operations = (20.0F / this.ticksPerOperation) * upgradesUtil.getSpeedMultiplier();
+
+        return this.baseConsumption * inefficiencyPenalty * 20 / operations;
+    }
     public long getMinEnergyConsumption(MachineUpgradesUtil upgradesUtil) {
-        return this.getEnergyConsumption(upgradesUtil, Blocks.STONE.defaultBlockState());
+        return (long) this.getEnergyPerOperation(upgradesUtil);
     }
     public long getEnergyConsumption(MachineUpgradesUtil upgradesUtil, BlockState blockState) {
         if(blockState.getBlock() instanceof LiquidBlock) {
@@ -180,10 +189,9 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
         }
 
         float blockHardnessPenalty = Math.clamp(blockState.getBlock().defaultDestroyTime() / 10, 1.0F, 5.0F);
-        float inefficiencyPenalty = upgradesUtil.getInefficiency();
-        float operations = (20.0F / this.ticksPerOperation) * upgradesUtil.getSpeedMultiplier();
+        float fortunePenalty = upgradesUtil.getFortuneEnergyMultiplier();
 
-        return (long) (this.baseConsumption * blockHardnessPenalty * inefficiencyPenalty * 20 / operations);
+        return (long) (this.getEnergyPerOperation(upgradesUtil) * blockHardnessPenalty * fortunePenalty);
     }
 
     /**
