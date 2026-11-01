@@ -25,6 +25,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
@@ -116,6 +118,8 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         if(Minecraft.getInstance().hasShiftDown() && timestamp > 0) {
             if(ZUtil.getBlockOrItem(quarryBlockStack) instanceof QuarryBlock quarryBlock) {
                 quarryBlock.appendTooltip(quarryBlockStack, context, textConsumer, options);
+            } else if(this.isOutOfRange(stack)) {
+                textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.status.out_of_range"));
             } else {
                 textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.status.unknown"));
             }
@@ -208,13 +212,48 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         if(ZUtil.getBlockOrItem(stack) instanceof QuarryMonitorItem quarryMonitorItem) {
             if(System.currentTimeMillis() - quarryMonitorItem.getCachedTimestamp(stack) < 1000L) return;
 
-            QuarryBlockEntity quarryBlockEntity = quarryMonitorItem.fetchQuarryBlockEntity(minecraftServer, stack);
+            boolean inRange = quarryMonitorItem.isInRange(minecraftServer, stack, world, playerEntity.position());
+            quarryMonitorItem.setOutOfRange(stack, !inRange);
+
+            QuarryBlockEntity quarryBlockEntity = inRange ? quarryMonitorItem.fetchQuarryBlockEntity(minecraftServer, stack) : null;
 
             if(quarryBlockEntity == null) {
                 quarryMonitorItem.clearCachedQuarry(stack);
             } else {
                 quarryMonitorItem.setCachedQuarry(stack, quarryBlockEntity, world.registryAccess());
             }
+        }
+    }
+
+    public boolean isInRange(MinecraftServer minecraftServer, ItemStack stack, Level world, Vec3 pos) {
+        ResourceKey<Level> worldRegistryKey = this.getWorldRegistryKey(stack).orElse(null);
+        ServerLevel quarryWorld = minecraftServer.getLevel(worldRegistryKey);
+        BlockPos quarryPos = this.getPosition(stack);
+        if(quarryWorld == null || quarryPos == null) return true;
+
+        double scale = 1.0D;
+        if(!quarryWorld.dimension().equals(world.dimension())) {
+            if(!this.interdimensional) return false;
+
+            scale = DimensionType.getTeleportationScale(world.dimensionType(), quarryWorld.dimensionType());
+        }
+
+        Vec3 quarryCenter = quarryPos.getCenter();
+        double distanceX = pos.x * scale - quarryCenter.x;
+        double distanceZ = pos.z * scale - quarryCenter.z;
+
+        return distanceX * distanceX + distanceZ * distanceZ <= (double) this.range * this.range;
+    }
+    public boolean isOutOfRange(ItemStack stack) {
+        return stack.getOrDefault(ZComponents.QUARRY_MONITOR_OUT_OF_RANGE, false);
+    }
+    public void setOutOfRange(ItemStack stack, boolean outOfRange) {
+        if(this.isOutOfRange(stack) == outOfRange) return;
+
+        if(outOfRange) {
+            stack.set(ZComponents.QUARRY_MONITOR_OUT_OF_RANGE, true);
+        } else {
+            stack.remove(ZComponents.QUARRY_MONITOR_OUT_OF_RANGE);
         }
     }
 

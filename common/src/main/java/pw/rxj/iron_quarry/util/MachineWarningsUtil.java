@@ -20,15 +20,16 @@ public class MachineWarningsUtil {
     public static final float INV_WARNING_PCT = 0.7F;
 
     public static final int WARNING_QUARRY_UNKNOWN = 0;
-    public static final int WARNING_OWNER_MISSING = 1;
-    public static final int WARNING_MINING_DENIED = 2;
-    public static final int WARNING_BLUEPRINT_EMPTY = 3;
-    public static final int WARNING_BLUEPRINT_UNSEALED = 4;
-    public static final int WARNING_DRILL_EMPTY = 5;
-    public static final int WARNING_ENERGY_DEPLETED = 6;
-    public static final int WARNING_INV_FULL = 7;
-    public static final int WARNING_ENERGY_30 = 8;
-    public static final int WARNING_INV_70 = 9;
+    public static final int WARNING_QUARRY_OUT_OF_RANGE = 1;
+    public static final int WARNING_OWNER_MISSING = 2;
+    public static final int WARNING_MINING_DENIED = 3;
+    public static final int WARNING_BLUEPRINT_EMPTY = 4;
+    public static final int WARNING_BLUEPRINT_UNSEALED = 5;
+    public static final int WARNING_DRILL_EMPTY = 6;
+    public static final int WARNING_ENERGY_DEPLETED = 7;
+    public static final int WARNING_INV_FULL = 8;
+    public static final int WARNING_ENERGY_30 = 9;
+    public static final int WARNING_INV_70 = 10;
 
     public static final List<Integer> CRITICAL_FLAG_LIST = List.of(
             WARNING_QUARRY_UNKNOWN,
@@ -43,6 +44,7 @@ public class MachineWarningsUtil {
     public static final int CRITICAL_FLAG = toFlag(CRITICAL_FLAG_LIST);
 
     private static final MachineWarningsUtil UNKNOWN = new MachineWarningsUtil(1 << WARNING_QUARRY_UNKNOWN, null, MachineUpgradesUtil.from(List.of()));
+    private static final MachineWarningsUtil OUT_OF_RANGE = new MachineWarningsUtil(1 << WARNING_QUARRY_OUT_OF_RANGE, null, MachineUpgradesUtil.from(List.of()));
 
     private final int flag;
     private final @Nullable QuarryBlockedDataComponent blocked;
@@ -101,6 +103,8 @@ public class MachineWarningsUtil {
     public static MachineWarningsUtil from(ItemStack quarryMonitorStack) {
         if(!(quarryMonitorStack.getItem() instanceof QuarryMonitorItem quarryMonitorItem)) return UNKNOWN;
 
+        if(quarryMonitorItem.isOutOfRange(quarryMonitorStack)) return OUT_OF_RANGE;
+
         ItemStack quarryStack = quarryMonitorItem.getCachedQuarryStack(quarryMonitorStack);
         if(!(ZUtil.getBlockOrItem(quarryStack) instanceof QuarryBlock quarryBlock)) return UNKNOWN;
 
@@ -143,6 +147,9 @@ public class MachineWarningsUtil {
     public void appendTooltip(Consumer<Component> textConsumer) {
         if(hasWarning(this.flag, WARNING_QUARRY_UNKNOWN)) {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_status_unknown"));
+        }
+        if(hasWarning(this.flag, WARNING_QUARRY_OUT_OF_RANGE)) {
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_out_of_range"));
         }
         if(hasWarning(this.flag, WARNING_OWNER_MISSING)) {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_owner_missing"));

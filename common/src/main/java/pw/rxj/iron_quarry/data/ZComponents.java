@@ -65,6 +65,9 @@ public class ZComponents {
     public static DataComponentType<QuarryBlockedDataComponent> QUARRY_MONITOR_CACHED_BLOCKED_DATA = register("quarry_monitor_cached_blocked_data", (builder) -> builder
             .persistent(QuarryBlockedDataComponent.CODEC)
             .networkSynchronized(QuarryBlockedDataComponent.PACKET_CODEC));
+    public static DataComponentType<Boolean> QUARRY_MONITOR_OUT_OF_RANGE = register("quarry_monitor_out_of_range", (builder) -> builder
+            .persistent(Codec.BOOL)
+            .networkSynchronized(ByteBufCodecs.BOOL));
 
 
     /**
