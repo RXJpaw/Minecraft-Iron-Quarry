@@ -18,6 +18,7 @@ public class AugmentsConfig {
         public final int baseAmount;
         public final float maxSpeedBonus;
         public final float maxEnergyBonus;
+        public final float energyRatioExponent;
         public final float speedFactorLimit;
 
         public Speed() {
@@ -25,6 +26,7 @@ public class AugmentsConfig {
             this.baseAmount = 1_000;
             this.maxSpeedBonus = 15.0F;
             this.maxEnergyBonus = 45.0F;
+            this.energyRatioExponent = 1.5F;
             this.speedFactorLimit = 93.71293F;
         }
     }
