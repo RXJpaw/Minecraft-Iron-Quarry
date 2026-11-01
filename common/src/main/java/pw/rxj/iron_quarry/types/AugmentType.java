@@ -13,11 +13,11 @@ import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
 public enum AugmentType implements StringRepresentable {
-    EMPTY(0, "empty", ZAugments.EMPTY),
-    SPEED(1, "speed", ZAugments.SPEED),
-    FORTUNE(2, "fortune", ZAugments.FORTUNE),
-    SILK_TOUCH(3, "silk_touch", ZAugments.SILK_TOUCH),
-    CHEST_LOOTING(4, "chest_looting", ZAugments.CHEST_LOOTING);
+    EMPTY(0, "empty"),
+    SPEED(1, "speed"),
+    FORTUNE(2, "fortune"),
+    SILK_TOUCH(3, "silk_touch"),
+    CHEST_LOOTING(4, "chest_looting");
 
     public static final Codec<AugmentType> CODEC = StringRepresentable.fromValues(AugmentType::values);
     public static final IntFunction<AugmentType> ID_TO_VALUE = ByIdMap.<AugmentType>continuous((value) -> value.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
@@ -25,12 +25,10 @@ public enum AugmentType implements StringRepresentable {
 
     private final int id;
     private final String name;
-    private final AbstractAugment augment;
 
-    private AugmentType(int id, String name, AbstractAugment augment) {
+    private AugmentType(int id, String name) {
         this.id = id;
         this.name = name;
-        this.augment = augment;
     }
 
     public int getId(){
@@ -40,7 +38,13 @@ public enum AugmentType implements StringRepresentable {
         return this.name;
     }
     public AbstractAugment getAugment() {
-        return this.augment;
+        return switch (this) {
+            case EMPTY -> ZAugments.EMPTY;
+            case SPEED -> ZAugments.SPEED;
+            case FORTUNE -> ZAugments.FORTUNE;
+            case SILK_TOUCH -> ZAugments.SILK_TOUCH;
+            case CHEST_LOOTING -> ZAugments.CHEST_LOOTING;
+        };
     }
 
     public boolean isEmpty() { return this.equals(AugmentType.EMPTY); }
