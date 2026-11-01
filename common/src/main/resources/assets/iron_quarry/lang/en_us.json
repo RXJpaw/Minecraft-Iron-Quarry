@@ -85,6 +85,7 @@
     "item.iron_quarry.blueprint.overlay.second_pos_set": "Second position set to: %s",
     "item.iron_quarry.blueprint.info.unsealing": "Sealed blueprints can be unsealed on a grindstone. This also resets their mining progress.",
 
+    "item.iron_quarry.quarry_monitor.lore.interdimensional": "§{RGB_DARK_GRAY Works across dimensions}",
     "item.iron_quarry.quarry_monitor.lore.range": "§{RGB_LIGHT_GRAY Update range:} §{RGB_WEAK_HIGHLIGHT %s blocks}",
     "item.iron_quarry.quarry_monitor.lore.last_updated": "§{RGB_LIGHT_GRAY Last update:} §{RGB_WEAK_HIGHLIGHT %s ago}",
     "item.iron_quarry.quarry_monitor.lore.never_updated": "§{RGB_LIGHT_GRAY Last update:} §{RGB_WEAK_HIGHLIGHT not yet used}",

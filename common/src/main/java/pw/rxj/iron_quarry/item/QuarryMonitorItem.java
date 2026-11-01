@@ -129,6 +129,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
             if(timestamp > 0) {
                 textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.last_updated", ReadableString.toTimeAgo(timestamp)));
+                if(this.interdimensional) textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.interdimensional"));
 
                 MachineWarningsUtil warningsUtil = MachineWarningsUtil.from(stack);
                 if(warningsUtil.hasWarnings()) {
@@ -140,6 +141,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
                 textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.details"));
             } else {
                 textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.never_updated"));
+                if(this.interdimensional) textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.interdimensional"));
             }
         }
     }
