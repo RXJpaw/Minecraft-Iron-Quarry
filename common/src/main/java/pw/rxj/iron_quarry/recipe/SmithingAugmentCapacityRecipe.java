@@ -25,10 +25,13 @@ public class SmithingAugmentCapacityRecipe extends HandledSmithingRecipe {
 
     @Override
     public ItemStack assemble(SmithingRecipeInput input) {
-        if(DamageableSmithingTemplateItem.isNotOf(input.getItem(0))) return ItemStack.EMPTY;
+        ItemStack template = input.getItem(0);
+        DamageableSmithingTemplateItem templateItem = DamageableSmithingTemplateItem.instanceFrom(template);
+        if(templateItem == null) return ItemStack.EMPTY;
 
         ItemStack base = input.getItem(1).copy();
         if(!(base.getItem() instanceof AugmentItem augmentItem)) return ItemStack.EMPTY;
+        if(templateItem.getCDurability(template) < augmentItem.getCapacityUpgradeCost()) return ItemStack.EMPTY;
 
         boolean result = augmentItem.putUpgrade(base, input.getItem(2));
 

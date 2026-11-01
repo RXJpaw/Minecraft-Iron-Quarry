@@ -6,6 +6,7 @@ import net.minecraft.world.item.Rarity;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.event.ServerLifecycleCallback;
 import pw.rxj.iron_quarry.interfaces.IModifyCreativeTabEntries;
+import pw.rxj.iron_quarry.resource.config.server.AugmentingTemplateConfig;
 import pw.rxj.iron_quarry.resource.config.server.QuarryDrillStatsConfig;
 import pw.rxj.iron_quarry.resource.config.server.QuarryMonitorConfig;
 import pw.rxj.iron_quarry.types.AugmentType;
@@ -15,10 +16,11 @@ import pw.rxj.iron_quarry.util.ItemEntry;
 import java.util.List;
 
 public class ZItems {
+    private static final AugmentingTemplateConfig.Handler AUGMENTING_TEMPLATE_CONFIG = Main.CONFIG.getAugmentingTemplateConfig();
     private static final QuarryDrillStatsConfig.Handler QUARRY_DRILL_STATS_CONFIG = Main.CONFIG.getQuarryDrillStatsConfig();
     private static final QuarryMonitorConfig.Handler QUARRY_MONITOR_CONFIG = Main.CONFIG.getQuarryMonitorConfig();
 
-    public static final ItemEntry<DamageableSmithingTemplateItem> AUGMENTING_TEMPLATE = ItemEntry.of("augmenting_template", settings -> DamageableSmithingTemplateItem.createAugmentingTemplate(settings));
+    public static final ItemEntry<DamageableSmithingTemplateItem> AUGMENTING_TEMPLATE = ItemEntry.of("augmenting_template", settings -> DamageableSmithingTemplateItem.createAugmentingTemplate(settings, AUGMENTING_TEMPLATE_CONFIG.getDurability()));
 
     public static final ItemEntry<BlueprintItem> BLUEPRINT = ItemEntry.of("blueprint", settings -> new BlueprintItem(settings.stacksTo(1).rarity(Rarity.UNCOMMON)));
 
@@ -30,11 +32,11 @@ public class ZItems {
     public static final ItemEntry<Item> CIRCUIT_MK4 = ItemEntry.of("circuit_mk4", settings -> new Item(settings.stacksTo(64)));
     public static final ItemEntry<Item> CIRCUIT_MK5 = ItemEntry.of("circuit_mk5", settings -> new Item(settings.stacksTo(64)));
 
-    public static final ItemEntry<AugmentItem> AUGMENT = ItemEntry.of("augment", settings -> new AugmentItem(settings.stacksTo(1)));
-    public static final ItemEntry<AugmentItem> CHEST_LOOTING_AUGMENT = ItemEntry.of("chest_looting_augment", settings -> new AugmentItem(settings.stacksTo(1))
+    public static final ItemEntry<AugmentItem> AUGMENT = ItemEntry.of("augment", settings -> new AugmentItem(settings.stacksTo(1), AUGMENTING_TEMPLATE_CONFIG.getCapacityUpgradeCost()));
+    public static final ItemEntry<AugmentItem> CHEST_LOOTING_AUGMENT = ItemEntry.of("chest_looting_augment", settings -> new AugmentItem(settings.stacksTo(1), AUGMENTING_TEMPLATE_CONFIG.getCapacityUpgradeCost())
                     .dynamicName(DynamicText.GOLD)
                     .unique(AugmentType.CHEST_LOOTING));
-    public static final ItemEntry<AugmentItem> SILK_TOUCH_AUGMENT = ItemEntry.of("silk_touch_augment", settings -> new AugmentItem(settings.stacksTo(1))
+    public static final ItemEntry<AugmentItem> SILK_TOUCH_AUGMENT = ItemEntry.of("silk_touch_augment", settings -> new AugmentItem(settings.stacksTo(1), AUGMENTING_TEMPLATE_CONFIG.getCapacityUpgradeCost())
                     .dynamicName(DynamicText.EMERALD)
                     .unique(AugmentType.SILK_TOUCH));
 

@@ -44,9 +44,15 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
     private @NotNull AugmentType uniqueType = AugmentType.EMPTY;
     private @NotNull DynamicText dynamicName = DynamicText.EMPTY;
+    private int capacityUpgradeCost;
 
-    public AugmentItem(Properties settings) {
+    public AugmentItem(Properties settings, int capacityUpgradeCost) {
         super(settings);
+
+        this.capacityUpgradeCost = capacityUpgradeCost;
+    }
+    public void override(int capacityUpgradeCost) {
+        this.capacityUpgradeCost = capacityUpgradeCost;
     }
 
     public static boolean isOf(ItemStack stack){
@@ -232,7 +238,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         outputInv.awardUsedRecipes(player, List.of(template, base, addition));
 
         if(augmentStack == null) {
-            templateItem.cdamage(template, 1, null, null);
+            templateItem.cdamage(template, this.getCapacityUpgradeCost(), null, null);
             templateItem.triggerBreakEventIfNeeded(template, player.position(), player.level());
             inputInv.setItem(0, template);
 
@@ -300,6 +306,9 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         this.setAmount(stack, this.getAmount(stack) + amount);
     }
 
+    public int getCapacityUpgradeCost() {
+        return this.capacityUpgradeCost;
+    }
     public int getCapacity(@NotNull ItemStack stack) {
         if(this.isUnique()) return UNIQUE_SET_AMOUNT;
 
