@@ -37,13 +37,17 @@ dependencies {
 
 	include api("teamreborn:energy:${project.energy_api_version}") { transitive = false }
 
-	api("com.terraformersmc:modmenu:${project.modmenu_version}")
-	api("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
-	api("dev.architectury:architectury-fabric:${project.architectury_version}")
+	compileOnly("com.terraformersmc:modmenu:${project.modmenu_version}")
+	compileOnly("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
+	compileOnly("dev.architectury:architectury-fabric:${project.architectury_version}")
 	compileOnly("me.shedaniel.cloth:basic-math:0.6.1")
 	compileOnly("maven.modrinth:iris:${project.iris_version}")
 	compileOnly("noobanidus.mods:lootr-fabric:${project.lootr_version}")
 	compileOnly("mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}")
+
+	localRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
+	localRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
+	localRuntime("dev.architectury:architectury-fabric:${project.architectury_version}")
 
 }
 
