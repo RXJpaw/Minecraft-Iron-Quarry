@@ -24,7 +24,7 @@ public class AugmentsConfig {
             this.disabled = false;
             this.baseAmount = 1_000;
             this.maxSpeedBonus = 15.0F;
-            this.maxEnergyBonus = 25.0F;
+            this.maxEnergyBonus = 45.0F;
             this.speedFactorLimit = 93.71293F;
         }
     }

@@ -22,6 +22,7 @@ public class MachineUpgradesUtil {
 
     private float fortuneLevel = 0;
     private float speedMultiplier = 1;
+    private float speedEnergyBonus = 0;
     private float slowness = 1;
 
     private MachineUpgradesUtil(Container inventory){
@@ -37,6 +38,7 @@ public class MachineUpgradesUtil {
                 switch (augmentType) {
                     case SPEED -> {
                         this.speedMultiplier += ZAugments.SPEED.getSpeedBonus(progress);
+                        this.speedEnergyBonus += ZAugments.SPEED.getEnergyBonus(progress);
                     }
                     case FORTUNE -> {
                         this.fortuneLevel += ZAugments.FORTUNE.getLevel(progress);
@@ -54,6 +56,7 @@ public class MachineUpgradesUtil {
                 float speedMultiplier = (float) Math.pow(1.3, efficiencyLevel) - 1.0F;
 
                 this.speedMultiplier += speedMultiplier;
+                this.speedEnergyBonus += speedMultiplier;
             }
         }
     }
@@ -80,9 +83,12 @@ public class MachineUpgradesUtil {
         return Math.min(this.speedMultiplier / this.slowness, ZAugments.SPEED.getSpeedLimit());
     }
     public float getSpeedEnergyMultiplier() {
-        float cappedSpeedMultiplier = Math.min(this.speedMultiplier, ZAugments.SPEED.getSpeedLimit());
+        float speedBonus = this.speedMultiplier - 1;
+        if(speedBonus <= 0) return 1.0F;
 
-        return 1 + (cappedSpeedMultiplier - 1) * ZAugments.SPEED.getEnergyPerSpeed();
+        float cappedSpeedBonus = Math.min(this.speedMultiplier, ZAugments.SPEED.getSpeedLimit()) - 1;
+
+        return 1 + this.speedEnergyBonus * cappedSpeedBonus / speedBonus;
     }
 
     //conflicts

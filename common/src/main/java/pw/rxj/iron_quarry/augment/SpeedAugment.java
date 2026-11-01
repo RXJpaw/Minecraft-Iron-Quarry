@@ -32,14 +32,17 @@ public class SpeedAugment extends AbstractAugment {
         return progress * this.config.getSpeed().maxSpeedBonus;
     }
     public float getEnergyBonus(float progress) {
-        return this.getSpeedBonus(progress) * this.getEnergyPerSpeed();
+        return this.getSpeedBonus(progress) * this.getEnergyRatio(progress);
+    }
+    public float getEnergyRatio(float progress) {
+        return 1 + (this.getFullEnergyRatio() - 1) * progress;
     }
     public float getSpeedLimit() {
         return this.config.getSpeed().speedFactorLimit;
     }
-    public float getEnergyPerSpeed() {
+    public float getFullEnergyRatio() {
         AugmentsConfig.Speed speed = this.config.getSpeed();
-        if(speed.maxSpeedBonus == 0) return 0.0F;
+        if(speed.maxSpeedBonus == 0) return 1.0F;
 
         return speed.maxEnergyBonus / speed.maxSpeedBonus;
     }
