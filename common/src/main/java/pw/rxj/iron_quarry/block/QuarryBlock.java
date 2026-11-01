@@ -175,10 +175,10 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
     }
 
     private float getEnergyPerOperation(MachineUpgradesUtil upgradesUtil) {
-        float inefficiencyPenalty = upgradesUtil.getInefficiency();
+        float speedPenalty = upgradesUtil.getSpeedEnergyMultiplier();
         float operations = (20.0F / this.ticksPerOperation) * upgradesUtil.getSpeedMultiplier();
 
-        return this.baseConsumption * inefficiencyPenalty * 20 / operations;
+        return this.baseConsumption * speedPenalty * 20 / operations;
     }
     public long getMinEnergyConsumption(MachineUpgradesUtil upgradesUtil) {
         return (long) this.getEnergyPerOperation(upgradesUtil);

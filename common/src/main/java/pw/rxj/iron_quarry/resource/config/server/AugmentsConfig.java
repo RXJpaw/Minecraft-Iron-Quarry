@@ -18,12 +18,14 @@ public class AugmentsConfig {
         public final int baseAmount;
         public final int maxSpeedBonus;
         public final int maxEnergyBonus;
+        public final float speedBonusLimit;
 
         public Speed() {
             this.disabled = false;
             this.baseAmount = 1_000;
             this.maxSpeedBonus = 1_500;
             this.maxEnergyBonus = 2_500;
+            this.speedBonusLimit = 9_271.293F;
         }
     }
     @EqualsAndHashCode

@@ -17,14 +17,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class MachineUpgradesUtil {
-    public static final float SPEED_LIMIT = 91.0F + 2.71293F;
-
     private boolean hasSilkTouch = false;
     private boolean hasChestLooting = false;
 
     private float fortuneLevel = 0;
     private float speedMultiplier = 1;
-    private float inefficiency = 1;
     private float slowness = 1;
 
     private MachineUpgradesUtil(Container inventory){
@@ -40,7 +37,6 @@ public class MachineUpgradesUtil {
                 switch (augmentType) {
                     case SPEED -> {
                         this.speedMultiplier += ZAugments.SPEED.getSpeedBonus(progress)/100;
-                        this.inefficiency += ZAugments.SPEED.getEnergyBonus(progress)/100;
                     }
                     case FORTUNE -> {
                         this.fortuneLevel += ZAugments.FORTUNE.getLevel(progress);
@@ -57,7 +53,6 @@ public class MachineUpgradesUtil {
 
                 float speedMultiplier = (float) Math.pow(1.3, efficiencyLevel) - 1.0F;
 
-                this.inefficiency += speedMultiplier * ZAugments.SPEED.getEnergyPerSpeed();
                 this.speedMultiplier += speedMultiplier;
             }
         }
@@ -82,10 +77,12 @@ public class MachineUpgradesUtil {
         return 1 + this.getFortuneLevel() * ZAugments.FORTUNE.getEnergyPerLevel() / 100;
     }
     public float getSpeedMultiplier() {
-        return Math.min(this.speedMultiplier / this.slowness, SPEED_LIMIT);
+        return Math.min(this.speedMultiplier / this.slowness, ZAugments.SPEED.getSpeedLimit());
     }
-    public float getInefficiency() {
-        return this.inefficiency;
+    public float getSpeedEnergyMultiplier() {
+        float cappedSpeedMultiplier = Math.min(this.speedMultiplier, ZAugments.SPEED.getSpeedLimit());
+
+        return 1 + (cappedSpeedMultiplier - 1) * ZAugments.SPEED.getEnergyPerSpeed();
     }
 
     //conflicts
@@ -128,7 +125,7 @@ public class MachineUpgradesUtil {
     }
 
     public boolean exceedsSpeedLimit() {
-        return this.speedMultiplier > SPEED_LIMIT;
+        return this.speedMultiplier > ZAugments.SPEED.getSpeedLimit();
     }
     public boolean exceedsFortuneLimit() {
         return this.fortuneLevel > ZAugments.FORTUNE.getLevelLimit();
@@ -138,7 +135,7 @@ public class MachineUpgradesUtil {
     }
 
     public void appendStatsTooltip(QuarryBlock quarryBlock, Consumer<Component> textConsumer) {
-        float energy_usage = quarryBlock.getBaseConsumption() * this.getInefficiency() * this.getFortuneEnergyMultiplier();
+        float energy_usage = quarryBlock.getBaseConsumption() * this.getSpeedEnergyMultiplier() * this.getFortuneEnergyMultiplier();
         float operations = (20.0F / quarryBlock.getTicksPerOperation()) * this.getSpeedMultiplier();
 
         SupplicableAlt<?> HasShiftDown = SupplicableAlt.when(Minecraft.getInstance().hasShiftDown());
@@ -166,7 +163,7 @@ public class MachineUpgradesUtil {
         int conflictFlag = this.getConflictFlag();
 
         if(hasConflict(conflictFlag, CONFLICT_SPEED)) {
-            textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.speed_limit", ZUtil.expandableFixedFloat((SPEED_LIMIT-1)*100)));
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.speed_limit", ZUtil.expandableFixedFloat((ZAugments.SPEED.getSpeedLimit()-1)*100)));
         }
         if(hasConflict(conflictFlag, CONFLICT_FORTUNE)) {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.fortune_limit", ZUtil.expandableFixedFloat(ZAugments.FORTUNE.getLevelLimit())));
