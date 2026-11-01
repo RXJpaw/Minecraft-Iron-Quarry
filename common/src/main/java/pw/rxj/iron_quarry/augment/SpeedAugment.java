@@ -35,21 +35,21 @@ public class SpeedAugment extends AbstractAugment {
         return this.getSpeedBonus(progress) * this.getEnergyPerSpeed();
     }
     public float getSpeedLimit() {
-        return 1 + this.config.getSpeed().speedBonusLimit / 100;
+        return this.config.getSpeed().speedFactorLimit;
     }
     public float getEnergyPerSpeed() {
         AugmentsConfig.Speed speed = this.config.getSpeed();
         if(speed.maxSpeedBonus == 0) return 0.0F;
 
-        return (float) speed.maxEnergyBonus / speed.maxSpeedBonus;
+        return speed.maxEnergyBonus / speed.maxSpeedBonus;
     }
 
     @Override
     public void appendEffectTooltip(int amount, Consumer<Component> textConsumer) {
         float progress = this.getProgress(amount);
 
-        MutableComponent LORE_BENEFIT = ReadableString.translatable("item.iron_quarry.augment.lore.benefit.speed", ZUtil.expandableFixedFloat(this.getSpeedBonus(progress) / 100));
-        MutableComponent LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback.speed_energy_factor", ZUtil.expandableFixedFloat(this.getEnergyBonus(progress) / 100));
+        MutableComponent LORE_BENEFIT = ReadableString.translatable("item.iron_quarry.augment.lore.benefit.speed", ZUtil.expandableFixedFloat(this.getSpeedBonus(progress)));
+        MutableComponent LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback.speed_energy_factor", ZUtil.expandableFixedFloat(this.getEnergyBonus(progress)));
 
         textConsumer.accept(LORE_BENEFIT);
         textConsumer.accept(LORE_DRAWBACK);

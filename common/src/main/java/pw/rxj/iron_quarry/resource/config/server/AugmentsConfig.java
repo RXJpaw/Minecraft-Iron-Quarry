@@ -16,16 +16,16 @@ public class AugmentsConfig {
     public static class Speed {
         public final boolean disabled;
         public final int baseAmount;
-        public final int maxSpeedBonus;
-        public final int maxEnergyBonus;
-        public final float speedBonusLimit;
+        public final float maxSpeedBonus;
+        public final float maxEnergyBonus;
+        public final float speedFactorLimit;
 
         public Speed() {
             this.disabled = false;
             this.baseAmount = 1_000;
-            this.maxSpeedBonus = 1_500;
-            this.maxEnergyBonus = 2_500;
-            this.speedBonusLimit = 9_271.293F;
+            this.maxSpeedBonus = 15.0F;
+            this.maxEnergyBonus = 25.0F;
+            this.speedFactorLimit = 93.71293F;
         }
     }
     @EqualsAndHashCode
@@ -33,14 +33,14 @@ public class AugmentsConfig {
         public final boolean disabled;
         public final int baseAmount;
         public final float maxLevel;
-        public final int maxEnergyBonus;
+        public final float maxEnergyBonus;
         public final float levelLimit;
 
         public Fortune() {
             this.disabled = false;
             this.baseAmount = 1_500;
             this.maxLevel = 4.7F;
-            this.maxEnergyBonus = 200;
+            this.maxEnergyBonus = 2.0F;
             this.levelLimit = 4.7F;
         }
     }

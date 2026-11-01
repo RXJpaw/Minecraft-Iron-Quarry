@@ -49,7 +49,7 @@ public class FortuneAugment extends AbstractAugment {
         float progress = this.getProgress(amount);
 
         MutableComponent LORE_BENEFIT = ReadableString.translatable("item.iron_quarry.augment.lore.benefit.fortune", ZUtil.expandableFixedFloat(this.getLevel(progress)));
-        MutableComponent LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback.fortune_energy_factor", ZUtil.expandableFixedFloat(this.getEnergyBonus(progress) / 100));
+        MutableComponent LORE_DRAWBACK = ReadableString.translatable("item.iron_quarry.augment.lore.drawback.fortune_energy_factor", ZUtil.expandableFixedFloat(this.getEnergyBonus(progress)));
 
         textConsumer.accept(LORE_BENEFIT);
         textConsumer.accept(LORE_DRAWBACK);

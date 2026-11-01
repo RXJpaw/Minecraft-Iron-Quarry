@@ -36,7 +36,7 @@ public class MachineUpgradesUtil {
 
                 switch (augmentType) {
                     case SPEED -> {
-                        this.speedMultiplier += ZAugments.SPEED.getSpeedBonus(progress)/100;
+                        this.speedMultiplier += ZAugments.SPEED.getSpeedBonus(progress);
                     }
                     case FORTUNE -> {
                         this.fortuneLevel += ZAugments.FORTUNE.getLevel(progress);
@@ -74,7 +74,7 @@ public class MachineUpgradesUtil {
         return Math.min(this.fortuneLevel, ZAugments.FORTUNE.getLevelLimit());
     }
     public float getFortuneEnergyMultiplier() {
-        return 1 + this.getFortuneLevel() * ZAugments.FORTUNE.getEnergyPerLevel() / 100;
+        return 1 + this.getFortuneLevel() * ZAugments.FORTUNE.getEnergyPerLevel();
     }
     public float getSpeedMultiplier() {
         return Math.min(this.speedMultiplier / this.slowness, ZAugments.SPEED.getSpeedLimit());
