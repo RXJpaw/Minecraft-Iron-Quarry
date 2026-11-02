@@ -1,5 +1,6 @@
 package pw.rxj.iron_quarry.augment;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
@@ -8,6 +9,7 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.compat.Compat;
 import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.resource.config.server.AugmentsConfig;
 import pw.rxj.iron_quarry.util.ReadableString;
@@ -53,5 +55,18 @@ public class ChestLootingAugment extends AbstractAugment {
 
         textConsumer.accept(LORE_BENEFIT);
         textConsumer.accept(LORE_DRAWBACK);
+
+        if(Compat.LOOTR_LOADED) {
+            ReadableString.translatableLines("item.iron_quarry.augment.lore.lootr_exploration").forEach(textConsumer);
+
+            if(Minecraft.getInstance().hasShiftDown()) {
+                ReadableString.translatableLines("item.iron_quarry.augment.lore.lootr_conversion").forEach(textConsumer);
+            } else {
+                MutableComponent LORE_DETAILS = ReadableString.translatable("item.iron_quarry.lore.details");
+
+                textConsumer.accept(ReadableString.space());
+                textConsumer.accept(LORE_DETAILS);
+            }
+        }
     }
 }

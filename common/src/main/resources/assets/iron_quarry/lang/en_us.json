@@ -66,6 +66,8 @@
     "item.iron_quarry.augment.lore.energy_factor_stacking.speed": "§{RGB_DARK_GRAY Adds up with other Speed Augments,}\n§{RGB_DARK_GRAY multiplies with other energy factors.}",
     "item.iron_quarry.augment.lore.energy_factor_stacking.fortune": "§{RGB_DARK_GRAY Adds up with other Fortune Augments,}\n§{RGB_DARK_GRAY multiplies with other energy factors.}",
     "item.iron_quarry.augment.lore.drawback.time": "§{RGB_DRAWBACK Consumes 1 operation per 1 pulled item}",
+    "item.iron_quarry.augment.lore.lootr_exploration": "§{RGB_LIGHT_GRAY Lootr containers can only be looted once}\n§{RGB_LIGHT_GRAY a player has explored the area around them.}",
+    "item.iron_quarry.augment.lore.lootr_conversion": "§{RGB_DARK_GRAY Lootr only converts loot containers while the}\n§{RGB_DARK_GRAY 5×5 chunk area centered on them is loaded.}\n§{RGB_DARK_GRAY Unconverted containers are skipped.}",
 
     "item.iron_quarry.blueprint": "Blueprint",
     "item.iron_quarry.blueprint.sealed": "Sealed Blueprint",
