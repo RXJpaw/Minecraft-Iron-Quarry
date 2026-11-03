@@ -47,7 +47,7 @@ public abstract class BlueprintMarkerRenderer {
         this.screenPosList = List.of();
     }
 
-    public void update(@Nullable BlockPos firstPos, @Nullable BlockPos secondPos, Camera camera, Matrix4f positionMatrix, Matrix4f projectionMatrix) {
+    public void update(@Nullable BlockPos firstPos, @Nullable BlockPos secondPos, @Nullable BlockPos blockedPos, Camera camera, Matrix4f positionMatrix, Matrix4f projectionMatrix) {
         this.camera = camera;
         this.positionMatrix = positionMatrix;
         this.projectionMatrix = projectionMatrix;
@@ -65,19 +65,28 @@ public abstract class BlueprintMarkerRenderer {
         if(firstPos != null && secondPos != null) {
             screenPosList.sort((a, b) -> Double.compare(b.distance, a.distance));
 
-            ScreenPosData background = screenPosList.get(0);
-            ScreenPosData foreground = screenPosList.get(1);
+            screenPosList.set(0, fadeBehind(screenPosList.get(0), screenPosList.get(1)));
+        }
 
-            float distance = (float) background.screenPos.distanceTo(foreground.screenPos);
+        if(blockedPos != null) {
+            ScreenPosData blocked = this.toScreenPosData(blockedPos, new Vec2(0, 13));
 
-            if(foreground.screenPos.isAhead() && distance < 20.0F) {
-                float alpha = Math.clamp((distance - 4.0F) / 16.0F, 0.2F, 1.0F);
-
-                screenPosList.set(0, background.withAlpha(alpha));
-            }
+            screenPosList.replaceAll(screenPosData -> fadeBehind(screenPosData, blocked));
+            screenPosList.add(blocked);
         }
 
         this.screenPosList = screenPosList;
+    }
+
+    private static ScreenPosData fadeBehind(ScreenPosData background, ScreenPosData foreground) {
+        if(!foreground.screenPos.isAhead()) return background;
+
+        float distance = (float) background.screenPos.distanceTo(foreground.screenPos);
+        if(distance >= 20.0F) return background;
+
+        float alpha = Math.clamp((distance - 4.0F) / 16.0F, 0.2F, 1.0F);
+
+        return background.withAlpha(Math.min(background.alpha, alpha));
     }
 
     private ScreenPosData toScreenPosData(BlockPos blockPos, Vec2 texUV) {

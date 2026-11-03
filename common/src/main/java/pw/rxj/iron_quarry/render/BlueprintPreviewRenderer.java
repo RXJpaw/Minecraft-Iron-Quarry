@@ -13,6 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import pw.rxj.iron_quarry.block.QuarryBlock;
+import pw.rxj.iron_quarry.data.QuarryBlockedDataComponent;
 import pw.rxj.iron_quarry.event.WorldRenderCallback;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
@@ -35,6 +36,7 @@ public class BlueprintPreviewRenderer {
         if(player == null) return;
 
         AtomicReference<ItemStack> atomicBlueprintStack = new AtomicReference<>();
+        AtomicReference<BlockPos> atomicBlockedPos = new AtomicReference<>();
 
         ItemStackUtil.ofAnyHand(player, BlueprintItem.class).ifPresent(stackUtil -> {
             atomicBlueprintStack.set(stackUtil.stack);
@@ -49,6 +51,9 @@ public class BlueprintPreviewRenderer {
             ItemStackUtil.ofAnyHand(player, QuarryMonitorItem.class).ifPresent(stackUtil -> {
                 ItemStack stack = stackUtil.item.getCachedBlueprintStack(stackUtil.stack);
                 if(!stack.isEmpty()) atomicBlueprintStack.set(stack);
+
+                QuarryBlockedDataComponent blockedData = stackUtil.item.getCachedBlockedData(stackUtil.stack);
+                if(blockedData != null) atomicBlockedPos.set(blockedData.getBlockPos());
             });
         }
 
@@ -68,7 +73,7 @@ public class BlueprintPreviewRenderer {
         BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack).orElse(null);
         if(firstPos != null && secondPos != null) renderCuboid(minecraftClient, player, camera, matrices, firstPos, secondPos);
 
-        WORLD_MARKER_RENDERER.update(firstPos, secondPos, camera, positionMatrix, projectionMatrix);
+        WORLD_MARKER_RENDERER.update(firstPos, secondPos, atomicBlockedPos.get(), camera, positionMatrix, projectionMatrix);
     }
 
     private static void renderCuboid(Minecraft minecraftClient, LocalPlayer player, Camera camera, PoseStack matrices, BlockPos firstPos, BlockPos secondPos) {
