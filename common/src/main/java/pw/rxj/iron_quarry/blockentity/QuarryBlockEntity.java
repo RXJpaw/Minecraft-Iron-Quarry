@@ -426,7 +426,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
         this.blocked = blocked;
 
-        this.setChanged();
         this.updateListeners();
     }
     public void nextChunk() {
@@ -682,16 +681,17 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         DrillInventory.write(Storage.child("DrillInventory"));
         MachineUpgradesInventory.write(Storage.child("MachineUpgradesInventory"));
 
-        this.saveSyncedData(view);
+        this.savePersistentClientData(view);
     }
-    private void saveSyncedData(ValueOutput view) {
+    private void savePersistentClientData(ValueOutput view) {
         //Config
         CompoundTag Config = Configuration.write();
         view.store("rxj.pw/Config", CompoundTag.CODEC, Config);
 
         //Owner
         if(this.owner != null) view.store("rxj.pw/Owner", QuarryOwnerComponent.CODEC, this.owner);
-
+    }
+    private void saveTransientClientData(ValueOutput view) {
         //Blocked
         if(this.blocked != null) view.store("rxj.pw/Blocked", QuarryBlockedDataComponent.CODEC, this.blocked);
     }
@@ -704,7 +704,8 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
         TagValueOutput view = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registryLookup);
-        this.saveSyncedData(view);
+        this.savePersistentClientData(view);
+        this.saveTransientClientData(view);
 
         return view.buildResult();
     }
