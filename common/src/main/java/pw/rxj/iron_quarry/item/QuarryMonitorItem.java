@@ -36,6 +36,7 @@ import pw.rxj.iron_quarry.data.QuarryBlockedDataComponent;
 import pw.rxj.iron_quarry.data.QuarryOwnerComponent;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
+import pw.rxj.iron_quarry.interfaces.ISilentComponentUpdate;
 import pw.rxj.iron_quarry.interfaces.ITickingInventoryItem;
 import pw.rxj.iron_quarry.resource.config.server.QuarryMonitorConfig;
 import pw.rxj.iron_quarry.util.ComplexInventory;
@@ -46,7 +47,7 @@ import pw.rxj.iron_quarry.util.ZUtil;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class QuarryMonitorItem extends Item implements ITickingInventoryItem, ITooltipDataProvider {
+public class QuarryMonitorItem extends Item implements ITickingInventoryItem, ITooltipDataProvider, ISilentComponentUpdate {
     private boolean interdimensional;
     private int range;
 
@@ -227,6 +228,11 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         }
     }
 
+    @Override
+    public boolean isSilentComponentUpdate(ItemStack oldStack, ItemStack newStack) {
+        return ItemStack.matches(withoutCache(oldStack), withoutCache(newStack));
+    }
+
     public boolean isInRange(MinecraftServer minecraftServer, ItemStack stack, Level world, Vec3 pos) {
         ResourceKey<Level> worldRegistryKey = this.getWorldRegistryKey(stack).orElse(null);
         ServerLevel quarryWorld = minecraftServer.getLevel(worldRegistryKey);
@@ -386,5 +392,17 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         if(quarryBlock == null) return ItemStack.EMPTY;
 
         return quarryBlock.getDrillStack(quarryStack);
+    }
+
+    private static ItemStack withoutCache(ItemStack stack) {
+        ItemStack stackWithoutCache = stack.copy();
+
+        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_QUARRY);
+        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP);
+        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
+        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
+        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_OUT_OF_RANGE);
+
+        return stackWithoutCache;
     }
 }

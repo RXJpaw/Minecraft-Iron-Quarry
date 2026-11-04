@@ -12,10 +12,12 @@
         "SmithingScreenHandlerMixin"
     ],
     "client": [
+        "BlockBreakingItemUpdateMixin",
         "BootstrapClientMixin",
         "CustomDurabilityBarMixin",
         "DynamicItemNameRendererMixin",
         "EnergyBarMixin",
+        "HeldItemUpdateAnimationMixin",
         "InGameHudMixin",
         "MouseScrollMixin",
         "QuarryMonitorWarningMixin",
