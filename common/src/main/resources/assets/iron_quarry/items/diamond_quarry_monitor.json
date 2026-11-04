@@ -1,6 +1,9 @@
 {
     "model": {
-        "type": "minecraft:model",
-        "model": "iron_quarry:item/diamond_quarry_monitor"
+        "type": "iron_quarry:quarry_monitor",
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "iron_quarry:item/diamond_quarry_monitor"
+        }
     }
 }

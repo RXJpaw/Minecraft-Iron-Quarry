@@ -12,6 +12,7 @@ import pw.rxj.iron_quarry.event.GameLifecycleCallback;
 import pw.rxj.iron_quarry.interfaces.IHandledMainHandAttack;
 import pw.rxj.iron_quarry.model.HandledModelPredicateProperty;
 import pw.rxj.iron_quarry.model.QuarryItemModel;
+import pw.rxj.iron_quarry.model.QuarryMonitorItemModel;
 import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.platform.Platform;
 import pw.rxj.iron_quarry.render.BlueprintPreviewRenderer;
@@ -49,6 +50,7 @@ public class Client {
         QuarryMonitorOverlayRenderer.register();
         ResourceReloadListener.register();
         QuarryItemModel.register();
+        QuarryMonitorItemModel.register();
         HandledModelPredicateProperty.register();
 
         Platform.CLIENT.registerMenuScreen(Main.QUARRY_BLOCK_SCREEN_HANDLER, QuarryBlockScreen::new);
