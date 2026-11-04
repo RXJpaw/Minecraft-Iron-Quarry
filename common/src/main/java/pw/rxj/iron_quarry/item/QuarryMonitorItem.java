@@ -3,7 +3,6 @@ package pw.rxj.iron_quarry.item;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -62,6 +61,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         this.range = entry.range;
     }
 
+    //Display
     @Override
     public Component getName(ItemStack stack) {
         long timestamp = this.getCachedTimestamp(stack);
@@ -147,6 +147,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         }
     }
 
+    //Interaction
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
@@ -168,46 +169,12 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
         return InteractionResult.PASS;
     }
-
     @Override
     public InteractionResult use(Level world, Player user, InteractionHand hand) {
         return InteractionResult.CONSUME;
     }
 
-    public void setWorld(ItemStack stack, Level world) {
-        this.setWorld(stack, world.dimension());
-    }
-    public void setWorld(ItemStack stack, ResourceKey<Level> newWorldKey) {
-        ResourceKey<Level> oldWorldKey = this.getWorldRegistryKey(stack).orElse(null);
-        if(ZUtil.equals(oldWorldKey, newWorldKey)) return;
-
-        this.resetPosition(stack);
-
-        stack.set(ZComponents.QUARRY_MONITOR_WORLD, newWorldKey);
-
-    }
-    public Optional<ResourceKey<Level>> getWorldRegistryKey(ItemStack stack) {
-        return Optional.ofNullable(stack.get(ZComponents.QUARRY_MONITOR_WORLD));
-    }
-
-    public void resetPosition(ItemStack stack) {
-        stack.remove(ZComponents.QUARRY_MONITOR_POSITION);
-
-    }
-    private void setPosition(ItemStack stack, @Nullable Level world, BlockPos blockPos) {
-        if(world != null) {
-            this.setWorld(stack, world);
-            blockPos = ZUtil.limitInsideWorldBounds(blockPos, world);
-        } else if(this.getWorldRegistryKey(stack).isEmpty()) {
-            throw new IllegalStateException("QuarryItemMonitor#setWorld has to be called first if no world is supplied.");
-        }
-
-        stack.set(ZComponents.QUARRY_MONITOR_POSITION, blockPos);
-    }
-    public @Nullable BlockPos getPosition(ItemStack stack) {
-        return stack.get(ZComponents.QUARRY_MONITOR_POSITION);
-    }
-
+    //Inventory Ticking
     @Override
     public void tick(ServerPlayer playerEntity, ServerLevel world, ItemStack stack) {
         MinecraftServer minecraftServer = world.getServer();
@@ -223,17 +190,62 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
             if(quarryBlockEntity == null) {
                 quarryMonitorItem.clearCachedQuarry(stack);
             } else {
-                quarryMonitorItem.setCachedQuarry(stack, quarryBlockEntity, world.registryAccess());
+                quarryMonitorItem.setCachedQuarry(stack, quarryBlockEntity);
             }
         }
     }
 
+    //Silent Updates
     @Override
     public boolean isSilentComponentUpdate(ItemStack oldStack, ItemStack newStack) {
-        return ItemStack.matches(withoutCache(oldStack), withoutCache(newStack));
+        return ItemStack.matches(this.withoutCache(oldStack), this.withoutCache(newStack));
+    }
+    private ItemStack withoutCache(ItemStack stack) {
+        ItemStack stackWithoutCache = stack.copy();
+
+        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_QUARRY);
+        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP);
+        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
+        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
+        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_OUT_OF_RANGE);
+
+        return stackWithoutCache;
     }
 
-    public boolean isInRange(MinecraftServer minecraftServer, ItemStack stack, Level world, Vec3 pos) {
+    //Linking
+    private void setWorld(ItemStack stack, Level world) {
+        this.setWorld(stack, world.dimension());
+    }
+    private void setWorld(ItemStack stack, ResourceKey<Level> newWorldKey) {
+        ResourceKey<Level> oldWorldKey = this.getWorldRegistryKey(stack).orElse(null);
+        if(ZUtil.equals(oldWorldKey, newWorldKey)) return;
+
+        this.resetPosition(stack);
+
+        stack.set(ZComponents.QUARRY_MONITOR_WORLD, newWorldKey);
+    }
+    public Optional<ResourceKey<Level>> getWorldRegistryKey(ItemStack stack) {
+        return Optional.ofNullable(stack.get(ZComponents.QUARRY_MONITOR_WORLD));
+    }
+    private void setPosition(ItemStack stack, @Nullable Level world, BlockPos blockPos) {
+        if(world != null) {
+            this.setWorld(stack, world);
+            blockPos = ZUtil.limitInsideWorldBounds(blockPos, world);
+        } else if(this.getWorldRegistryKey(stack).isEmpty()) {
+            throw new IllegalStateException("QuarryItemMonitor#setWorld has to be called first if no world is supplied.");
+        }
+
+        stack.set(ZComponents.QUARRY_MONITOR_POSITION, blockPos);
+    }
+    private void resetPosition(ItemStack stack) {
+        stack.remove(ZComponents.QUARRY_MONITOR_POSITION);
+    }
+    public @Nullable BlockPos getPosition(ItemStack stack) {
+        return stack.get(ZComponents.QUARRY_MONITOR_POSITION);
+    }
+
+    //Discovery
+    private boolean isInRange(MinecraftServer minecraftServer, ItemStack stack, Level world, Vec3 pos) {
         ResourceKey<Level> worldRegistryKey = this.getWorldRegistryKey(stack).orElse(null);
         ServerLevel quarryWorld = minecraftServer.getLevel(worldRegistryKey);
         BlockPos quarryPos = this.getPosition(stack);
@@ -255,7 +267,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     public boolean isOutOfRange(ItemStack stack) {
         return stack.getOrDefault(ZComponents.QUARRY_MONITOR_OUT_OF_RANGE, false);
     }
-    public void setOutOfRange(ItemStack stack, boolean outOfRange) {
+    private void setOutOfRange(ItemStack stack, boolean outOfRange) {
         if(this.isOutOfRange(stack) == outOfRange) return;
 
         if(outOfRange) {
@@ -264,8 +276,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
             stack.remove(ZComponents.QUARRY_MONITOR_OUT_OF_RANGE);
         }
     }
-
-    public @Nullable QuarryBlockEntity fetchQuarryBlockEntity(MinecraftServer minecraftServer, ItemStack stack) {
+    private @Nullable QuarryBlockEntity fetchQuarryBlockEntity(MinecraftServer minecraftServer, ItemStack stack) {
         ResourceKey<Level> worldRegistryKey = this.getWorldRegistryKey(stack).orElse(null);
         ServerLevel serverWorld = minecraftServer.getLevel(worldRegistryKey);
         if(serverWorld == null) return null;
@@ -280,10 +291,10 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
         Optional<QuarryBlockEntity> quarryBlockEntity = worldChunk.getBlockEntity(quarryPos, ZBlockEntities.QUARRY_BLOCK_ENTITY);
         return quarryBlockEntity.orElse(null);
-
     }
 
-    public void setCachedQuarry(ItemStack stack, QuarryBlockEntity blockEntity, HolderLookup.Provider registryLookup) {
+    //Cache Writing
+    private void setCachedQuarry(ItemStack stack, QuarryBlockEntity blockEntity) {
         QuarryBlock quarryBlock = blockEntity.getQuarryBlock();
         if(quarryBlock == null) return;
 
@@ -308,18 +319,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
             stack.remove(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
         }
     }
-
-    public @NotNull ItemStack getCachedQuarryStack(ItemStack stack) {
-        ItemStackTemplate quarryTemplate = stack.get(ZComponents.QUARRY_MONITOR_CACHED_QUARRY);
-
-        return quarryTemplate == null ? ItemStack.EMPTY : quarryTemplate.create();
-    }
-    public boolean exists(ItemStack stack) {
-        ItemStack quarryStack = this.getCachedQuarryStack(stack);
-
-        return !quarryStack.isEmpty();
-    }
-    public void clearCachedQuarry(ItemStack stack) {
+    private void clearCachedQuarry(ItemStack stack) {
         ItemStack quarryStack = this.getCachedQuarryStack(stack);
         if(quarryStack.isEmpty()) return;
 
@@ -327,6 +327,29 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         stack.remove(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
         stack.remove(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
         stack.set(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, System.currentTimeMillis());
+    }
+
+    //Cached Components
+    public long getCachedTimestamp(ItemStack stack) {
+        return stack.getOrDefault(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, 0L);
+    }
+    public @Nullable QuarryOwnerComponent getCachedOwner(ItemStack stack) {
+        return stack.get(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
+    }
+    public @Nullable QuarryBlockedDataComponent getCachedBlockedData(ItemStack stack) {
+        return stack.get(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
+    }
+
+    //Cached Quarry
+    public boolean hasCachedQuarry(ItemStack stack) {
+        ItemStack quarryStack = this.getCachedQuarryStack(stack);
+
+        return !quarryStack.isEmpty();
+    }
+    public @NotNull ItemStack getCachedQuarryStack(ItemStack stack) {
+        ItemStackTemplate quarryTemplate = stack.get(ZComponents.QUARRY_MONITOR_CACHED_QUARRY);
+
+        return quarryTemplate == null ? ItemStack.EMPTY : quarryTemplate.create();
     }
     private @Nullable QuarryBlock getCachedQuarryBlock(ItemStack quarryStack) {
         if(quarryStack.isEmpty()) return null;
@@ -339,21 +362,11 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
         return null;
     }
-
     public Direction getCachedFacing(ItemStack stack) {
         BlockItemStateProperties properties = this.getCachedQuarryStack(stack).getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
         Direction facing = properties.get(QuarryBlock.FACING);
 
         return facing == null ? Direction.NORTH : facing;
-    }
-    public long getCachedTimestamp(ItemStack stack) {
-        return stack.getOrDefault(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, 0L);
-    }
-    public @Nullable QuarryOwnerComponent getCachedOwner(ItemStack stack) {
-        return stack.get(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
-    }
-    public @Nullable QuarryBlockedDataComponent getCachedBlockedData(ItemStack stack) {
-        return stack.get(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
     }
     public float getCachedEnergyPct(ItemStack stack) {
         ItemStack quarryStack = this.getCachedQuarryStack(stack);
@@ -392,17 +405,5 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         if(quarryBlock == null) return ItemStack.EMPTY;
 
         return quarryBlock.getDrillStack(quarryStack);
-    }
-
-    private static ItemStack withoutCache(ItemStack stack) {
-        ItemStack stackWithoutCache = stack.copy();
-
-        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_QUARRY);
-        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP);
-        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
-        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
-        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_OUT_OF_RANGE);
-
-        return stackWithoutCache;
     }
 }

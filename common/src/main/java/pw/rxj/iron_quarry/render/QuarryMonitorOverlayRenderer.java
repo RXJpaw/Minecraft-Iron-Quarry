@@ -44,7 +44,7 @@ public class QuarryMonitorOverlayRenderer {
         }
 
         if(quarryMonitorStack == null) return;
-        if(!quarryMonitorItem.exists(quarryMonitorStack)) return;
+        if(!quarryMonitorItem.hasCachedQuarry(quarryMonitorStack)) return;
 
         float energyPct = quarryMonitorItem.getCachedEnergyPct(quarryMonitorStack);
         float outputInvPct = quarryMonitorItem.getCachedOutputInvPct(quarryMonitorStack);
