@@ -47,6 +47,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class QuarryMonitorItem extends Item implements ITickingInventoryItem, ITooltipDataProvider, ISilentComponentUpdate {
+    private static final long INVENTORY_UPDATE_INTERVAL = 1000L;
+    private static final long HELD_UPDATE_INTERVAL = 200L;
+
     private boolean interdimensional;
     private int range;
 
@@ -180,7 +183,9 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         MinecraftServer minecraftServer = world.getServer();
 
         if(ZUtil.getBlockOrItem(stack) instanceof QuarryMonitorItem quarryMonitorItem) {
-            if(System.currentTimeMillis() - quarryMonitorItem.getCachedTimestamp(stack) < 1000L) return;
+            boolean held = playerEntity.getMainHandItem() == stack || playerEntity.getOffhandItem() == stack;
+            long updateInterval = held ? HELD_UPDATE_INTERVAL : INVENTORY_UPDATE_INTERVAL;
+            if(System.currentTimeMillis() - quarryMonitorItem.getCachedTimestamp(stack) < updateInterval) return;
 
             boolean inRange = quarryMonitorItem.isInRange(minecraftServer, stack, world, playerEntity.position());
             quarryMonitorItem.setOutOfRange(stack, !inRange);
