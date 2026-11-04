@@ -10,7 +10,7 @@ import pw.rxj.iron_quarry.util.ZUtil;
 public class QuarryMonitorWarningRenderer {
     public static void renderGuiItemOverlay(GuiGraphicsExtractor context, ItemStack stack, int x, int y) {
         if(!(ZUtil.getBlockOrItem(stack) instanceof QuarryMonitorItem quarryMonitorItem)) return;
-        if(quarryMonitorItem.getCachedTimestamp(stack) <= 0) return;
+        if(!quarryMonitorItem.hasEverCachedQuarry(stack)) return;
 
         renderIcon(context, MachineWarningsUtil.from(stack), x + 13, y);
     }

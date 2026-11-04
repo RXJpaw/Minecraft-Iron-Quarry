@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -49,12 +48,8 @@ public class QuarryMonitorItemModel implements ItemModel {
 
     private ItemStack getShownQuarryStack(ItemStack stack, ItemDisplayContext displayContext) {
         if(displayContext != ItemDisplayContext.GUI) return ItemStack.EMPTY;
-
-        Minecraft client = Minecraft.getInstance();
-        if(client.screen == null || !client.hasShiftDown()) return ItemStack.EMPTY;
-
         if(!(ZUtil.getBlockOrItem(stack) instanceof QuarryMonitorItem quarryMonitorItem)) return ItemStack.EMPTY;
-        if(quarryMonitorItem.getCachedTimestamp(stack) <= 0) return ItemStack.EMPTY;
+        if(!quarryMonitorItem.shouldDisplayAsQuarry(stack)) return ItemStack.EMPTY;
 
         return quarryMonitorItem.getCachedQuarryStack(stack);
     }

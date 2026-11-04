@@ -67,9 +67,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     //Display
     @Override
     public Component getName(ItemStack stack) {
-        long timestamp = this.getCachedTimestamp(stack);
-
-        if(Minecraft.getInstance().hasShiftDown() && timestamp > 0) {
+        if(this.shouldDisplayAsQuarry(stack)) {
             ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
 
             if(!quarryBlockStack.isEmpty()) {
@@ -80,6 +78,11 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         }
 
         return super.getName(stack);
+    }
+    public boolean shouldDisplayAsQuarry(ItemStack stack) {
+        Minecraft client = Minecraft.getInstance();
+
+        return client.screen != null && client.hasShiftDown() && this.hasEverCachedQuarry(stack);
     }
 
     @Override
@@ -117,9 +120,8 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay displayComponent, Consumer<Component> textConsumer, TooltipFlag options) {
         ItemStack quarryBlockStack = this.getCachedQuarryStack(stack);
-        long timestamp = this.getCachedTimestamp(stack);
 
-        if(Minecraft.getInstance().hasShiftDown() && timestamp > 0) {
+        if(this.shouldDisplayAsQuarry(stack)) {
             if(ZUtil.getBlockOrItem(quarryBlockStack) instanceof QuarryBlock quarryBlock) {
                 quarryBlock.appendTooltip(quarryBlockStack, context, textConsumer, options);
             } else if(this.isOutOfRange(stack)) {
@@ -131,8 +133,8 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         } else {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.range", ReadableString.intFrom(range)));
 
-            if(timestamp > 0) {
-                textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.last_updated", ReadableString.toTimeAgo(timestamp)));
+            if(this.hasEverCachedQuarry(stack)) {
+                textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.last_updated", ReadableString.toTimeAgo(this.getCachedTimestamp(stack))));
                 if(this.interdimensional) textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.interdimensional"));
 
                 MachineWarningsUtil warningsUtil = MachineWarningsUtil.from(stack);
@@ -346,6 +348,9 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     //Cached Components
     public long getCachedTimestamp(ItemStack stack) {
         return stack.getOrDefault(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, 0L);
+    }
+    public boolean hasEverCachedQuarry(ItemStack stack) {
+        return this.getCachedTimestamp(stack) > 0;
     }
     public @Nullable QuarryOwnerComponent getCachedOwner(ItemStack stack) {
         return stack.get(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
