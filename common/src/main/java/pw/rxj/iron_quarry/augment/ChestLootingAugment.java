@@ -38,7 +38,7 @@ public class ChestLootingAugment extends AbstractAugment {
     }
 
     public @Nullable LootPool.Builder getLootPoolBuilder(Identifier id) {
-        Optional<AugmentsConfig.ChestLooting.Entry> optionalEntry = Arrays.stream(this.config.getChestLooting().lootPools).filter(el -> el.lootTable.equals(id.toString())).findAny();
+        Optional<AugmentsConfig.ChestLooting.Entry> optionalEntry = Arrays.stream(this.config.getChestLooting().lootPools).filter(el -> id.toString().equals(el.lootTable)).findAny();
         if(optionalEntry.isEmpty()) return null;
         AugmentsConfig.ChestLooting.Entry entry = optionalEntry.get();
 
