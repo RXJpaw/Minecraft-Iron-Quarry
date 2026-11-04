@@ -207,6 +207,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP);
         stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
         stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
+        stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_CACHED_MINING_POS);
         stackWithoutCache.remove(ZComponents.QUARRY_MONITOR_OUT_OF_RANGE);
 
         return stackWithoutCache;
@@ -318,6 +319,13 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         } else {
             stack.remove(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
         }
+
+        BlockPos miningPos = blockEntity.getMiningPos();
+        if(miningPos != null) {
+            stack.set(ZComponents.QUARRY_MONITOR_CACHED_MINING_POS, miningPos);
+        } else {
+            stack.remove(ZComponents.QUARRY_MONITOR_CACHED_MINING_POS);
+        }
     }
     private void clearCachedQuarry(ItemStack stack) {
         ItemStack quarryStack = this.getCachedQuarryStack(stack);
@@ -326,6 +334,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         stack.remove(ZComponents.QUARRY_MONITOR_CACHED_QUARRY);
         stack.remove(ZComponents.QUARRY_MONITOR_CACHED_OWNER);
         stack.remove(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
+        stack.remove(ZComponents.QUARRY_MONITOR_CACHED_MINING_POS);
         stack.set(ZComponents.QUARRY_MONITOR_CACHED_TIMESTAMP, System.currentTimeMillis());
     }
 
@@ -338,6 +347,9 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
     }
     public @Nullable QuarryBlockedDataComponent getCachedBlockedData(ItemStack stack) {
         return stack.get(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
+    }
+    public @Nullable BlockPos getCachedMiningPos(ItemStack stack) {
+        return stack.get(ZComponents.QUARRY_MONITOR_CACHED_MINING_POS);
     }
 
     //Cached Quarry

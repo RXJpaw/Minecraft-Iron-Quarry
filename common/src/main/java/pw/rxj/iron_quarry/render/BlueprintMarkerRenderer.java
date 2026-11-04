@@ -47,7 +47,7 @@ public abstract class BlueprintMarkerRenderer {
         this.screenPosList = List.of();
     }
 
-    public void update(@Nullable BlockPos firstPos, @Nullable BlockPos secondPos, @Nullable BlockPos blockedPos, Camera camera, Matrix4f positionMatrix, Matrix4f projectionMatrix) {
+    public void update(@Nullable BlockPos firstPos, @Nullable BlockPos secondPos, @Nullable BlockPos miningPos, @Nullable BlockPos blockedPos, Camera camera, Matrix4f positionMatrix, Matrix4f projectionMatrix) {
         this.camera = camera;
         this.positionMatrix = positionMatrix;
         this.projectionMatrix = projectionMatrix;
@@ -69,15 +69,20 @@ public abstract class BlueprintMarkerRenderer {
         }
 
         if(blockedPos != null) {
-            ScreenPosData blocked = this.toScreenPosData(blockedPos, new Vec2(0, 13));
-
-            screenPosList.replaceAll(screenPosData -> fadeBehind(screenPosData, blocked));
-            screenPosList.add(blocked);
+            this.addQuarryMarker(screenPosList, blockedPos, new Vec2(0, 13));
+        } else if(miningPos != null) {
+            this.addQuarryMarker(screenPosList, miningPos, new Vec2(13, 13));
         }
 
         this.screenPosList = screenPosList;
     }
 
+    private void addQuarryMarker(List<ScreenPosData> screenPosList, BlockPos blockPos, Vec2 texUV) {
+        ScreenPosData quarryMarker = this.toScreenPosData(blockPos, texUV);
+
+        screenPosList.replaceAll(screenPosData -> fadeBehind(screenPosData, quarryMarker));
+        screenPosList.add(quarryMarker);
+    }
     private static ScreenPosData fadeBehind(ScreenPosData background, ScreenPosData foreground) {
         if(!foreground.screenPos.isAhead()) return background;
 

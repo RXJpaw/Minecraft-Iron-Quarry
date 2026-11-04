@@ -36,6 +36,7 @@ public class BlueprintPreviewRenderer {
         if(player == null) return;
 
         AtomicReference<ItemStack> atomicBlueprintStack = new AtomicReference<>();
+        AtomicReference<BlockPos> atomicMiningPos = new AtomicReference<>();
         AtomicReference<BlockPos> atomicBlockedPos = new AtomicReference<>();
 
         ItemStackUtil.ofAnyHand(player, BlueprintItem.class).ifPresent(stackUtil -> {
@@ -51,6 +52,8 @@ public class BlueprintPreviewRenderer {
             ItemStackUtil.ofAnyHand(player, QuarryMonitorItem.class).ifPresent(stackUtil -> {
                 ItemStack stack = stackUtil.item.getCachedBlueprintStack(stackUtil.stack);
                 if(!stack.isEmpty()) atomicBlueprintStack.set(stack);
+
+                atomicMiningPos.set(stackUtil.item.getCachedMiningPos(stackUtil.stack));
 
                 QuarryBlockedDataComponent blockedData = stackUtil.item.getCachedBlockedData(stackUtil.stack);
                 if(blockedData != null) atomicBlockedPos.set(blockedData.getBlockPos());
@@ -73,7 +76,7 @@ public class BlueprintPreviewRenderer {
         BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack).orElse(null);
         if(firstPos != null && secondPos != null) renderCuboid(minecraftClient, player, camera, matrices, firstPos, secondPos);
 
-        WORLD_MARKER_RENDERER.update(firstPos, secondPos, atomicBlockedPos.get(), camera, positionMatrix, projectionMatrix);
+        WORLD_MARKER_RENDERER.update(firstPos, secondPos, atomicMiningPos.get(), atomicBlockedPos.get(), camera, positionMatrix, projectionMatrix);
     }
 
     private static void renderCuboid(Minecraft minecraftClient, LocalPlayer player, Camera camera, PoseStack matrices, BlockPos firstPos, BlockPos secondPos) {

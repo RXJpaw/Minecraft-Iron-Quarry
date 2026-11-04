@@ -235,6 +235,9 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     public @Nullable QuarryBlockedDataComponent getBlocked() {
         return this.blocked;
     }
+    public @Nullable BlockPos getMiningPos() {
+        return this.miningPos;
+    }
 
     //World Ticking
     private static final IMiningIterator.Factory MINING_ITERATOR_FACTORY = (box, seed) -> ColumnMiningIterator.of(box);
@@ -251,6 +254,8 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     private static final int BLOCKED_RETRY_TICKS = 100;
     private int blockedCooldown = 0;
     private @Nullable QuarryBlockedDataComponent blocked;
+
+    private @Nullable BlockPos miningPos;
 
     private boolean deferringChanges = false;
     private boolean hasDeferredChanges = false;
@@ -306,6 +311,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             thisBlockEntity.currentChunk = null;
             thisBlockEntity.MiningQueue.clear();
             thisBlockEntity.setBlocked(null);
+            thisBlockEntity.miningPos = null;
 
             thisBlockEntity.loadedChunks = List.of();
         }
@@ -527,6 +533,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             }
 
             if(!quarryBlockEntity.canModify(serverWorldToBreak, blockActress)) return drillResults;
+            quarryBlockEntity.miningPos = blockPosToBreak;
 
             //handle special block entities
             //will only work if canDrill conditions are met! like if the container is not empty
