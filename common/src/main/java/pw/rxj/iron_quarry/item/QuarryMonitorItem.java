@@ -37,6 +37,7 @@ import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.gui.ITooltipDataProvider;
 import pw.rxj.iron_quarry.interfaces.ISilentComponentUpdate;
 import pw.rxj.iron_quarry.interfaces.ITickingInventoryItem;
+import pw.rxj.iron_quarry.platform.Platform;
 import pw.rxj.iron_quarry.resource.config.server.QuarryMonitorConfig;
 import pw.rxj.iron_quarry.util.ComplexInventory;
 import pw.rxj.iron_quarry.util.MachineWarningsUtil;
@@ -80,9 +81,11 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         return super.getName(stack);
     }
     public boolean shouldDisplayAsQuarry(ItemStack stack) {
+        if(Platform.LOADER.isDedicatedServer()) return false;
+
         Minecraft client = Minecraft.getInstance();
 
-        return client.screen != null && client.hasShiftDown() && this.hasEverCachedQuarry(stack);
+        return client.isSameThread() && client.screen != null && client.hasShiftDown() && this.hasEverCachedQuarry(stack);
     }
 
     @Override

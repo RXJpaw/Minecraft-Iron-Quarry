@@ -106,9 +106,6 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
     @Override
     public Component getName(ItemStack stack) {
-        Minecraft minecraftClient = Minecraft.getInstance();
-        if(minecraftClient.player == null) return super.getName(stack);
-
         String translationKey = "item.iron_quarry.augment";
 
         AugmentType augmentType = this.getType(stack);
