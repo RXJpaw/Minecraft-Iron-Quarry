@@ -13,21 +13,18 @@ import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.item.v1.EnchantmentEvents;
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.util.TriState;
 import pw.rxj.iron_quarry.event.*;
 
 public class FabricEventBridge {
     public static void register() {
-        ServerLifecycleEvents.SERVER_STARTING.register(server -> ServerLifecycleCallback.STARTING.invoker().onStarting(server));
+        ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> ServerLifecycleCallback.SYNC_DATA_PACK_CONTENTS.invoker().onSyncDataPackContents(player));
 
         ServerLevelEvents.LOAD.register((server, serverWorld) -> ServerLevelCallback.LOAD.invoker().onLoad(serverWorld));
         ServerLevelEvents.UNLOAD.register((server, serverWorld) -> ServerLevelCallback.UNLOAD.invoker().onUnload(serverWorld));
         ServerTickEvents.START_LEVEL_TICK.register(serverWorld -> ServerLevelCallback.START_TICK.invoker().onStartTick(serverWorld));
 
         ServerEntityEvents.ENTITY_LOAD.register((entity, serverWorld) -> ServerEntityCallback.LOAD.invoker().onLoad(entity, serverWorld));
-
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> ServerConnectionCallback.JOIN.invoker().onJoin(handler.player));
 
         AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> PlayerInteractionCallback.ATTACK_BLOCK.invoker().onAttackBlock(player, world, hand, pos, direction));
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> PlayerInteractionCallback.USE_BLOCK.invoker().onUseBlock(player, world, hand, hitResult));

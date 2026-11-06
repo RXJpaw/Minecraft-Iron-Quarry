@@ -1,15 +1,15 @@
 package pw.rxj.iron_quarry.event;
 
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
 public interface ServerLifecycleCallback {
-    Event<Starting> STARTING = Event.createArrayBacked(Starting.class, (listeners) -> (server) -> {
-        for (Starting event : listeners) {
-            event.onStarting(server);
+    Event<SyncDataPackContents> SYNC_DATA_PACK_CONTENTS = Event.createArrayBacked(SyncDataPackContents.class, (listeners) -> (player) -> {
+        for (SyncDataPackContents event : listeners) {
+            event.onSyncDataPackContents(player);
         }
     });
 
-    interface Starting {
-        void onStarting(MinecraftServer server);
+    interface SyncDataPackContents {
+        void onSyncDataPackContents(ServerPlayer player);
     }
 }

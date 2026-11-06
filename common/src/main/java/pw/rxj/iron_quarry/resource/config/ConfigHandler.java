@@ -7,7 +7,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.event.ClientConnectionCallback;
-import pw.rxj.iron_quarry.event.ServerConnectionCallback;
 import pw.rxj.iron_quarry.event.ServerLifecycleCallback;
 import pw.rxj.iron_quarry.network.PacketServerConfigApply;
 import pw.rxj.iron_quarry.network.ZNetwork;
@@ -27,7 +26,7 @@ import java.util.function.Consumer;
 
 public class ConfigHandler {
     private static final String CLIENT_HEADER = "Iron Quarry: Client Config\nRead when the game starts. Edit it while the game is closed, the config screen overwrites it.";
-    private static final String SERVER_HEADER = "Iron Quarry: Server Config\nRead when the server starts, then sent to joining players.";
+    private static final String SERVER_HEADER = "Iron Quarry: Server Config\nRead when the server starts and on /reload. It's sent to all players.";
 
     private final Path clientConfigPath;
     private final Path serverConfigPath;
@@ -166,7 +165,7 @@ public class ConfigHandler {
         this.getQuarryDrillStatsConfig().validate();
     }
     public void registerServer() {
-        ServerConnectionCallback.JOIN.register(player -> {
+        ServerLifecycleCallback.SYNC_DATA_PACK_CONTENTS.register(player -> {
             ZNetwork.sendToPlayer(player, PacketServerConfigApply.bake(this));
             Main.LOGGER.info("Sent server config to: {} ({})", player.getGameProfile().name(), player.getUUID());
         });
