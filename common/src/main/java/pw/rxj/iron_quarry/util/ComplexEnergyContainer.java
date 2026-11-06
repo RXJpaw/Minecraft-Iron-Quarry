@@ -24,10 +24,10 @@ public abstract class ComplexEnergyContainer {
     }
 
     public long getStored() {
-        return this.amount;
+        return Math.min(this.amount, this.getCapacity());
     }
     public void setStored(long amount) {
-        this.amount = Math.max(Math.min(amount, this.getCapacity()), 0);
+        this.amount = Math.clamp(amount, 0, this.getCapacity());
         this.onFinalCommit();
     }
 
@@ -55,7 +55,7 @@ public abstract class ComplexEnergyContainer {
     public CompoundTag write(){
         CompoundTag data = new CompoundTag();
 
-        data.putLong("Stored", this.amount);
+        data.putLong("Stored", this.getStored());
 
         return data;
     }
