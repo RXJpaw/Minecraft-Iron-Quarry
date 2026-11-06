@@ -5,24 +5,12 @@ import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
-import java.util.function.LongSupplier;
 
-public class ComplexEnergyContainer {
+public abstract class ComplexEnergyContainer {
     protected long amount = 0;
     private @Nullable Object platformStorage = null;
 
-    public static ComplexEnergyContainer ofCapacity(LongSupplier capacity) {
-        return new ComplexEnergyContainer() {
-            @Override
-            public long getCapacity() {
-                return capacity.getAsLong();
-            }
-        };
-    }
-
-    public long getCapacity() {
-        return 0;
-    }
+    public abstract long getCapacity();
 
     public long getMaxInsert(@Nullable Direction side) {
         return 0;

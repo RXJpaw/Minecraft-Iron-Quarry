@@ -123,30 +123,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     };
 
     //Energy
-    public final ComplexEnergyContainer EnergyContainer = new ComplexEnergyContainer() {
-        @Override
-        public void onFinalCommit() {
-            QuarryBlockEntity.this.setChanged();
-        }
-
-        @Override
-        public long getCapacity() {
-            QuarryBlock quarryBlock = QuarryBlockEntity.this.getQuarryBlock();
-            if(quarryBlock == null) return 0;
-
-            return quarryBlock.getEnergyCapacity();
-        }
-
-        @Override
-        public long getMaxInsert(@Nullable Direction side) {
-            return this.getCapacity();
-        }
-
-        @Override
-        public long getMaxExtract(@Nullable Direction side) {
-            return 0;
-        }
-    };
+    public final ComplexEnergyContainer EnergyContainer = QuarryEnergyContainer.ofRef(this);
 
     public void attemptCharge() {
         if(level == null) return;
