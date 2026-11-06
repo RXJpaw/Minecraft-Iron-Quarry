@@ -7,7 +7,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.augment.ZAugments;
 
-//Doesn't respect minecraft's usual /reload and applies instantly after config save!
+//Checked when a villager's trades are generated, existing trades stay!
 public class SilkTouchTradingCondition implements LootItemCondition {
     public static final Identifier ID = Identifier.fromNamespaceAndPath(Main.MOD_ID, "silk_touch_trading_enabled");
     public static final SilkTouchTradingCondition INSTANCE = new SilkTouchTradingCondition();
