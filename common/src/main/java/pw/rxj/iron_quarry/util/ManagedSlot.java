@@ -21,10 +21,13 @@ public class ManagedSlot extends Slot {
     }
     @Override
     public boolean isActive() {
-        return this.isEnabled && !this.isLocked();
+        return this.isEnabled && !this.isLockedAndEmpty();
     }
     public boolean isLocked() {
         return this.isLocked;
+    }
+    public boolean isLockedAndEmpty() {
+        return this.isLocked() && !this.hasItem();
     }
 
     public void setEnabled(boolean state) {

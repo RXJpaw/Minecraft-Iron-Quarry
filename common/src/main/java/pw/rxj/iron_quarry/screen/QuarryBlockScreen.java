@@ -120,7 +120,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
 
         ComplexEnergyContainer EnergyContainer = menu.getEnergyContainer();
         MachineConfiguration MachineConfiguration = blockEntity.Configuration;
-        MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(menu.getMachineUpgradeStacks());
+        MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(menu);
         MachineWarningsUtil warningsUtil = MachineWarningsUtil.from(menu);
 
         int backgroundX = this.leftPos;
@@ -325,7 +325,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
             context.setTooltipForNextFrame(this.font, ReadableString.translatable(this.hasNextChunk() ? "screen.iron_quarry.quarry_block.tooltip.next_chunk" : "screen.iron_quarry.quarry_block.tooltip.next_chunk.disabled"), mouseX, mouseY);
         } else if(AugmentsConfig.isMouseOver()) {
             for (ManagedSlot slot : AUGMENT_SLOTS) {
-                if(slot.isLocked() && TrackableZone.isMouseOver(slot, this.leftPos, this.topPos, mouseX, mouseY)) {
+                if(slot.isLockedAndEmpty() && TrackableZone.isMouseOver(slot, this.leftPos, this.topPos, mouseX, mouseY)) {
                     context.setTooltipForNextFrame(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.locked_augment_slot"), mouseX, mouseY);
 
                     break;

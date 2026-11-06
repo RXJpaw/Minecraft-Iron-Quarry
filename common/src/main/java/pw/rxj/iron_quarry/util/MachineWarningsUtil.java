@@ -43,8 +43,8 @@ public class MachineWarningsUtil {
     );
     public static final int CRITICAL_FLAG = toFlag(CRITICAL_FLAG_LIST);
 
-    private static final MachineWarningsUtil UNKNOWN = new MachineWarningsUtil(1 << WARNING_QUARRY_UNKNOWN, null, MachineUpgradesUtil.from(List.of()));
-    private static final MachineWarningsUtil OUT_OF_RANGE = new MachineWarningsUtil(1 << WARNING_QUARRY_OUT_OF_RANGE, null, MachineUpgradesUtil.from(List.of()));
+    private static final MachineWarningsUtil UNKNOWN = new MachineWarningsUtil(1 << WARNING_QUARRY_UNKNOWN, null, MachineUpgradesUtil.empty());
+    private static final MachineWarningsUtil OUT_OF_RANGE = new MachineWarningsUtil(1 << WARNING_QUARRY_OUT_OF_RANGE, null, MachineUpgradesUtil.empty());
 
     private final int flag;
     private final @Nullable QuarryBlockedDataComponent blocked;
@@ -55,9 +55,8 @@ public class MachineWarningsUtil {
         this.blocked = blocked;
         this.upgradesUtil = upgradesUtil;
     }
-    private MachineWarningsUtil(QuarryBlock quarryBlock, long energyStored, ComplexInventory outputInventory, ItemStack blueprintStack, ItemStack drillStack, List<ItemStack> machineUpgradeStacks,
+    private MachineWarningsUtil(QuarryBlock quarryBlock, long energyStored, ComplexInventory outputInventory, ItemStack blueprintStack, ItemStack drillStack, MachineUpgradesUtil upgradesUtil,
                                 @Nullable QuarryOwnerComponent owner, @Nullable QuarryBlockedDataComponent blocked) {
-        MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(machineUpgradeStacks);
         long energyRequired = quarryBlock.getMinEnergyConsumption(upgradesUtil);
         int occupiedSlots = outputInventory.occupiedSlots();
         int slots = outputInventory.getContainerSize();
@@ -98,7 +97,7 @@ public class MachineWarningsUtil {
         if(quarryBlock == null) return UNKNOWN;
 
         return new MachineWarningsUtil(quarryBlock, screenHandler.getEnergyContainer().getStored(), screenHandler.getOutputInventory(), screenHandler.getBlueprintInventory().getItem(0), screenHandler.getDrillInventory().getItem(0),
-                screenHandler.getMachineUpgradeStacks(), blockEntity.getOwner(), blockEntity.getBlocked());
+                MachineUpgradesUtil.from(screenHandler), blockEntity.getOwner(), blockEntity.getBlocked());
     }
     public static MachineWarningsUtil from(ItemStack quarryMonitorStack) {
         if(!(quarryMonitorStack.getItem() instanceof QuarryMonitorItem quarryMonitorItem)) return UNKNOWN;
@@ -109,7 +108,7 @@ public class MachineWarningsUtil {
         if(!(ZUtil.getBlockOrItem(quarryStack) instanceof QuarryBlock quarryBlock)) return UNKNOWN;
 
         return new MachineWarningsUtil(quarryBlock, quarryBlock.getEnergyStored(quarryStack), quarryBlock.getOutputInventory(quarryStack), quarryBlock.getBlueprintStack(quarryStack), quarryBlock.getDrillStack(quarryStack),
-                quarryBlock.getMachineUpgradeStacks(quarryStack), quarryMonitorItem.getCachedOwner(quarryMonitorStack), quarryMonitorItem.getCachedBlockedData(quarryMonitorStack));
+                MachineUpgradesUtil.from(quarryStack), quarryMonitorItem.getCachedOwner(quarryMonitorStack), quarryMonitorItem.getCachedBlockedData(quarryMonitorStack));
     }
 
     private static int toFlag(List<Integer> warningList) {

@@ -55,8 +55,6 @@ import pw.rxj.iron_quarry.resource.config.server.QuarryStatsConfig;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.util.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -104,15 +102,6 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
 
         return outputInventory;
     }
-    public List<ItemStack> getMachineUpgradeStacks(ItemStack stack) {
-        List<ItemStack> stacks = new ArrayList<>();
-
-        stacks.add(this.getDrillStack(stack));
-        stacks.addAll(this.getAugmentInventory(stack).getItems());
-
-        return stacks;
-    }
-
     public @NotNull ItemStack getDrillStack(ItemStack stack) {
         return stack.getOrDefault(QuarryInventory.Drill.COMPONENT, ItemContainerContents.EMPTY).copyOne();
     }
@@ -131,7 +120,7 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
     }
     @Override
     public void appendTooltip(ItemStack stack, Item.TooltipContext context, Consumer<Component> textConsumer, TooltipFlag options) {
-        MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(this.getMachineUpgradeStacks(stack));
+        MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(stack);
 
         upgradesUtil.appendStatsTooltip(this, textConsumer);
 

@@ -19,9 +19,6 @@ import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.util.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class QuarryBlockScreenHandler extends AbstractContainerMenu {
     public static final SingleByteMap Buttons = new SingleByteMap().with(6, 2).with(2, 1);
 
@@ -155,12 +152,8 @@ public class QuarryBlockScreenHandler extends AbstractContainerMenu {
     public ComplexInventory getDrillInventory() {
         return this.DrillInventory;
     }
-    public List<ItemStack> getMachineUpgradeStacks() {
-        List<ItemStack> stacks = new ArrayList<>();
-        stacks.addAll(this.MachineUpgradesInventory.items);
-        stacks.addAll(this.DrillInventory.items);
-
-        return stacks;
+    public ComplexInventory getMachineUpgradesInventory() {
+        return this.MachineUpgradesInventory;
     }
 
     //This getter will be used by our Screen class

@@ -121,6 +121,7 @@
     "item.iron_quarry.conflict.speed_limit": "§{RGB_WARNING ⚠ Speed Augments are limited to Speed factor ×%s}",
     "item.iron_quarry.conflict.fortune_limit": "§{RGB_WARNING ⚠ Fortune Augments are limited to Fortune %s}",
     "item.iron_quarry.conflict.silk_touch_fortune": "§{RGB_WARNING ⚠ Silk Touch overrides Fortune Augment}",
+    "item.iron_quarry.conflict.locked_augment": "§{RGB_WARNING ⚠ Augments in locked slots are ignored}",
 
     "item.iron_quarry.warning.quarry_status_unknown": "§{RGB_CRITICAL ⚠ Quarry unloaded or destroyed}",
     "item.iron_quarry.warning.quarry_energy_depleted": "§{RGB_CRITICAL ⚠ Energy fully depleted}",

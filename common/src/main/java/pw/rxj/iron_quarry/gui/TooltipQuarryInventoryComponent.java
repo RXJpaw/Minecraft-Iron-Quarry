@@ -66,9 +66,9 @@ public class TooltipQuarryInventoryComponent implements CustomTooltipComponent {
                 RenderUtil.drawTexture(context, AUGMENTATION_CONFIGURATION_TEXTURE, slotX, slotY, 100, 0, 18, 18, 256, 256);
             } else {
                 RenderUtil.drawTexture(context, AUGMENTATION_CONFIGURATION_TEXTURE, slotX, slotY, 22, 25, 18, 18, 256, 256);
-                this.drawAugmentSlot(slotX, slotY, index, textRenderer, context);
             }
 
+            this.drawAugmentSlot(slotX, slotY, index, textRenderer, context);
         }
     }
 

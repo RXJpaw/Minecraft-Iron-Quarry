@@ -4,32 +4,38 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantments;
 import pw.rxj.iron_quarry.augment.ZAugments;
 import pw.rxj.iron_quarry.block.QuarryBlock;
+import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.item.AugmentItem;
 import pw.rxj.iron_quarry.item.DrillItem;
+import pw.rxj.iron_quarry.screen.QuarryBlockScreenHandler;
 import pw.rxj.iron_quarry.types.AugmentType;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public class MachineUpgradesUtil {
     private boolean hasSilkTouch = false;
     private boolean hasChestLooting = false;
+    private boolean hasLockedAugments = false;
 
     private float fortuneLevel = 0;
     private float speedMultiplier = 1;
     private float speedEnergyBonus = 0;
     private float slowness = 1;
 
-    private MachineUpgradesUtil(Container inventory){
-        for (int i = 0; i < inventory.getContainerSize(); i++) {
-            ItemStack stack = inventory.getItem(i);
+    private MachineUpgradesUtil() { }
+    private MachineUpgradesUtil(QuarryBlock quarryBlock, Container augmentInventory, ItemStack drillStack){
+        for (int i = 0; i < augmentInventory.getContainerSize(); i++) {
+            ItemStack stack = augmentInventory.getItem(i);
 
             if (stack.getItem() instanceof AugmentItem augmentItem) {
+                if(i >= quarryBlock.getAugmentLimit()) {
+                    this.hasLockedAugments = true; continue;
+                }
+
                 AugmentType augmentType = augmentItem.getType(stack);
                 if(augmentType.getAugment().isDisabled()) continue;
 
@@ -49,10 +55,13 @@ public class MachineUpgradesUtil {
                     }
                     case CHEST_LOOTING -> this.hasChestLooting = true;
                 }
-            } else if(stack.getItem() instanceof DrillItem) {
-                int efficiencyLevel = ZUtil.getCappedEnchantmentLevel(stack, Enchantments.EFFICIENCY);
-                if(efficiencyLevel <= 0) continue;
+            }
+        }
 
+        if(drillStack.getItem() instanceof DrillItem) {
+            int efficiencyLevel = ZUtil.getCappedEnchantmentLevel(drillStack, Enchantments.EFFICIENCY);
+
+            if(efficiencyLevel > 0) {
                 float speedMultiplier = (float) Math.pow(1.3, efficiencyLevel) - 1.0F;
 
                 this.speedMultiplier += speedMultiplier;
@@ -61,11 +70,22 @@ public class MachineUpgradesUtil {
         }
     }
 
-    public static MachineUpgradesUtil from(Container inventory) {
-        return new MachineUpgradesUtil(inventory);
+    public static MachineUpgradesUtil empty() {
+        return new MachineUpgradesUtil();
     }
-    public static MachineUpgradesUtil from(List<ItemStack> stacks) {
-        return from(new SimpleContainer(stacks.toArray(new ItemStack[0])));
+    public static MachineUpgradesUtil from(QuarryBlockEntity blockEntity) {
+        QuarryBlock quarryBlock = blockEntity.getQuarryBlock();
+        if(quarryBlock == null) return empty();
+
+        return new MachineUpgradesUtil(quarryBlock, blockEntity.MachineUpgradesInventory, blockEntity.DrillInventory.getItem(0));
+    }
+    public static MachineUpgradesUtil from(QuarryBlockScreenHandler screenHandler) {
+        return new MachineUpgradesUtil(screenHandler.getQuarryBlock(), screenHandler.getMachineUpgradesInventory(), screenHandler.getDrillInventory().getItem(0));
+    }
+    public static MachineUpgradesUtil from(ItemStack quarryStack) {
+        if(!(ZUtil.getBlockOrItem(quarryStack) instanceof QuarryBlock quarryBlock)) return empty();
+
+        return new MachineUpgradesUtil(quarryBlock, quarryBlock.getAugmentInventory(quarryStack), quarryBlock.getDrillStack(quarryStack));
     }
 
     public boolean hasSilkTouch() { return this.hasSilkTouch; }
@@ -95,6 +115,7 @@ public class MachineUpgradesUtil {
     public static final int CONFLICT_SPEED = 0;
     public static final int CONFLICT_FORTUNE = 1;
     public static final int CONFLICT_SILK_TOUCH = 2;
+    public static final int CONFLICT_LOCKED_AUGMENT = 3;
     public static boolean hasConflicts(int flag) {
         return flag != 0;
     }
@@ -105,7 +126,7 @@ public class MachineUpgradesUtil {
     }
 
     public boolean[] getConflictList() {
-        return new boolean[] { this.exceedsSpeedLimit(), this.exceedsFortuneLimit(), this.conflictsWithSilkTouch() };
+        return new boolean[] { this.exceedsSpeedLimit(), this.exceedsFortuneLimit(), this.conflictsWithSilkTouch(), this.hasLockedAugments() };
     }
     public int getConflictAmount() {
         int amount = 0;
@@ -123,6 +144,7 @@ public class MachineUpgradesUtil {
         if(list[CONFLICT_SPEED]) flag += 1 << CONFLICT_SPEED;
         if(list[CONFLICT_FORTUNE]) flag += 1 << CONFLICT_FORTUNE;
         if(list[CONFLICT_SILK_TOUCH]) flag += 1 << CONFLICT_SILK_TOUCH;
+        if(list[CONFLICT_LOCKED_AUGMENT]) flag += 1 << CONFLICT_LOCKED_AUGMENT;
 
         return flag;
     }
@@ -138,6 +160,9 @@ public class MachineUpgradesUtil {
     }
     public boolean conflictsWithSilkTouch() {
         return this.hasSilkTouch && this.fortuneLevel > 0;
+    }
+    public boolean hasLockedAugments() {
+        return this.hasLockedAugments;
     }
 
     public void appendStatsTooltip(QuarryBlock quarryBlock, Consumer<Component> textConsumer) {
@@ -176,6 +201,9 @@ public class MachineUpgradesUtil {
         }
         if(hasConflict(conflictFlag, CONFLICT_SILK_TOUCH)) {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.silk_touch_fortune"));
+        }
+        if(hasConflict(conflictFlag, CONFLICT_LOCKED_AUGMENT)) {
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.conflict.locked_augment"));
         }
     }
 }

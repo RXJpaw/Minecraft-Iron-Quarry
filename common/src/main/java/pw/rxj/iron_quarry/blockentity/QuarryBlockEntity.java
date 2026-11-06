@@ -149,15 +149,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     public final ComplexInventory BlueprintInventory = QuarryInventory.Blueprint.ofRef(this);
     public final ComplexInventory DrillInventory = QuarryInventory.Drill.ofRef(this);
 
-    public List<ItemStack> getMachineUpgradeStacks() {
-        List<ItemStack> stacks = new ArrayList<>();
-        stacks.addAll(MachineUpgradesInventory.items);
-        stacks.addAll(DrillInventory.items);
-
-        return stacks;
-
-    }
-
     public @Nullable Container getLinkedContainer(Direction direction){
         if(direction == null) return null;
 
@@ -323,7 +314,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
         ChunkLoadingManager.keepLoaded(serverWorldToBreak, thisBlockEntity.loadedChunks);
 
-        MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(thisBlockEntity.getMachineUpgradeStacks());
+        MachineUpgradesUtil upgradesUtil = MachineUpgradesUtil.from(thisBlockEntity);
         long minimumEnergyConsumption = thisBlock.getMinEnergyConsumption(upgradesUtil);
         if(thisBlockEntity.EnergyContainer.getStored() < minimumEnergyConsumption) return;
 
