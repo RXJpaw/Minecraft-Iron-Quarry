@@ -9,6 +9,7 @@
         "GrindstoneInsertionMixin",
         "GrindstoneScreenHandlerMixin",
         "RecipeManagerMixin",
+        "ServerConfigReloadMixin",
         "SmithingScreenHandlerMixin"
     ],
     "client": [

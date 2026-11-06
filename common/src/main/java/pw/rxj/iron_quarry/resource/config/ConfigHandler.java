@@ -166,11 +166,6 @@ public class ConfigHandler {
         this.getQuarryDrillStatsConfig().validate();
     }
     public void registerServer() {
-        ServerLifecycleCallback.STARTING.register(server -> {
-            this.read(ConfigSide.SERVER);
-            this.validateServerConfig();
-        });
-
         ServerConnectionCallback.JOIN.register(player -> {
             ZNetwork.sendToPlayer(player, PacketServerConfigApply.bake(this));
             Main.LOGGER.info("Sent server config to: {} ({})", player.getGameProfile().name(), player.getUUID());

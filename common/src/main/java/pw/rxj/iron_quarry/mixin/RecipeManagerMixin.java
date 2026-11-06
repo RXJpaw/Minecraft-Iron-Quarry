@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.augment.ZAugments;
-import pw.rxj.iron_quarry.resource.config.ConfigSide;
 
 import java.util.HashSet;
 import java.util.List;
@@ -19,9 +18,6 @@ import java.util.Set;
 public abstract class RecipeManagerMixin {
     @ModifyVariable(method = "apply(Lnet/minecraft/world/item/crafting/RecipeMap;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V", at = @At(value = "HEAD"), argsOnly = true)
     private RecipeMap apply(RecipeMap preparedRecipes) {
-        Main.CONFIG.read(ConfigSide.SERVER);
-        Main.CONFIG.validateServerConfig();
-
         Set<Identifier> disabled = new HashSet<>();
 
         if(ZAugments.SPEED.isDisabled()) {
