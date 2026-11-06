@@ -21,3 +21,4 @@ accessible method net/minecraft/client/renderer/rendertype/RenderType create (Lj
 accessible class net/minecraft/client/gui/screens/MenuScreens$ScreenConstructor
 accessible field net/minecraft/world/item/crafting/ShapedRecipePattern data Ljava/util/Optional;
 accessible method net/minecraft/world/item/crafting/ShapedRecipePattern matches (Lnet/minecraft/world/item/crafting/CraftingInput;Z)Z
+accessible field net/minecraft/world/item/CreativeModeTabs CACHED_PARAMETERS Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;
