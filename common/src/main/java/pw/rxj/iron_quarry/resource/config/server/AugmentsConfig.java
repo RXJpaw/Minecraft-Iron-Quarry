@@ -1,18 +1,15 @@
 package pw.rxj.iron_quarry.resource.config.server;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 
-@EqualsAndHashCode
 public class AugmentsConfig {
     public final Speed speed = new Speed();
     public final Fortune fortune = new Fortune();
     public final SilkTouch silkTouch = new SilkTouch();
     public final ChestLooting chestLooting = new ChestLooting();
 
-    @EqualsAndHashCode
     public static class Speed {
         public final boolean disabled;
         public final int baseAmount;
@@ -30,7 +27,6 @@ public class AugmentsConfig {
             this.speedFactorLimit = 93.71293F;
         }
     }
-    @EqualsAndHashCode
     public static class Fortune {
         public final boolean disabled;
         public final int baseAmount;
@@ -46,7 +42,6 @@ public class AugmentsConfig {
             this.levelLimit = 4.7F;
         }
     }
-    @EqualsAndHashCode
     public static class SilkTouch {
         public final boolean disabled;
         public final float slowness;
@@ -58,7 +53,6 @@ public class AugmentsConfig {
             this.tradingEnabled = true;
         }
     }
-    @EqualsAndHashCode
     public static class ChestLooting {
         public final boolean disabled;
         public final Entry[] lootPools = new Entry[]{
@@ -83,7 +77,6 @@ public class AugmentsConfig {
                 Entry.rare("minecraft:chests/ancient_city")
         };
 
-        @EqualsAndHashCode
         @AllArgsConstructor
         public static class Entry {
             public final String lootTable;

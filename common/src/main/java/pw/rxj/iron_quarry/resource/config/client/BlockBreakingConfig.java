@@ -1,10 +1,8 @@
 package pw.rxj.iron_quarry.resource.config.client;
 
-import lombok.EqualsAndHashCode;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 
-@EqualsAndHashCode
 public class BlockBreakingConfig {
     public float volume = 1.0F;
     public float distance = 64.0F;

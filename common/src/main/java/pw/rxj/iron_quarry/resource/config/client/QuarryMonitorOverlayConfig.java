@@ -1,12 +1,10 @@
 package pw.rxj.iron_quarry.resource.config.client;
 
 import com.mojang.blaze3d.platform.Window;
-import lombok.EqualsAndHashCode;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 import pw.rxj.iron_quarry.types.AbsAlignment;
 
-@EqualsAndHashCode
 public class QuarryMonitorOverlayConfig {
     public String alignment = AbsAlignment.BOTTOM_LEFT.getTranslationKey();
     public int x = 8;

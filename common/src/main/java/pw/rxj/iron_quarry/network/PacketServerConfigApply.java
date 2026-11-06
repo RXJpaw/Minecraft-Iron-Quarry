@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.network;
 
-import pw.rxj.iron_quarry.resource.config.ConfigSide;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -30,13 +29,13 @@ public class PacketServerConfigApply extends ByteArrayPacket {
     protected void receiveFromServer(ByteArrayPacket payload, Minecraft client, LocalPlayer player) {
         String address = client.getCurrentServer() == null ? "unknown address/integrated server" : client.getCurrentServer().ip;
 
-        Main.CONFIG.readByteArray(ConfigSide.SERVER, payload.bytes);
+        Main.CONFIG.readServerByteArray(payload.bytes);
         Main.CONFIG.applyServerChanges();
 
         Main.LOGGER.info("Received server config from: {}", address);
     }
 
     public static PacketServerConfigApply bake(ConfigHandler config) {
-        return new PacketServerConfigApply(config.asByteArray(ConfigSide.SERVER));
+        return new PacketServerConfigApply(config.asServerByteArray());
     }
 }

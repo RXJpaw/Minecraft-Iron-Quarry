@@ -1,12 +1,10 @@
 package pw.rxj.iron_quarry.resource.config.server;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import pw.rxj.iron_quarry.block.ZBlocks;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 
-@EqualsAndHashCode
 public class QuarryStatsConfig {
     public final Entry copperQuarry = new Entry(0, 40, 20_000, 20);           //       74 RF/t * 269t |   800 RF ~ 1-2 Coal Generators
     public final Entry ironQuarry = new Entry(1, 30, 100_000, 40);            //    1.949 RF/t *  51t | 1.200 RF ~ 10 Advanced Solar Panels (day/night average)
@@ -15,7 +13,6 @@ public class QuarryStatsConfig {
     public final Entry netheriteQuarry = new Entry(4, 5, 10_000_000, 810);    //  337.072 RF/t *  30t | 4.050 RF ~  5 Quantum Solar Panels (day/night average)
     public final Entry netherStarQuarry = new Entry(6, 2, 50_000_000, 3_040); //2.085.862 RF/t *  24t | 6.080 RF ~ 16 Quantum Solar Panels (day/night average)
 
-    @EqualsAndHashCode
     @AllArgsConstructor
     public static class Entry {
         public final int augmentLimit;

@@ -2,6 +2,7 @@ package pw.rxj.iron_quarry.resource.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import pw.rxj.iron_quarry.Main;
@@ -13,19 +14,25 @@ import pw.rxj.iron_quarry.network.ZNetwork;
 import pw.rxj.iron_quarry.resource.config.client.BlockBreakingConfig;
 import pw.rxj.iron_quarry.resource.config.client.QuarryMonitorOverlayConfig;
 import pw.rxj.iron_quarry.resource.config.server.*;
+import pw.rxj.iron_quarry.resource.config.util.JsoncReader;
+import pw.rxj.iron_quarry.resource.config.util.JsoncWriter;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.function.Consumer;
 
 public class ConfigHandler {
+    private static final String CLIENT_HEADER = "Iron Quarry: Client Config\nRead when the game starts. Edit it while the game is closed, the config screen overwrites it.";
+    private static final String SERVER_HEADER = "Iron Quarry: Server Config\nRead when the server starts, then sent to joining players.";
+
     private final Path clientConfigPath;
     private final Path serverConfigPath;
     private final Config config;
     private final Gson gson;
-    private int clientConfigHash = 0;
-    private int serverConfigHash = 0;
 
     private ConfigHandler(Path clientPath, Path serverPath, Gson gson) {
         this.clientConfigPath = clientPath;
@@ -33,32 +40,30 @@ public class ConfigHandler {
         this.config = Config.empty();
         this.gson = gson;
     }
-    public static ConfigHandler of(Path clientPath, Path serverPath, Gson gson) {
+    private static ConfigHandler of(Path clientPath, Path serverPath, Gson gson) {
         return new ConfigHandler(clientPath, serverPath, gson);
     }
     public static ConfigHandler bake(Path configDir) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Path clientPath = configDir.resolve("client.json");
-        Path serverPath = configDir.resolve("server.json");
+        Gson gson = new GsonBuilder().setStrictness(Strictness.LENIENT).create();
+        Path clientPath = configDir.resolve("client.jsonc");
+        Path serverPath = configDir.resolve("server.jsonc");
 
         return of(clientPath, serverPath, gson);
-    }
-    public ConfigHandler copy() {
-        return ConfigHandler.of(this.clientConfigPath, this.serverConfigPath, this.gson);
     }
 
     protected Config getConfig() {
         return this.config;
     }
 
-    //Client
+    //Client Configs
     public BlockBreakingConfig.Handler getBlockBreakingConfig() {
         return BlockBreakingConfig.Handler.of(this);
     }
     public QuarryMonitorOverlayConfig.Handler getQuarryMonitorOverlayConfig() {
         return QuarryMonitorOverlayConfig.Handler.of(this);
     }
-    //Server
+
+    //Server Configs
     public QuarryStatsConfig.Handler getQuarryStatsConfig() {
         return QuarryStatsConfig.Handler.of(this);
     }
@@ -75,132 +80,88 @@ public class ConfigHandler {
         return QuarryDrillStatsConfig.Handler.of(this);
     }
 
-    public void read(ConfigSide environment) {
-        if(environment.equals(ConfigSide.CLIENT)) {
-            if(!Files.exists(this.clientConfigPath)) {
-                this.write(environment);
+    //Reading
+    public synchronized void read(ConfigSide side) {
+        boolean safeToWrite = switch (side) {
+            case CLIENT -> this.readFile(this.clientConfigPath, Config.Client.class, this.config.CLIENT, Config.empty().CLIENT, this.config::overrideClient);
+            case SERVER -> this.readFile(this.serverConfigPath, Config.Server.class, this.config.SERVER, Config.empty().SERVER, this.config::overrideServer);
+        };
 
-                Main.LOGGER.info("Client config created.");
-                return;
-            }
+        //Make sure a complete version is saved on disk!
+        if(safeToWrite) this.write(side);
+    }
+    private <T> boolean readFile(Path path, Class<T> type, T current, T defaults, Consumer<T> apply) {
+        if(!Files.exists(path)) {
+            Main.LOGGER.info("Config file {} doesn't exist yet, creating it.", path);
+            return true;
+        }
 
-            try {
-                BufferedReader reader = Files.newBufferedReader(this.clientConfigPath);
-                this.config.overrideClient(this.gson.fromJson(reader, Config.Client.class));
-                reader.close();
+        try {
+            apply.accept(JsoncReader.read(this.gson, Files.readString(path), type, defaults));
 
-                Main.LOGGER.info("Client config read from disk.");
-
-                //Make sure a complete version is saved on disk!
-                this.write(environment);
-            } catch (Exception e) {
-                Main.LOGGER.error("ConfigHandler couldn't read client config file: ", e);
-
-                this.config.overrideClient(Config.empty().CLIENT);
-                this.write(environment);
-
-                Main.LOGGER.warn("Client config reset to default.");
-            }
-        } else if(environment.equals(ConfigSide.SERVER)) {
-            if(!Files.exists(this.serverConfigPath)) {
-                this.write(environment);
-
-                Main.LOGGER.info("Server config created.");
-                return;
-            }
-
-            try {
-                BufferedReader reader = Files.newBufferedReader(this.serverConfigPath);
-                this.config.overrideServer(this.gson.fromJson(reader, Config.Server.class));
-                reader.close();
-
-                Main.LOGGER.info("Server config read from disk.");
-
-                //Make sure a complete version is saved on disk!
-                this.write(environment);
-            } catch (Exception e) {
-                Main.LOGGER.error("ConfigHandler couldn't read server config file: ", e);
-
-                this.config.overrideServer(Config.empty().SERVER);
-                this.write(environment);
-
-                Main.LOGGER.warn("Server config reset to default.");
-            }
+            Main.LOGGER.info("Config file {} read.", path);
+            return true;
+        } catch (Exception e) {
+            Main.LOGGER.error("Couldn't read config file {}, using {} until it is fixed: {}", path, this.describeValuesInUse(current, defaults), e.toString());
+            return false;
         }
     }
-    public void write(ConfigSide environment) {
-        if(environment.equals(ConfigSide.CLIENT)) {
-            if(this.clientConfigHash == this.config.CLIENT.hashCode()) return;
-            if(this.clientConfigHash != 0) Main.LOGGER.info("Client config may have changed..");
+    private String describeValuesInUse(Object current, Object defaults) {
+        return this.gson.toJsonTree(current).equals(this.gson.toJsonTree(defaults)) ? "the default values" : "the previously read values";
+    }
 
-            if(!Files.exists(this.clientConfigPath)) {
-                try {
-                    Files.createDirectories(this.clientConfigPath.getParent());
-                    Files.createFile(this.clientConfigPath);
-                } catch (Exception e) {
-                    Main.LOGGER.error("ConfigHandler couldn't initialize client config file: ", e);
-                    return;
-                }
-            }
+    //Writing
+    public synchronized void write(ConfigSide side) {
+        switch (side) {
+            case CLIENT -> this.writeFile(this.clientConfigPath, CLIENT_HEADER, this.config.CLIENT, Config.empty().CLIENT);
+            case SERVER -> this.writeFile(this.serverConfigPath, SERVER_HEADER, this.config.SERVER, Config.empty().SERVER);
+        }
+    }
+    private void writeFile(Path path, String header, Object config, Object defaults) {
+        String text = JsoncWriter.write(this.gson, header, config, defaults);
+        if(isUpToDate(path, text)) return;
 
-            try {
-                BufferedWriter writer = Files.newBufferedWriter(this.clientConfigPath);
-                this.gson.toJson(this.config.CLIENT, writer);
-                writer.close();
+        Path temporaryPath = path.resolveSibling(path.getFileName() + ".tmp");
 
-                this.clientConfigHash = this.config.CLIENT.hashCode();
-                Main.LOGGER.info("Client config written to disk.");
-            } catch (Exception e) {
-                Main.LOGGER.error("ConfigHandler couldn't write to client config file: ", e);
-            }
-        } else if(environment.equals(ConfigSide.SERVER)) {
-            if(this.serverConfigHash == this.config.SERVER.hashCode()) return;
-            if(this.serverConfigHash != 0) Main.LOGGER.info("Server config may have changed..");
+        try {
+            Files.createDirectories(path.getParent());
+            Files.writeString(temporaryPath, text);
+            replaceFile(temporaryPath, path);
 
-            if(!Files.exists(this.serverConfigPath)) {
-                try {
-                    Files.createDirectories(this.serverConfigPath.getParent());
-                    Files.createFile(this.serverConfigPath);
-                } catch (Exception e) {
-                    Main.LOGGER.error("ConfigHandler couldn't initialize server config file: ", e);
-                    return;
-                }
-            }
-
-            try {
-                BufferedWriter writer = Files.newBufferedWriter(this.serverConfigPath);
-                this.gson.toJson(this.config.SERVER, writer);
-                writer.close();
-
-                this.serverConfigHash = this.config.SERVER.hashCode();
-                Main.LOGGER.info("Server config written to disk.");
-            } catch (Exception e) {
-                Main.LOGGER.error("ConfigHandler couldn't write to server config file: ", e);
-            }
+            Main.LOGGER.info("Config file {} written.", path);
+        } catch (Exception e) {
+            Main.LOGGER.error("Couldn't write config file {}: ", path, e);
+        }
+    }
+    private static boolean isUpToDate(Path path, String text) {
+        try {
+            return Files.exists(path) && Files.readString(path).equals(text);
+        } catch (IOException e) {
+            return false;
+        }
+    }
+    private static void replaceFile(Path source, Path target) throws IOException {
+        try {
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
-    public byte[] asByteArray(ConfigSide environment) {
-        Gson uglyGson = new GsonBuilder().create();
-
-        if(environment.equals(ConfigSide.CLIENT)) {
-            return uglyGson.toJson(this.config.CLIENT).getBytes();
-        } else if(environment.equals(ConfigSide.SERVER)) {
-            return uglyGson.toJson(this.config.SERVER).getBytes();
-        } else {
-            return new byte[]{};
-        }
+    //Server Sync
+    public byte[] asServerByteArray() {
+        return this.gson.toJson(this.config.SERVER).getBytes(StandardCharsets.UTF_8);
     }
-    public void readByteArray(ConfigSide environment, byte[] bytes) {
-        String json = new String(bytes);
+    public synchronized void readServerByteArray(byte[] bytes) {
+        String json = new String(bytes, StandardCharsets.UTF_8);
 
-        if(environment.equals(ConfigSide.CLIENT)) {
-            this.config.overrideClient(this.gson.fromJson(json, Config.Client.class));
-        } else if(environment.equals(ConfigSide.SERVER)) {
-            this.config.overrideServer(this.gson.fromJson(json, Config.Server.class));
-        }
+        this.config.overrideServer(JsoncReader.read(this.gson, json, Config.Server.class, Config.empty().SERVER));
+    }
+    private synchronized void discardReceivedServerConfig() {
+        this.config.overrideServer(Config.empty().SERVER);
     }
 
+    //Lifecycle
     public void applyServerChanges() {
         this.getQuarryStatsConfig().applyChanges();
         this.getAugmentingTemplateConfig().applyChanges();
@@ -215,12 +176,13 @@ public class ConfigHandler {
 
         ServerConnectionCallback.JOIN.register(player -> {
             ZNetwork.sendToPlayer(player, PacketServerConfigApply.bake(this));
-            Main.LOGGER.info("Sent server config to: {} ({})", player.getName(), player.getUUID());
+            Main.LOGGER.info("Sent server config to: {} ({})", player.getGameProfile().name(), player.getUUID());
         });
     }
     @Environment(EnvType.CLIENT)
     public void registerClient() {
         ClientConnectionCallback.DISCONNECT.register(() -> {
+            this.discardReceivedServerConfig();
             this.read(ConfigSide.SERVER);
             this.applyServerChanges();
         });

@@ -1,12 +1,10 @@
 package pw.rxj.iron_quarry.resource.config.server;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 
-@EqualsAndHashCode
 public class QuarryDrillStatsConfig {
     public final Entry copperDrill = new Entry(649, 2, "minecraft:stone_pickaxe");
     public final Entry ironDrill = new Entry(1_284, 5, "minecraft:iron_pickaxe");
@@ -15,7 +13,6 @@ public class QuarryDrillStatsConfig {
     public final Entry shulkerDrill = new Entry(159_375, 7, "minecraft:netherite_pickaxe");
     public final Entry netherStarDrill = new Entry(796_875, 9, "minecraft:netherite_pickaxe");
 
-    @EqualsAndHashCode
     @AllArgsConstructor
     public static class Entry {
         public final int durability;

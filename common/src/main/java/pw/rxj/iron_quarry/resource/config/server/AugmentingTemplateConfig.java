@@ -1,11 +1,9 @@
 package pw.rxj.iron_quarry.resource.config.server;
 
-import lombok.EqualsAndHashCode;
 import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 
-@EqualsAndHashCode
 public class AugmentingTemplateConfig {
     public final int durability;
     public final int capacityUpgradeCost;
