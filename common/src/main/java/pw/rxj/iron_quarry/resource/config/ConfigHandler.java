@@ -32,6 +32,7 @@ public class ConfigHandler {
     private final Path serverConfigPath;
     private final Config config;
     private final Gson gson;
+    private boolean hasReceivedServerConfig = false;
 
     private ConfigHandler(Path clientPath, Path serverPath, Gson gson) {
         this.clientConfigPath = clientPath;
@@ -155,9 +156,16 @@ public class ConfigHandler {
         String json = new String(bytes, StandardCharsets.UTF_8);
 
         this.config.overrideServer(JsoncReader.read(this.gson, json, Config.Server.class, Config.empty().SERVER));
+        this.hasReceivedServerConfig = true;
     }
-    private synchronized void discardReceivedServerConfig() {
+    private synchronized void restoreLocalServerConfig() {
+        if(!this.hasReceivedServerConfig) return;
+
         this.config.overrideServer(Config.empty().SERVER);
+        this.hasReceivedServerConfig = false;
+
+        this.read(ConfigSide.SERVER);
+        this.validateServerConfig();
     }
 
     //Lifecycle
@@ -172,10 +180,6 @@ public class ConfigHandler {
     }
     @Environment(EnvType.CLIENT)
     public void registerClient() {
-        ClientConnectionCallback.DISCONNECT.register(() -> {
-            this.discardReceivedServerConfig();
-            this.read(ConfigSide.SERVER);
-            this.validateServerConfig();
-        });
+        ClientConnectionCallback.DISCONNECT.register(this::restoreLocalServerConfig);
     }
 }
