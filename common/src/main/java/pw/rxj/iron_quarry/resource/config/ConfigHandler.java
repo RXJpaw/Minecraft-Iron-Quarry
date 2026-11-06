@@ -162,16 +162,13 @@ public class ConfigHandler {
     }
 
     //Lifecycle
-    public void applyServerChanges() {
-        this.getQuarryStatsConfig().applyChanges();
-        this.getAugmentingTemplateConfig().applyChanges();
-        this.getQuarryMonitorConfig().applyChanges();
-        this.getQuarryDrillStatsConfig().applyChanges();
+    public void validateServerConfig() {
+        this.getQuarryDrillStatsConfig().validate();
     }
     public void registerServer() {
         ServerLifecycleCallback.STARTING.register(server -> {
             this.read(ConfigSide.SERVER);
-            this.applyServerChanges();
+            this.validateServerConfig();
         });
 
         ServerConnectionCallback.JOIN.register(player -> {
@@ -184,7 +181,7 @@ public class ConfigHandler {
         ClientConnectionCallback.DISCONNECT.register(() -> {
             this.discardReceivedServerConfig();
             this.read(ConfigSide.SERVER);
-            this.applyServerChanges();
+            this.validateServerConfig();
         });
     }
 }

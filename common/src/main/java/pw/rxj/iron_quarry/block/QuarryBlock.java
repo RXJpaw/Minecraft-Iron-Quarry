@@ -59,15 +59,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, ITooltipDataProvider, IHandledBlockUse, IBlockTooltipAppender {
     private final String textureReference;
-    private int ticksPerOperation;
-    private int baseConsumption;
-    private int energyCapacity;
-    private int augmentLimit;
+    private final Supplier<QuarryStatsConfig.Entry> config;
 
-    public QuarryBlock(Properties settings, String texRef, QuarryStatsConfig.Entry entry) {
+    public QuarryBlock(Properties settings, String texRef, Supplier<QuarryStatsConfig.Entry> config) {
         super(settings);
         this.textureReference = texRef;
 
@@ -75,16 +73,7 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
                 .setValue(FACING, Direction.NORTH)
         );
 
-        this.ticksPerOperation = entry.ticksPerOperation;
-        this.baseConsumption = entry.baseConsumption;
-        this.energyCapacity = entry.energyCapacity;
-        this.augmentLimit = entry.augmentLimit;
-    }
-    public void override(QuarryStatsConfig.Entry quarryStats) {
-        this.ticksPerOperation = quarryStats.ticksPerOperation;
-        this.baseConsumption = quarryStats.baseConsumption;
-        this.energyCapacity = quarryStats.energyCapacity;
-        this.augmentLimit = quarryStats.augmentLimit;
+        this.config = config;
     }
 
     public static final EnumProperty<Direction> FACING = EnumProperty.create("facing", Direction.class);
@@ -97,7 +86,7 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
     }
 
     public int getAugmentLimit(){
-        return this.augmentLimit;
+        return this.config.get().augmentLimit;
     }
 
     public @NotNull MachineConfiguration getMachineConfiguration(ItemStack stack) {
@@ -176,9 +165,9 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
 
     private float getEnergyPerOperation(MachineUpgradesUtil upgradesUtil) {
         float speedPenalty = upgradesUtil.getSpeedEnergyMultiplier();
-        float operations = (20.0F / this.ticksPerOperation) * upgradesUtil.getSpeedMultiplier();
+        float operations = (20.0F / this.getTicksPerOperation()) * upgradesUtil.getSpeedMultiplier();
 
-        return this.baseConsumption * speedPenalty * 20 / operations;
+        return this.getBaseConsumption() * speedPenalty * 20 / operations;
     }
     public long getMinEnergyConsumption(MachineUpgradesUtil upgradesUtil) {
         return (long) this.getEnergyPerOperation(upgradesUtil);
@@ -288,12 +277,12 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
     }
 
     public int getTicksPerOperation(){
-        return this.ticksPerOperation;
+        return this.config.get().ticksPerOperation;
     }
     @Override
-    public int getBaseConsumption() { return this.baseConsumption; }
+    public int getBaseConsumption() { return this.config.get().baseConsumption; }
     @Override
-    public int getEnergyCapacity() { return this.energyCapacity; }
+    public int getEnergyCapacity() { return this.config.get().energyCapacity; }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> stateManager) {

@@ -24,6 +24,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.ChunkPos;
@@ -507,6 +508,9 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         ComplexInventory OutputInventory = quarryBlockEntity.OutputInventory;
         ArrayDeque<BlockPos> MiningQueue = quarryBlockEntity.MiningQueue;
 
+        ItemStack toolStack = drillItem.createToolStack();
+        Tool toolComponent = drillItem.getToolComponent();
+
         for (int threadIndex = 0; threadIndex < threads; threadIndex++) {
             if(drillStack.isEmpty()) return drillResults;
             if(MiningQueue.isEmpty()) return drillResults;
@@ -546,7 +550,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             if(EnergyContainer.getStored() < energyConsumption) return drillResults;
 
             //loot generation
-            ItemStack mockPickaxe = drillItem.getToolStack().copy();
+            ItemStack mockPickaxe = toolStack.copy();
 
             if(upgradesUtil.hasSilkTouch()) {
                 mockPickaxe.enchant(ZUtil.getEnchantmentEntry(serverWorldToBreak.registryAccess(), Enchantments.SILK_TOUCH), 1);
@@ -558,7 +562,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             boolean isLiquidBlock = blockActress.isLiquidBlock();
 
             //only drop item if required mining level is present
-            if(!isLiquidBlock && blockActress.isCorrectForDrops(drillItem.getToolComponent())) {
+            if(!isLiquidBlock && blockActress.isCorrectForDrops(toolComponent)) {
                 List<ItemStack> droppedStacks = blockActress.getDroppedStacks(quarryBlockState, quarryPos, mockPickaxe);
 
                 if(OutputInventory.canInsertAll(droppedStacks)) {

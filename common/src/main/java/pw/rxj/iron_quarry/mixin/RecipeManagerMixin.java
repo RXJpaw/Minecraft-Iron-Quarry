@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.mixin;
 
-import pw.rxj.iron_quarry.resource.config.ConfigSide;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -10,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.augment.ZAugments;
+import pw.rxj.iron_quarry.resource.config.ConfigSide;
 
 import java.util.HashSet;
 import java.util.List;
@@ -20,7 +20,7 @@ public abstract class RecipeManagerMixin {
     @ModifyVariable(method = "apply(Lnet/minecraft/world/item/crafting/RecipeMap;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V", at = @At(value = "HEAD"), argsOnly = true)
     private RecipeMap apply(RecipeMap preparedRecipes) {
         Main.CONFIG.read(ConfigSide.SERVER);
-        Main.CONFIG.applyServerChanges();
+        Main.CONFIG.validateServerConfig();
 
         Set<Identifier> disabled = new HashSet<>();
 

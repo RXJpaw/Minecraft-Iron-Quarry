@@ -15,12 +15,12 @@ import java.util.List;
 public class ZBlocks {
     private static final QuarryStatsConfig.Handler QUARRY_STATS_CONFIG = Main.CONFIG.getQuarryStatsConfig();
 
-    public static final BlockEntry<QuarryBlock> COPPER_QUARRY = BlockEntry.of("copper_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_BLOCK), settings -> new QuarryBlock(settings, "block/copper_quarry", QUARRY_STATS_CONFIG.getCopperQuarry()));
-    public static final BlockEntry<QuarryBlock> IRON_QUARRY = BlockEntry.of("iron_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK), settings -> new QuarryBlock(settings, "block/iron_quarry", QUARRY_STATS_CONFIG.getIronQuarry()));
-    public static final BlockEntry<QuarryBlock> GOLD_QUARRY = BlockEntry.of("gold_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.GOLD_BLOCK), settings -> new QuarryBlock(settings, "block/gold_quarry", QUARRY_STATS_CONFIG.getGoldQuarry()));
-    public static final BlockEntry<QuarryBlock> DIAMOND_QUARRY = BlockEntry.of("diamond_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.DIAMOND_BLOCK), settings -> new QuarryBlock(settings, "block/diamond_quarry", QUARRY_STATS_CONFIG.getDiamondQuarry()));
-    public static final BlockEntry<QuarryBlock> NETHERITE_QUARRY = BlockEntry.of("netherite_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.NETHERITE_BLOCK), settings -> new QuarryBlock(settings, "block/netherite_quarry", QUARRY_STATS_CONFIG.getNetheriteQuarry()), settings -> settings.rarity(Rarity.UNCOMMON).fireResistant());
-    public static final BlockEntry<QuarryBlock> NETHER_STAR_QUARRY = BlockEntry.of("nether_star_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.NETHERITE_BLOCK), settings -> new QuarryBlock(settings, "block/nether_star_quarry", QUARRY_STATS_CONFIG.getNetherStarQuarry()), settings -> settings.rarity(Rarity.RARE).fireResistant());
+    public static final BlockEntry<QuarryBlock> COPPER_QUARRY = BlockEntry.of("copper_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_BLOCK), settings -> new QuarryBlock(settings, "block/copper_quarry", QUARRY_STATS_CONFIG::getCopperQuarry));
+    public static final BlockEntry<QuarryBlock> IRON_QUARRY = BlockEntry.of("iron_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK), settings -> new QuarryBlock(settings, "block/iron_quarry", QUARRY_STATS_CONFIG::getIronQuarry));
+    public static final BlockEntry<QuarryBlock> GOLD_QUARRY = BlockEntry.of("gold_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.GOLD_BLOCK), settings -> new QuarryBlock(settings, "block/gold_quarry", QUARRY_STATS_CONFIG::getGoldQuarry));
+    public static final BlockEntry<QuarryBlock> DIAMOND_QUARRY = BlockEntry.of("diamond_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.DIAMOND_BLOCK), settings -> new QuarryBlock(settings, "block/diamond_quarry", QUARRY_STATS_CONFIG::getDiamondQuarry));
+    public static final BlockEntry<QuarryBlock> NETHERITE_QUARRY = BlockEntry.of("netherite_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.NETHERITE_BLOCK), settings -> new QuarryBlock(settings, "block/netherite_quarry", QUARRY_STATS_CONFIG::getNetheriteQuarry), settings -> settings.rarity(Rarity.UNCOMMON).fireResistant());
+    public static final BlockEntry<QuarryBlock> NETHER_STAR_QUARRY = BlockEntry.of("nether_star_quarry", BlockBehaviour.Properties.ofFullCopy(Blocks.NETHERITE_BLOCK), settings -> new QuarryBlock(settings, "block/nether_star_quarry", QUARRY_STATS_CONFIG::getNetherStarQuarry), settings -> settings.rarity(Rarity.RARE).fireResistant());
     private static final List<BlockEntry<QuarryBlock>> quarryBlockEntryList = List.of(
             COPPER_QUARRY,
             IRON_QUARRY,

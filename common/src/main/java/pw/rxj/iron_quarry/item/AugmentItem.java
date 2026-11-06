@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.IntSupplier;
 
 public class AugmentItem extends Item implements IHandledSmithing, IHandledItemEntity, IModelPredicateProvider, IDynamicItemName, IModifyCreativeTabEntries {
     public static int CAPACITY_UPGRADE_SLOTS = 7;
@@ -44,14 +45,11 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
     private @NotNull AugmentType uniqueType = AugmentType.EMPTY;
     private @NotNull DynamicText dynamicName = DynamicText.EMPTY;
-    private int capacityUpgradeCost;
+    private final IntSupplier capacityUpgradeCost;
 
-    public AugmentItem(Properties settings, int capacityUpgradeCost) {
+    public AugmentItem(Properties settings, IntSupplier capacityUpgradeCost) {
         super(settings);
 
-        this.capacityUpgradeCost = capacityUpgradeCost;
-    }
-    public void override(int capacityUpgradeCost) {
         this.capacityUpgradeCost = capacityUpgradeCost;
     }
 
@@ -304,7 +302,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     public int getCapacityUpgradeCost() {
-        return this.capacityUpgradeCost;
+        return this.capacityUpgradeCost.getAsInt();
     }
     public int getCapacity(@NotNull ItemStack stack) {
         if(this.isUnique()) return UNIQUE_SET_AMOUNT;

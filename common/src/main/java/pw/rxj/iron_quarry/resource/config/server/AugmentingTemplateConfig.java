@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.resource.config.server;
 
-import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 
@@ -26,14 +25,6 @@ public class AugmentingTemplateConfig {
         }
         public int getCapacityUpgradeCost() {
             return this.server.augmentingTemplate.capacityUpgradeCost;
-        }
-
-        @Override
-        public void applyChanges() {
-            ZItems.AUGMENTING_TEMPLATE.getItem().override(this.getDurability());
-            ZItems.AUGMENT.getItem().override(this.getCapacityUpgradeCost());
-            ZItems.CHEST_LOOTING_AUGMENT.getItem().override(this.getCapacityUpgradeCost());
-            ZItems.SILK_TOUCH_AUGMENT.getItem().override(this.getCapacityUpgradeCost());
         }
     }
 }

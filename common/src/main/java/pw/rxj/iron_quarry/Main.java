@@ -76,7 +76,7 @@ public class Main {
 		Compat.init();
 
 		CONFIG.read(ConfigSide.SERVER);
-		GameLifecycleCallback.IMMINENT_REGISTRY_FREEZE.register(CONFIG::applyServerChanges);
+		GameLifecycleCallback.IMMINENT_REGISTRY_FREEZE.register(CONFIG::validateServerConfig);
 		CONFIG.registerServer();
 
 		ChunkLoadingManager.register();

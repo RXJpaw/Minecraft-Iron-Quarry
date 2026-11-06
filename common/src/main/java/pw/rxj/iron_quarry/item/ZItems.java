@@ -4,7 +4,6 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import pw.rxj.iron_quarry.Main;
-import pw.rxj.iron_quarry.event.ServerLifecycleCallback;
 import pw.rxj.iron_quarry.interfaces.IModifyCreativeTabEntries;
 import pw.rxj.iron_quarry.resource.config.server.AugmentingTemplateConfig;
 import pw.rxj.iron_quarry.resource.config.server.QuarryDrillStatsConfig;
@@ -20,7 +19,7 @@ public class ZItems {
     private static final QuarryDrillStatsConfig.Handler QUARRY_DRILL_STATS_CONFIG = Main.CONFIG.getQuarryDrillStatsConfig();
     private static final QuarryMonitorConfig.Handler QUARRY_MONITOR_CONFIG = Main.CONFIG.getQuarryMonitorConfig();
 
-    public static final ItemEntry<DamageableSmithingTemplateItem> AUGMENTING_TEMPLATE = ItemEntry.of("augmenting_template", settings -> DamageableSmithingTemplateItem.createAugmentingTemplate(settings, AUGMENTING_TEMPLATE_CONFIG.getDurability()));
+    public static final ItemEntry<DamageableSmithingTemplateItem> AUGMENTING_TEMPLATE = ItemEntry.of("augmenting_template", settings -> DamageableSmithingTemplateItem.createAugmentingTemplate(settings, AUGMENTING_TEMPLATE_CONFIG::getDurability));
 
     public static final ItemEntry<BlueprintItem> BLUEPRINT = ItemEntry.of("blueprint", settings -> new BlueprintItem(settings.stacksTo(1).rarity(Rarity.UNCOMMON)));
 
@@ -32,26 +31,26 @@ public class ZItems {
     public static final ItemEntry<Item> CIRCUIT_MK4 = ItemEntry.of("circuit_mk4", settings -> new Item(settings.stacksTo(64)));
     public static final ItemEntry<Item> CIRCUIT_MK5 = ItemEntry.of("circuit_mk5", settings -> new Item(settings.stacksTo(64)));
 
-    public static final ItemEntry<AugmentItem> AUGMENT = ItemEntry.of("augment", settings -> new AugmentItem(settings.stacksTo(1), AUGMENTING_TEMPLATE_CONFIG.getCapacityUpgradeCost()));
-    public static final ItemEntry<AugmentItem> CHEST_LOOTING_AUGMENT = ItemEntry.of("chest_looting_augment", settings -> new AugmentItem(settings.stacksTo(1), AUGMENTING_TEMPLATE_CONFIG.getCapacityUpgradeCost())
+    public static final ItemEntry<AugmentItem> AUGMENT = ItemEntry.of("augment", settings -> new AugmentItem(settings.stacksTo(1), AUGMENTING_TEMPLATE_CONFIG::getCapacityUpgradeCost));
+    public static final ItemEntry<AugmentItem> CHEST_LOOTING_AUGMENT = ItemEntry.of("chest_looting_augment", settings -> new AugmentItem(settings.stacksTo(1), AUGMENTING_TEMPLATE_CONFIG::getCapacityUpgradeCost)
                     .dynamicName(DynamicText.GOLD)
                     .unique(AugmentType.CHEST_LOOTING));
-    public static final ItemEntry<AugmentItem> SILK_TOUCH_AUGMENT = ItemEntry.of("silk_touch_augment", settings -> new AugmentItem(settings.stacksTo(1), AUGMENTING_TEMPLATE_CONFIG.getCapacityUpgradeCost())
+    public static final ItemEntry<AugmentItem> SILK_TOUCH_AUGMENT = ItemEntry.of("silk_touch_augment", settings -> new AugmentItem(settings.stacksTo(1), AUGMENTING_TEMPLATE_CONFIG::getCapacityUpgradeCost)
                     .dynamicName(DynamicText.EMERALD)
                     .unique(AugmentType.SILK_TOUCH));
 
 
-    public static final ItemEntry<DrillItem> COPPER_DRILL = ItemEntry.of("copper_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG.getCopperDrill()));
-    public static final ItemEntry<DrillItem> IRON_DRILL = ItemEntry.of("iron_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG.getIronDrill()));
-    public static final ItemEntry<DrillItem> DIAMOND_DRILL = ItemEntry.of("diamond_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG.getDiamondDrill()));
-    public static final ItemEntry<DrillItem> NETHERITE_DRILL = ItemEntry.of("netherite_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG.getNetheriteDrill()));
-    public static final ItemEntry<DrillItem> SHULKER_DRILL = ItemEntry.of("shulker_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG.getShulkerDrill()));
-    public static final ItemEntry<DrillItem> NETHER_STAR_DRILL = ItemEntry.of("nether_star_drill", settings -> new DrillItem(settings.stacksTo(1).rarity(Rarity.UNCOMMON), QUARRY_DRILL_STATS_CONFIG.getNetherStarDrill()));
+    public static final ItemEntry<DrillItem> COPPER_DRILL = ItemEntry.of("copper_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getCopperDrill, QuarryDrillStatsConfig.DEFAULTS.copperDrill));
+    public static final ItemEntry<DrillItem> IRON_DRILL = ItemEntry.of("iron_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getIronDrill, QuarryDrillStatsConfig.DEFAULTS.ironDrill));
+    public static final ItemEntry<DrillItem> DIAMOND_DRILL = ItemEntry.of("diamond_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getDiamondDrill, QuarryDrillStatsConfig.DEFAULTS.diamondDrill));
+    public static final ItemEntry<DrillItem> NETHERITE_DRILL = ItemEntry.of("netherite_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getNetheriteDrill, QuarryDrillStatsConfig.DEFAULTS.netheriteDrill));
+    public static final ItemEntry<DrillItem> SHULKER_DRILL = ItemEntry.of("shulker_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getShulkerDrill, QuarryDrillStatsConfig.DEFAULTS.shulkerDrill));
+    public static final ItemEntry<DrillItem> NETHER_STAR_DRILL = ItemEntry.of("nether_star_drill", settings -> new DrillItem(settings.stacksTo(1).rarity(Rarity.UNCOMMON), QUARRY_DRILL_STATS_CONFIG::getNetherStarDrill, QuarryDrillStatsConfig.DEFAULTS.netherStarDrill));
 
-    public static final ItemEntry<QuarryMonitorItem> IRON_QUARRY_MONITOR = ItemEntry.of("iron_quarry_monitor", settings -> new QuarryMonitorItem(settings.stacksTo(1), QUARRY_MONITOR_CONFIG.getIronMonitor()));
-    public static final ItemEntry<QuarryMonitorItem> DIAMOND_QUARRY_MONITOR = ItemEntry.of("diamond_quarry_monitor", settings -> new QuarryMonitorItem(settings.stacksTo(1), QUARRY_MONITOR_CONFIG.getDiamondMonitor()));
-    public static final ItemEntry<QuarryMonitorItem> NETHERITE_QUARRY_MONITOR = ItemEntry.of("netherite_quarry_monitor", settings -> new QuarryMonitorItem(settings.stacksTo(1).fireResistant(), QUARRY_MONITOR_CONFIG.getNetheriteMonitor()));
-    public static final ItemEntry<QuarryMonitorItem> SCULK_QUARRY_MONITOR = ItemEntry.of("sculk_quarry_monitor", settings -> new QuarryMonitorItem(settings.stacksTo(1).fireResistant(), QUARRY_MONITOR_CONFIG.getSculkMonitor()));
+    public static final ItemEntry<QuarryMonitorItem> IRON_QUARRY_MONITOR = ItemEntry.of("iron_quarry_monitor", settings -> new QuarryMonitorItem(settings.stacksTo(1), QUARRY_MONITOR_CONFIG::getIronMonitor));
+    public static final ItemEntry<QuarryMonitorItem> DIAMOND_QUARRY_MONITOR = ItemEntry.of("diamond_quarry_monitor", settings -> new QuarryMonitorItem(settings.stacksTo(1), QUARRY_MONITOR_CONFIG::getDiamondMonitor));
+    public static final ItemEntry<QuarryMonitorItem> NETHERITE_QUARRY_MONITOR = ItemEntry.of("netherite_quarry_monitor", settings -> new QuarryMonitorItem(settings.stacksTo(1).fireResistant(), QUARRY_MONITOR_CONFIG::getNetheriteMonitor));
+    public static final ItemEntry<QuarryMonitorItem> SCULK_QUARRY_MONITOR = ItemEntry.of("sculk_quarry_monitor", settings -> new QuarryMonitorItem(settings.stacksTo(1).fireResistant(), QUARRY_MONITOR_CONFIG::getSculkMonitor));
 
     private static final List<ItemEntry<?>> itemEntryList = List.of(
             AUGMENTING_TEMPLATE,
@@ -87,14 +86,6 @@ public class ZItems {
         for (ItemEntry<?> itemEntry : itemEntryList) {
             itemEntry.register();
         }
-
-        ServerLifecycleCallback.STARTING.register(server -> {
-            for (ItemEntry<?> itemEntry : itemEntryList) {
-                if(itemEntry.getItem() instanceof DrillItem drillItem){
-                    drillItem.assignCorrectToolComponent();
-                }
-            }
-        });
     }
 
     public static void fillCreativeTab(CreativeModeTab.Output entries) {

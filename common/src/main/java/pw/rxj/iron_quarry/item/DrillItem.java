@@ -1,6 +1,17 @@
 package pw.rxj.iron_quarry.item;
 
-import pw.rxj.iron_quarry.Main;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.item.enchantment.Enchantable;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import pw.rxj.iron_quarry.interfaces.ICustomDurability;
 import pw.rxj.iron_quarry.interfaces.ICustomEnchantabilityProvider;
 import pw.rxj.iron_quarry.resource.config.server.QuarryDrillStatsConfig;
@@ -8,51 +19,23 @@ import pw.rxj.iron_quarry.util.ReadableString;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.Tool;
-import net.minecraft.world.item.component.TooltipDisplay;
-import net.minecraft.world.item.enchantment.Enchantable;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.Enchantments;
+import java.util.function.Supplier;
 
 public class DrillItem extends Item implements ICustomEnchantabilityProvider, ICustomDurability {
-    private Tool toolComponent;
-    private ItemStack toolStack;
+    private static final Tool NO_TOOL = new Tool(List.of(), 0.0F, 0, true);
 
-    private String toolEquivalent;
-    private int enchantability;
-    private int maxCDamage;
+    private final Supplier<QuarryDrillStatsConfig.Entry> config;
+    private final QuarryDrillStatsConfig.Entry defaultConfig;
 
-    public DrillItem(Item.Properties settings, QuarryDrillStatsConfig.Entry entry) {
-        super(settings.enchantable(entry.enchantability));
+    public DrillItem(Item.Properties settings, Supplier<QuarryDrillStatsConfig.Entry> config, QuarryDrillStatsConfig.Entry defaultConfig) {
+        super(settings);
 
-        this.enchantability = entry.enchantability;
-        this.toolEquivalent = entry.toolEquivalent;
-        this.maxCDamage = entry.durability;
+        this.config = config;
+        this.defaultConfig = defaultConfig;
 
-        BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.add(settings.itemIdOrThrow(), (components, context, key) -> components.set(DataComponents.ENCHANTABLE, new Enchantable(this.enchantability)));
-    }
-    public void override(QuarryDrillStatsConfig.Entry quarryDrillStats) {
-        this.enchantability = quarryDrillStats.enchantability;
-        this.toolEquivalent = quarryDrillStats.toolEquivalent;
-        this.maxCDamage = quarryDrillStats.durability;
-
-        if(this.toolComponent != null) {
-            this.assignCorrectToolComponent();
-        }
+        BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.add(settings.itemIdOrThrow(), (components, context, key) -> components.set(DataComponents.ENCHANTABLE, new Enchantable(this.getEnchantability())));
     }
 
     @Override
@@ -61,7 +44,7 @@ public class DrillItem extends Item implements ICustomEnchantabilityProvider, IC
         int durability = maxDamage - this.getCDamage(stack);
         String durabilityPercent = ZUtil.expandableFixedFloat((float) durability / maxDamage * 100);
 
-        MutableComponent LORE_MINING_LEVEL = ReadableString.translatable("item.iron_quarry.lore.mining_level", ReadableString.translatable("mining_level.iron_quarry." + toolEquivalent));
+        MutableComponent LORE_MINING_LEVEL = ReadableString.translatable("item.iron_quarry.lore.mining_level", ReadableString.translatable("mining_level.iron_quarry." + BuiltInRegistries.ITEM.getKey(this.getToolItem())));
         MutableComponent LORE_DURABILITY = ReadableString.translatable("item.iron_quarry.lore.custom_durability", ZUtil.expandableFixedInt(durability), ZUtil.expandableFixedInt(maxDamage), durabilityPercent);
 
         textConsumer.accept(LORE_MINING_LEVEL);
@@ -78,34 +61,23 @@ public class DrillItem extends Item implements ICustomEnchantabilityProvider, IC
     }
     @Override
     public int getMaxCDamage() {
-        return this.maxCDamage;
+        return this.config.get().durability;
+    }
+    public int getEnchantability() {
+        return this.config.get().enchantability;
     }
 
-    protected void assignCorrectToolComponent() {
-        Identifier toolId = Identifier.tryParse(this.toolEquivalent);
-        if(toolId == null) throw new IllegalStateException("Config.DrillStats.toolEquivalent (" + this.toolEquivalent + ") has incorrect identifier format!");
-
-        Optional<Item> tool = BuiltInRegistries.ITEM.getOptional(toolId);
-        if(tool.isEmpty()) throw new IllegalStateException("Config.DrillStats.toolEquivalent (" + this.toolEquivalent + ") is not an existing tool!");
-
-        this.toolStack = tool.get().getDefaultInstance();
-        Tool defaultToolComponent = this.toolStack.get(DataComponents.TOOL);
-
-        if(defaultToolComponent == null) {
-            Main.LOGGER.warn("Could not find tool component for tool: {}", toolId);
-            this.toolComponent = new Tool(List.of(), 0.0F, 0, true);
-        } else {
-            Main.LOGGER.info("Found tool component for tool: {} {}", toolId, defaultToolComponent.rules());
-            this.toolComponent = defaultToolComponent;
-        }
+    public Item getToolItem() {
+        return this.config.get().getToolItem().or(this.defaultConfig::getToolItem).orElse(Items.AIR);
     }
     public Tool getToolComponent() {
-        Objects.requireNonNull(this.toolComponent);
-        return this.toolComponent;
+        return this.getToolItem().components().getOrDefault(DataComponents.TOOL, NO_TOOL);
     }
-    public ItemStack getToolStack() {
-        Objects.requireNonNull(this.toolComponent);
-        return this.toolStack;
+    public ItemStack createToolStack() {
+        ItemStack toolStack = new ItemStack(this.getToolItem());
+        toolStack.set(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+
+        return toolStack;
     }
 
     @Override

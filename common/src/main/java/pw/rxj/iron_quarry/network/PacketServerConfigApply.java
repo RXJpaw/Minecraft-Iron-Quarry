@@ -30,7 +30,7 @@ public class PacketServerConfigApply extends ByteArrayPacket {
         String address = client.getCurrentServer() == null ? "unknown address/integrated server" : client.getCurrentServer().ip;
 
         Main.CONFIG.readServerByteArray(payload.bytes);
-        Main.CONFIG.applyServerChanges();
+        Main.CONFIG.validateServerConfig();
 
         Main.LOGGER.info("Received server config from: {}", address);
     }

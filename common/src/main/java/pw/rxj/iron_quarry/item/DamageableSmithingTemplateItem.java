@@ -9,6 +9,7 @@ import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.IntSupplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -23,16 +24,13 @@ import net.minecraft.world.item.component.TooltipDisplay;
 public class DamageableSmithingTemplateItem extends SmithingTemplateItem implements ICustomDurability {
     private final Component appliesToText;
     private final Component ingredientsText;
-    private int maxCDamage;
+    private final IntSupplier maxCDamage;
 
-    private DamageableSmithingTemplateItem(Component appliesToText, Component ingredientsText, int maxDamage, Component baseSlotDescriptionText, Component additionsSlotDescriptionText, List<Identifier> emptyBaseSlotTextures, List<Identifier> emptyAdditionsSlotTextures, Item.Properties settings) {
+    private DamageableSmithingTemplateItem(Component appliesToText, Component ingredientsText, IntSupplier maxDamage, Component baseSlotDescriptionText, Component additionsSlotDescriptionText, List<Identifier> emptyBaseSlotTextures, List<Identifier> emptyAdditionsSlotTextures, Item.Properties settings) {
         super(appliesToText, ingredientsText, baseSlotDescriptionText, additionsSlotDescriptionText, emptyBaseSlotTextures, emptyAdditionsSlotTextures, settings.stacksTo(1));
 
         this.appliesToText = appliesToText;
         this.ingredientsText = ingredientsText;
-        this.maxCDamage = maxDamage;
-    }
-    public void override(int maxDamage) {
         this.maxCDamage = maxDamage;
     }
 
@@ -49,7 +47,7 @@ public class DamageableSmithingTemplateItem extends SmithingTemplateItem impleme
 
     @Override
     public int getMaxCDamage() {
-        return this.maxCDamage;
+        return this.maxCDamage.getAsInt();
     }
 
     @Override
@@ -69,7 +67,7 @@ public class DamageableSmithingTemplateItem extends SmithingTemplateItem impleme
 
     }
 
-    public static DamageableSmithingTemplateItem createAugmentingTemplate(Item.Properties settings, int maxDamage) {
+    public static DamageableSmithingTemplateItem createAugmentingTemplate(Item.Properties settings, IntSupplier maxDamage) {
         return new DamageableSmithingTemplateItem(AUGMENTING_APPLIES_TO_TEXT, AUGMENTING_INGREDIENTS_TEXT, maxDamage, AUGMENTING_BASE_SLOT_DESCRIPTION_TEXT, AUGMENTING_ADDITIONS_SLOT_DESCRIPTION_TEXT,
                 List.of(EMPTY_SLOT_AUGMENT_TEXTURE), List.of(EMPTY_SLOT_REDSTONE_DUST_TEXTURE, EMPTY_SLOT_LAPIS_LAZULI_TEXTURE, EMPTY_SLOT_INGOT_TEXTURE), settings);
     }

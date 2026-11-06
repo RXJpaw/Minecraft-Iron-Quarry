@@ -1,7 +1,6 @@
 package pw.rxj.iron_quarry.resource.config.server;
 
 import lombok.AllArgsConstructor;
-import pw.rxj.iron_quarry.block.ZBlocks;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 
@@ -46,16 +45,6 @@ public class QuarryStatsConfig {
         }
         public QuarryStatsConfig.Entry getNetherStarQuarry() {
             return this.server.quarryStats.netherStarQuarry;
-        }
-
-        @Override
-        public void applyChanges() {
-            ZBlocks.COPPER_QUARRY.getBlock().override(this.getCopperQuarry());
-            ZBlocks.IRON_QUARRY.getBlock().override(this.getIronQuarry());
-            ZBlocks.GOLD_QUARRY.getBlock().override(this.getGoldQuarry());
-            ZBlocks.DIAMOND_QUARRY.getBlock().override(this.getDiamondQuarry());
-            ZBlocks.NETHERITE_QUARRY.getBlock().override(this.getNetheriteQuarry());
-            ZBlocks.NETHER_STAR_QUARRY.getBlock().override(this.getNetherStarQuarry());
         }
     }
 }

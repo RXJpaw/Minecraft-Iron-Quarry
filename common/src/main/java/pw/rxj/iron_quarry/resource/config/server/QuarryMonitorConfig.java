@@ -1,7 +1,6 @@
 package pw.rxj.iron_quarry.resource.config.server;
 
 import lombok.AllArgsConstructor;
-import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 
@@ -36,14 +35,6 @@ public class QuarryMonitorConfig {
         }
         public QuarryMonitorConfig.Entry getSculkMonitor() {
             return this.server.quarryMonitor.sculkMonitor;
-        }
-
-        @Override
-        public void applyChanges() {
-            ZItems.IRON_QUARRY_MONITOR.getItem().override(this.getIronMonitor());
-            ZItems.DIAMOND_QUARRY_MONITOR.getItem().override(this.getDiamondMonitor());
-            ZItems.NETHERITE_QUARRY_MONITOR.getItem().override(this.getNetheriteMonitor());
-            ZItems.SCULK_QUARRY_MONITOR.getItem().override(this.getSculkMonitor());
         }
     }
 }

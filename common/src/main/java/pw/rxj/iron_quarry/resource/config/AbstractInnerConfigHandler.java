@@ -8,6 +8,4 @@ public abstract class AbstractInnerConfigHandler {
         this.server = handler.getConfig().SERVER;
         this.client = handler.getConfig().CLIENT;
     }
-
-    public void applyChanges() {}
 }

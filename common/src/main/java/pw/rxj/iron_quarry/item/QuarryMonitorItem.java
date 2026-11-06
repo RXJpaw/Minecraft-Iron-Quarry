@@ -46,23 +46,25 @@ import pw.rxj.iron_quarry.util.ZUtil;
 
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class QuarryMonitorItem extends Item implements ITickingInventoryItem, ITooltipDataProvider, ISilentComponentUpdate {
     private static final long INVENTORY_UPDATE_INTERVAL = 1000L;
     private static final long HELD_UPDATE_INTERVAL = 200L;
 
-    private boolean interdimensional;
-    private int range;
+    private final Supplier<QuarryMonitorConfig.Entry> config;
 
-    public QuarryMonitorItem(Properties settings, QuarryMonitorConfig.Entry entry) {
+    public QuarryMonitorItem(Properties settings, Supplier<QuarryMonitorConfig.Entry> config) {
         super(settings);
 
-        this.interdimensional = entry.interdimensional;
-        this.range = entry.range;
+        this.config = config;
     }
-    public void override(QuarryMonitorConfig.Entry entry) {
-        this.interdimensional = entry.interdimensional;
-        this.range = entry.range;
+
+    public int getRange() {
+        return this.config.get().range;
+    }
+    public boolean isInterdimensional() {
+        return this.config.get().interdimensional;
     }
 
     //Display
@@ -134,11 +136,11 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
             }
 
         } else {
-            textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.range", ReadableString.intFrom(range)));
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.range", ReadableString.intFrom(this.getRange())));
 
             if(this.hasEverCachedQuarry(stack)) {
                 textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.last_updated", ReadableString.toTimeAgo(this.getCachedTimestamp(stack))));
-                if(this.interdimensional) textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.interdimensional"));
+                if(this.isInterdimensional()) textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.interdimensional"));
 
                 MachineWarningsUtil warningsUtil = MachineWarningsUtil.from(stack);
                 if(warningsUtil.hasWarnings()) {
@@ -150,7 +152,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
                 textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.details"));
             } else {
                 textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.never_updated"));
-                if(this.interdimensional) textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.interdimensional"));
+                if(this.isInterdimensional()) textConsumer.accept(ReadableString.translatable("item.iron_quarry.quarry_monitor.lore.interdimensional"));
             }
         }
     }
@@ -264,7 +266,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
 
         double scale = 1.0D;
         if(!quarryWorld.dimension().equals(world.dimension())) {
-            if(!this.interdimensional) return false;
+            if(!this.isInterdimensional()) return false;
 
             scale = DimensionType.getTeleportationScale(world.dimensionType(), quarryWorld.dimensionType());
         }
@@ -273,7 +275,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
         double distanceX = pos.x * scale - quarryCenter.x;
         double distanceZ = pos.z * scale - quarryCenter.z;
 
-        return distanceX * distanceX + distanceZ * distanceZ <= (double) this.range * this.range;
+        return distanceX * distanceX + distanceZ * distanceZ <= (double) this.getRange() * this.getRange();
     }
     public boolean isOutOfRange(ItemStack stack) {
         return stack.getOrDefault(ZComponents.QUARRY_MONITOR_OUT_OF_RANGE, false);
