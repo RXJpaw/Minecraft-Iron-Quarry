@@ -29,9 +29,9 @@ public class ZComponents {
     public static DataComponentType<Integer> AUGMENT_AMOUNT = register("augment_amount", (builder) -> builder
             .persistent(Codec.INT)
             .networkSynchronized(ByteBufCodecs.VAR_INT));
-    public static DataComponentType<List<Identifier>> AUGMENT_UPGRADES = register("augment_upgrades", (builder) -> builder
-            .persistent(Identifier.CODEC.listOf())
-            .networkSynchronized(Identifier.STREAM_CODEC.apply(ByteBufCodecs.list()))
+    public static DataComponentType<AugmentCapacityUpgradesComponent> AUGMENT_CAPACITY_UPGRADES = register("augment_capacity_upgrades", (builder) -> builder
+            .persistent(AugmentCapacityUpgradesComponent.CODEC)
+            .networkSynchronized(AugmentCapacityUpgradesComponent.PACKET_CODEC)
             .cacheEncoding());
 
     public static DataComponentType<Boolean> BLUEPRINT_SEALED = register("blueprint_sealed", (builder) -> builder

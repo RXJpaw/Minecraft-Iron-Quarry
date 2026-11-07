@@ -1,11 +1,12 @@
 package pw.rxj.iron_quarry.item;
 
-import pw.rxj.iron_quarry.Main;
-
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import pw.rxj.iron_quarry.Main;
+
+import java.util.List;
 
 public class ZItemTags {
     private static TagKey<Item> of(String path) {
@@ -16,6 +17,23 @@ public class ZItemTags {
     }
 
     public static final TagKey<Item> AUGMENT_CAPACITY_ENHANCERS = of("augment_capacity_enhancers");
+    public static final TagKey<Item> AUGMENT_CAPACITY_SLOT1_ENHANCERS = of("augment_capacity_slot1_enhancers");
+    public static final TagKey<Item> AUGMENT_CAPACITY_SLOT2_ENHANCERS = of("augment_capacity_slot2_enhancers");
+    public static final TagKey<Item> AUGMENT_CAPACITY_SLOT3_ENHANCERS = of("augment_capacity_slot3_enhancers");
+    public static final TagKey<Item> AUGMENT_CAPACITY_SLOT4_ENHANCERS = of("augment_capacity_slot4_enhancers");
+    public static final TagKey<Item> AUGMENT_CAPACITY_SLOT5_ENHANCERS = of("augment_capacity_slot5_enhancers");
+    public static final TagKey<Item> AUGMENT_CAPACITY_SLOT6_ENHANCERS = of("augment_capacity_slot6_enhancers");
+    public static final TagKey<Item> AUGMENT_CAPACITY_SLOT7_ENHANCERS = of("augment_capacity_slot7_enhancers");
+    public static final List<TagKey<Item>> AUGMENT_CAPACITY_SLOT_ENHANCERS = List.of(
+            AUGMENT_CAPACITY_SLOT1_ENHANCERS,
+            AUGMENT_CAPACITY_SLOT2_ENHANCERS,
+            AUGMENT_CAPACITY_SLOT3_ENHANCERS,
+            AUGMENT_CAPACITY_SLOT4_ENHANCERS,
+            AUGMENT_CAPACITY_SLOT5_ENHANCERS,
+            AUGMENT_CAPACITY_SLOT6_ENHANCERS,
+            AUGMENT_CAPACITY_SLOT7_ENHANCERS
+    );
+
     public static final TagKey<Item> AUGMENT_FORTUNE_T1_ENHANCERS = of("augment_fortune_tier1_enhancers");
     public static final TagKey<Item> AUGMENT_FORTUNE_T2_ENHANCERS = of("augment_fortune_tier2_enhancers");
     public static final TagKey<Item> AUGMENT_FORTUNE_T3_ENHANCERS = of("augment_fortune_tier3_enhancers");

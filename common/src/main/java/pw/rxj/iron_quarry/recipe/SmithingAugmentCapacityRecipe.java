@@ -33,7 +33,7 @@ public class SmithingAugmentCapacityRecipe extends HandledSmithingRecipe {
         if(!(base.getItem() instanceof AugmentItem augmentItem)) return ItemStack.EMPTY;
         if(templateItem.getCDurability(template) < augmentItem.getCapacityUpgradeCost()) return ItemStack.EMPTY;
 
-        boolean result = augmentItem.putUpgrade(base, input.getItem(2));
+        boolean result = augmentItem.putCapacityUpgrade(base, input.getItem(2));
 
         return result ? base : ItemStack.EMPTY;
     }
@@ -50,7 +50,7 @@ public class SmithingAugmentCapacityRecipe extends HandledSmithingRecipe {
         ItemStack preview = this.getResultStack();
 
         if(preview.getItem() instanceof AugmentItem augmentItem) {
-            augmentItem.putUpgrade(preview, addition);
+            augmentItem.putCapacityUpgrade(preview, addition);
         }
 
         return preview;

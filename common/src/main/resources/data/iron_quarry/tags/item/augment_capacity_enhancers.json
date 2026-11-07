@@ -1,12 +1,12 @@
 {
     "replace": false,
     "values": [
-        "minecraft:diamond_block",
-        "minecraft:dragon_head",
-        "minecraft:enchanted_golden_apple",
-        "minecraft:nether_star",
-        "minecraft:silence_armor_trim_smithing_template",
-        "minecraft:deepslate_coal_ore",
-        "minecraft:deepslate_emerald_ore"
+        "#iron_quarry:augment_capacity_slot1_enhancers",
+        "#iron_quarry:augment_capacity_slot2_enhancers",
+        "#iron_quarry:augment_capacity_slot3_enhancers",
+        "#iron_quarry:augment_capacity_slot4_enhancers",
+        "#iron_quarry:augment_capacity_slot5_enhancers",
+        "#iron_quarry:augment_capacity_slot6_enhancers",
+        "#iron_quarry:augment_capacity_slot7_enhancers"
     ]
 }

@@ -3,11 +3,9 @@ package pw.rxj.iron_quarry.item;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
-import net.minecraft.tags.TagKey;
+import net.minecraft.util.Util;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,13 +14,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import org.jetbrains.annotations.NotNull;
 import pw.rxj.iron_quarry.augment.ZAugments;
+import pw.rxj.iron_quarry.data.AugmentCapacityUpgradesComponent;
 import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.gui.CustomTooltipData;
 import pw.rxj.iron_quarry.gui.TooltipInventoryData;
@@ -40,7 +39,7 @@ import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
 public class AugmentItem extends Item implements IHandledSmithing, IHandledItemEntity, IModelPredicateProvider, IDynamicItemName, IModifyCreativeTabEntries {
-    public static int CAPACITY_UPGRADE_SLOTS = 7;
+    public static int CAPACITY_UPGRADE_SLOTS = ZItemTags.AUGMENT_CAPACITY_SLOT_ENHANCERS.size();
     public static int UNIQUE_SET_AMOUNT = 1;
 
     private @NotNull AugmentType uniqueType = AugmentType.EMPTY;
@@ -91,15 +90,24 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         if(!this.isTooltipExtended(stack)) return Optional.empty();
 
         List<Pair<ItemStack, Boolean>> inventory = new ArrayList<>();
-        List<Item> capacityUpgrades = this.getUpgrades(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
+        AugmentCapacityUpgradesComponent capacityUpgrades = this.getCapacityUpgrades(stack);
 
-        BuiltInRegistries.ITEM.getTagOrEmpty(ZItemTags.AUGMENT_CAPACITY_ENHANCERS).forEach(itemRegistryEntry -> {
-            Item upgradeItem = itemRegistryEntry.value();
-
-            inventory.add(new Pair<>(upgradeItem.getDefaultInstance(), !capacityUpgrades.contains(upgradeItem)));
-        });
+        for (int slot = 0; slot < CAPACITY_UPGRADE_SLOTS; slot++) {
+            inventory.add(new Pair<>(this.getCapacitySlotStack(capacityUpgrades, slot), !capacityUpgrades.isFilled(slot)));
+        }
 
         return Optional.of(TooltipInventoryData.from(inventory));
+    }
+    private ItemStack getCapacitySlotStack(AugmentCapacityUpgradesComponent capacityUpgrades, int slot) {
+        Optional<Item> item = capacityUpgrades.getItem(slot);
+        if(item.isPresent()) return item.get().getDefaultInstance();
+
+        List<Item> slotItems = ZUtil.getItemsIn(ZItemTags.AUGMENT_CAPACITY_SLOT_ENHANCERS.get(slot));
+        if(slotItems.isEmpty()) return ItemStack.EMPTY;
+
+        int index = (int) (Util.getMillis() / 1000 % slotItems.size());
+
+        return slotItems.get(index).getDefaultInstance();
     }
 
     @Override
@@ -154,9 +162,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
         if(!this.isUnique()) {
             if(this.isTooltipExtended(stack)) {
-                List<Item> used_upgrades = this.getUpgrades(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
-
-                MutableComponent LORE_INFO = ReadableString.translatable("item.iron_quarry.augment.lore.capacity_upgrades", used_upgrades.size(), CAPACITY_UPGRADE_SLOTS);
+                MutableComponent LORE_INFO = ReadableString.translatable("item.iron_quarry.augment.lore.capacity_upgrades", this.getCapacityUpgradeCount(stack), CAPACITY_UPGRADE_SLOTS);
 
                 textConsumer.accept(ReadableString.space());
                 textConsumer.accept(LORE_INFO);
@@ -307,59 +313,47 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     public int getCapacity(@NotNull ItemStack stack) {
         if(this.isUnique()) return UNIQUE_SET_AMOUNT;
 
-        List<Item> upgrades = this.getUpgrades(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
         AugmentType type = this.getType(stack);
 
-        return type.getAugment().getCapacity(upgrades.size());
+        return type.getAugment().getCapacity(this.getCapacityUpgradeCount(stack));
+    }
+    public int getCapacityUpgradeCount(@NotNull ItemStack stack) {
+        return this.getCapacityUpgrades(stack).getFilledCount(CAPACITY_UPGRADE_SLOTS);
     }
     public int getFreeSpace(@NotNull ItemStack stack){
         return this.getCapacity(stack) - this.getAmount(stack);
     }
 
-    public boolean putUpgrade(@NotNull ItemStack stack, ItemStack upgrade) {
-        List<Identifier> itemIdList = new ArrayList<>(stack.getOrDefault(ZComponents.AUGMENT_UPGRADES, List.of()));
+    public boolean putCapacityUpgrade(@NotNull ItemStack stack, ItemStack upgrade) {
+        AugmentCapacityUpgradesComponent capacityUpgrades = this.getCapacityUpgrades(stack);
 
-        if(upgrade.is(ZItemTags.AUGMENT_CAPACITY_ENHANCERS)) {
-            List<Item> capacityUpgrades = this.getUpgrades(stack, ZItemTags.AUGMENT_CAPACITY_ENHANCERS);
-            if(capacityUpgrades.size() >= CAPACITY_UPGRADE_SLOTS) return false;
+        for (int slot = 0; slot < CAPACITY_UPGRADE_SLOTS; slot++) {
+            if(capacityUpgrades.isFilled(slot)) continue;
+            if(!upgrade.is(ZItemTags.AUGMENT_CAPACITY_SLOT_ENHANCERS.get(slot))) continue;
+
+            stack.set(ZComponents.AUGMENT_CAPACITY_UPGRADES, capacityUpgrades.with(slot, upgrade.getItem()));
+
+            return true;
         }
 
-        Identifier upgradeId = BuiltInRegistries.ITEM.getKey(upgrade.getItem());
-
-        for (Identifier itemId : itemIdList) {
-            if(itemId.equals(upgradeId)) return false;
-        }
-
-        itemIdList.add(upgradeId);
-        stack.set(ZComponents.AUGMENT_UPGRADES, List.copyOf(itemIdList));
-
-        return true;
+        return false;
     }
-
-    public List<Item> getUpgrades(@NotNull ItemStack stack) {
-        List<Identifier> itemIdList = stack.getOrDefault(ZComponents.AUGMENT_UPGRADES, new ArrayList<>());
-        List<Item> upgradeList = new ArrayList<>();
-
-        for (Identifier id : itemIdList) {
-            Optional<Item> item = BuiltInRegistries.ITEM.getOptional(id);
-            item.ifPresent(upgradeList::add);
-        }
-
-        return upgradeList;
-    }
-    public List<Item> getUpgrades(@NotNull ItemStack stack, TagKey<Item> itemTag) {
-        List<Item> upgradeList = this.getUpgrades(stack);
-
-        return upgradeList.stream().filter(item -> item.getDefaultInstance().is(itemTag)).toList();
+    public AugmentCapacityUpgradesComponent getCapacityUpgrades(@NotNull ItemStack stack) {
+        return stack.getOrDefault(ZComponents.AUGMENT_CAPACITY_UPGRADES, AugmentCapacityUpgradesComponent.EMPTY);
     }
 
     public ItemStack withAllCapacityEnhancers() {
         ItemStack stack = new ItemStack(this);
+        AugmentCapacityUpgradesComponent capacityUpgrades = AugmentCapacityUpgradesComponent.EMPTY;
 
-        for (Item enhancer : ZUtil.getItemsIn(ZItemTags.AUGMENT_CAPACITY_ENHANCERS)) {
-            this.putUpgrade(stack, enhancer.getDefaultInstance());
+        for (int slot = 0; slot < CAPACITY_UPGRADE_SLOTS; slot++) {
+            List<Item> slotItems = ZUtil.getItemsIn(ZItemTags.AUGMENT_CAPACITY_SLOT_ENHANCERS.get(slot));
+            if(slotItems.isEmpty()) continue;
+
+            capacityUpgrades = capacityUpgrades.with(slot, slotItems.getFirst());
         }
 
+        stack.set(ZComponents.AUGMENT_CAPACITY_UPGRADES, capacityUpgrades);
         return stack;
     }
     public ItemStack withCapacity(AugmentType augmentType, int capacityUpgrades) {
@@ -378,9 +372,11 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         entries.accept(this);
 
         if(!this.isUnique()) {
-            entries.accept(this.withAllCapacityEnhancers());
+            ItemStack allEnhancers = this.withAllCapacityEnhancers();
+            int capacityUpgradeCount = this.getCapacityUpgradeCount(allEnhancers);
+            entries.accept(allEnhancers);
 
-            for (int i = 0; i < CAPACITY_UPGRADE_SLOTS + 1; i++) {
+            for (int i = 0; i <= capacityUpgradeCount; i++) {
                 if(!ZAugments.SPEED.isDisabled()) entries.accept(this.withCapacity(AugmentType.SPEED, i));
                 if(!ZAugments.FORTUNE.isDisabled()) entries.accept(this.withCapacity(AugmentType.FORTUNE, i));
             }

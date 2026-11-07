@@ -182,6 +182,13 @@
     "kick_reason.iron_quarry.packet_blueprint_position_set.disallowed_distance": "Tried to expand blueprint position by an illegal amount. (Must be between %s and %s)",
 
     "tag.item.iron_quarry.augment_capacity_enhancers": "Augment Capacity Enhancers",
+    "tag.item.iron_quarry.augment_capacity_slot1_enhancers": "Augment Capacity Enhancers (Slot 1)",
+    "tag.item.iron_quarry.augment_capacity_slot2_enhancers": "Augment Capacity Enhancers (Slot 2)",
+    "tag.item.iron_quarry.augment_capacity_slot3_enhancers": "Augment Capacity Enhancers (Slot 3)",
+    "tag.item.iron_quarry.augment_capacity_slot4_enhancers": "Augment Capacity Enhancers (Slot 4)",
+    "tag.item.iron_quarry.augment_capacity_slot5_enhancers": "Augment Capacity Enhancers (Slot 5)",
+    "tag.item.iron_quarry.augment_capacity_slot6_enhancers": "Augment Capacity Enhancers (Slot 6)",
+    "tag.item.iron_quarry.augment_capacity_slot7_enhancers": "Augment Capacity Enhancers (Slot 7)",
     "tag.item.iron_quarry.augment_fortune_tier1_enhancers": "Fortune Augment Enhancers (Tier 1)",
     "tag.item.iron_quarry.augment_fortune_tier2_enhancers": "Fortune Augment Enhancers (Tier 2)",
     "tag.item.iron_quarry.augment_fortune_tier3_enhancers": "Fortune Augment Enhancers (Tier 3)",
