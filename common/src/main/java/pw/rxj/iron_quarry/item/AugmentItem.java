@@ -194,7 +194,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     }
 
     public Container getSmithingOutcome(ItemStack template, ItemStack input, ItemStack addition) {
-        DamageableSmithingTemplateItem templateItem = DamageableSmithingTemplateItem.instanceFrom(template);
+        AugmentingTemplateItem templateItem = AugmentingTemplateItem.instanceFrom(template);
         if(templateItem == null) return new SimpleContainer(template, input, addition, ItemStack.EMPTY);
 
         ItemStack comparisonStack = input.copy();
@@ -206,13 +206,13 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             if(augmentStack == null) return new SimpleContainer(template, input, addition, ItemStack.EMPTY);
             int augmentStackAmount = augmentStack.amount();
 
-            if(templateItem.getCDurability(template) < augmentStackAmount) break;
+            if(!templateItem.canUse(template, augmentStackAmount)) break;
 
             if(!this.canInsert(input, augmentStack)) break;
             this.addAmount(input, augmentStackAmount);
             this.setType(input, augmentStack.type());
 
-            templateItem.cdamage(template, augmentStackAmount, null, null);
+            templateItem.use(template, augmentStackAmount);
             addition.shrink(1);
         }
 
@@ -225,7 +225,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
     @Override
     public Boolean handleSmithingTakeOutput(Player player, Container inputInv, ResultContainer outputInv, ContainerLevelAccess context) {
         ItemStack template = inputInv.getItem(0).copy();
-        DamageableSmithingTemplateItem templateItem = DamageableSmithingTemplateItem.instanceFrom(template);
+        AugmentingTemplateItem templateItem = AugmentingTemplateItem.instanceFrom(template);
         if(templateItem == null) return false;
 
         ItemStack base = inputInv.getItem(1).copy();
@@ -239,8 +239,8 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
         outputInv.awardUsedRecipes(player, List.of(template, base, addition));
 
         if(augmentStack == null) {
-            templateItem.cdamage(template, this.getCapacityUpgradeCost(), null, null);
-            templateItem.triggerBreakEventIfNeeded(template, player.position(), player.level());
+            templateItem.use(template, this.getCapacityUpgradeCost());
+            templateItem.breakIfUsedUp(template, player.position(), player.level());
             inputInv.setItem(0, template);
 
             base.shrink(1);
@@ -252,7 +252,7 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
             Container outcome = this.getSmithingOutcome(template, base, addition);
 
             ItemStack outcomeTemplate = outcome.getItem(0);
-            templateItem.triggerBreakEventIfNeeded(outcomeTemplate, player.position(), player.level());
+            templateItem.breakIfUsedUp(outcomeTemplate, player.position(), player.level());
 
             inputInv.setItem(0, outcomeTemplate);
             inputInv.setItem(1, outcome.getItem(1));

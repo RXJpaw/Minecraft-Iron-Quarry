@@ -1,15 +1,5 @@
 package pw.rxj.iron_quarry.item;
 
-import org.jetbrains.annotations.Nullable;
-import pw.rxj.iron_quarry.Global;
-import pw.rxj.iron_quarry.Main;
-import pw.rxj.iron_quarry.interfaces.ICustomDurability;
-import pw.rxj.iron_quarry.util.ReadableString;
-import pw.rxj.iron_quarry.util.ZUtil;
-
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.IntSupplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -20,22 +10,25 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.Global;
+import pw.rxj.iron_quarry.Main;
+import pw.rxj.iron_quarry.util.ReadableString;
+import pw.rxj.iron_quarry.util.ZUtil;
 
-public class DamageableSmithingTemplateItem extends SmithingTemplateItem implements ICustomDurability {
-    private final Component appliesToText;
-    private final Component ingredientsText;
-    private final IntSupplier maxCDamage;
+import java.util.List;
+import java.util.function.Consumer;
 
-    private DamageableSmithingTemplateItem(Component appliesToText, Component ingredientsText, IntSupplier maxDamage, Component baseSlotDescriptionText, Component additionsSlotDescriptionText, List<Identifier> emptyBaseSlotTextures, List<Identifier> emptyAdditionsSlotTextures, Item.Properties settings) {
-        super(appliesToText, ingredientsText, baseSlotDescriptionText, additionsSlotDescriptionText, emptyBaseSlotTextures, emptyAdditionsSlotTextures, settings.stacksTo(1));
-
-        this.appliesToText = appliesToText;
-        this.ingredientsText = ingredientsText;
-        this.maxCDamage = maxDamage;
+public abstract class AugmentingTemplateItem extends SmithingTemplateItem {
+    protected AugmentingTemplateItem(Item.Properties settings) {
+        super(AUGMENTING_APPLIES_TO_TEXT, AUGMENTING_INGREDIENTS_TEXT, AUGMENTING_BASE_SLOT_DESCRIPTION_TEXT, AUGMENTING_ADDITIONS_SLOT_DESCRIPTION_TEXT,
+                List.of(EMPTY_SLOT_AUGMENT_TEXTURE), List.of(EMPTY_SLOT_REDSTONE_DUST_TEXTURE, EMPTY_SLOT_LAPIS_LAZULI_TEXTURE, EMPTY_SLOT_INGOT_TEXTURE), settings.stacksTo(1));
     }
 
-    public static @Nullable DamageableSmithingTemplateItem instanceFrom(ItemStack stack){
-        if (ZUtil.getBlockOrItem(stack) instanceof DamageableSmithingTemplateItem templateItem) {
+    public static @Nullable AugmentingTemplateItem instanceFrom(ItemStack stack){
+        if (ZUtil.getBlockOrItem(stack) instanceof AugmentingTemplateItem templateItem) {
             return templateItem;
         }
 
@@ -45,31 +38,20 @@ public class DamageableSmithingTemplateItem extends SmithingTemplateItem impleme
         return instanceFrom(stack) == null;
     }
 
-    @Override
-    public int getMaxCDamage() {
-        return this.maxCDamage.getAsInt();
-    }
+    public abstract boolean canUse(ItemStack stack, int cost);
+    public abstract void use(ItemStack stack, int cost);
+    public abstract void breakIfUsedUp(ItemStack stack, Vec3 breakPos, Level breakWorld);
+
+    protected abstract void appendDurabilityText(ItemStack stack, Consumer<Component> textConsumer);
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay displayComponent, Consumer<Component> textConsumer, TooltipFlag type) {
-        int maxDamage = this.getMaxCDamage();
-        int durability = this.getCDurability(stack);
-        String durabilityPercent = ZUtil.expandableFixedFloat((float) durability / maxDamage * 100);
-
-        MutableComponent LORE_DURABILITY = ReadableString.translatable("item.iron_quarry.lore.custom_durability", ZUtil.expandableFixedInt(durability), ZUtil.expandableFixedInt(maxDamage), durabilityPercent);
-
-        textConsumer.accept(LORE_DURABILITY);
+        this.appendDurabilityText(stack, textConsumer);
         textConsumer.accept(ReadableString.space());
         textConsumer.accept(APPLIES_TO_TEXT);
-        textConsumer.accept(ReadableString.space().append(this.appliesToText));
+        textConsumer.accept(ReadableString.space().append(AUGMENTING_APPLIES_TO_TEXT));
         textConsumer.accept(INGREDIENTS_TEXT);
-        textConsumer.accept(ReadableString.space().append(this.ingredientsText));
-
-    }
-
-    public static DamageableSmithingTemplateItem createAugmentingTemplate(Item.Properties settings, IntSupplier maxDamage) {
-        return new DamageableSmithingTemplateItem(AUGMENTING_APPLIES_TO_TEXT, AUGMENTING_INGREDIENTS_TEXT, maxDamage, AUGMENTING_BASE_SLOT_DESCRIPTION_TEXT, AUGMENTING_ADDITIONS_SLOT_DESCRIPTION_TEXT,
-                List.of(EMPTY_SLOT_AUGMENT_TEXTURE), List.of(EMPTY_SLOT_REDSTONE_DUST_TEXTURE, EMPTY_SLOT_LAPIS_LAZULI_TEXTURE, EMPTY_SLOT_INGOT_TEXTURE), settings);
+        textConsumer.accept(ReadableString.space().append(AUGMENTING_INGREDIENTS_TEXT));
     }
 
     private static final MutableComponent APPLIES_TO_TEXT = Component.translatable("item.minecraft.smithing_template.applies_to").withStyle(ChatFormatting.GRAY);
@@ -84,5 +66,4 @@ public class DamageableSmithingTemplateItem extends SmithingTemplateItem impleme
     private static final Identifier EMPTY_SLOT_INGOT_TEXTURE = Identifier.withDefaultNamespace("container/slot/ingot");
     private static final Identifier EMPTY_SLOT_LAPIS_LAZULI_TEXTURE = Identifier.withDefaultNamespace("container/slot/lapis_lazuli");
     private static final Identifier EMPTY_SLOT_REDSTONE_DUST_TEXTURE = Identifier.withDefaultNamespace("container/slot/redstone_dust");
-
 }

@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.recipe;
 
 import pw.rxj.iron_quarry.item.AugmentItem;
-import pw.rxj.iron_quarry.item.DamageableSmithingTemplateItem;
+import pw.rxj.iron_quarry.item.AugmentingTemplateItem;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,12 +26,12 @@ public class SmithingAugmentCapacityRecipe extends HandledSmithingRecipe {
     @Override
     public ItemStack assemble(SmithingRecipeInput input) {
         ItemStack template = input.getItem(0);
-        DamageableSmithingTemplateItem templateItem = DamageableSmithingTemplateItem.instanceFrom(template);
+        AugmentingTemplateItem templateItem = AugmentingTemplateItem.instanceFrom(template);
         if(templateItem == null) return ItemStack.EMPTY;
 
         ItemStack base = input.getItem(1).copy();
         if(!(base.getItem() instanceof AugmentItem augmentItem)) return ItemStack.EMPTY;
-        if(templateItem.getCDurability(template) < augmentItem.getCapacityUpgradeCost()) return ItemStack.EMPTY;
+        if(!templateItem.canUse(template, augmentItem.getCapacityUpgradeCost())) return ItemStack.EMPTY;
 
         boolean result = augmentItem.putCapacityUpgrade(base, input.getItem(2));
 

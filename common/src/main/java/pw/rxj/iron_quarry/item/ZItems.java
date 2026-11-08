@@ -19,7 +19,7 @@ public class ZItems {
     private static final QuarryDrillStatsConfig.Handler QUARRY_DRILL_STATS_CONFIG = Main.CONFIG.getQuarryDrillStatsConfig();
     private static final QuarryMonitorConfig.Handler QUARRY_MONITOR_CONFIG = Main.CONFIG.getQuarryMonitorConfig();
 
-    public static final ItemEntry<DamageableSmithingTemplateItem> AUGMENTING_TEMPLATE = ItemEntry.of("augmenting_template", settings -> DamageableSmithingTemplateItem.createAugmentingTemplate(settings, AUGMENTING_TEMPLATE_CONFIG::getDurability));
+    public static final ItemEntry<DamageableAugmentingTemplateItem> AUGMENTING_TEMPLATE = ItemEntry.of("augmenting_template", settings -> DamageableAugmentingTemplateItem.of(settings, AUGMENTING_TEMPLATE_CONFIG::getDurability));
 
     public static final ItemEntry<BlueprintItem> BLUEPRINT = ItemEntry.of("blueprint", settings -> new BlueprintItem(settings.stacksTo(1).rarity(Rarity.UNCOMMON)));
 

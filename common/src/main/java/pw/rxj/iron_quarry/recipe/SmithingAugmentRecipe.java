@@ -1,7 +1,7 @@
 package pw.rxj.iron_quarry.recipe;
 
 import pw.rxj.iron_quarry.item.AugmentItem;
-import pw.rxj.iron_quarry.item.DamageableSmithingTemplateItem;
+import pw.rxj.iron_quarry.item.AugmentingTemplateItem;
 import pw.rxj.iron_quarry.records.AugmentStack;
 
 import java.util.List;
@@ -28,7 +28,7 @@ public class SmithingAugmentRecipe extends HandledSmithingRecipe {
     @Override
     public ItemStack assemble(SmithingRecipeInput input) {
         ItemStack template = input.getItem(0).copy();
-        if(DamageableSmithingTemplateItem.isNotOf(template)) return ItemStack.EMPTY;
+        if(AugmentingTemplateItem.isNotOf(template)) return ItemStack.EMPTY;
 
         ItemStack base = input.getItem(1).copy();
         if(!(base.getItem() instanceof AugmentItem augmentItem)) return ItemStack.EMPTY;
