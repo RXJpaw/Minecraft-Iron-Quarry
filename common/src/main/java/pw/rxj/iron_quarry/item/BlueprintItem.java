@@ -140,7 +140,7 @@ public class BlueprintItem extends Item implements IHandledAttackOnBlock, IHandl
     }
     @Override
     public int getBarColor(ItemStack stack) {
-        return 0x5980DF;
+        return 0xFFB000;
     }
     @Override
     public int getBarWidth(ItemStack stack) {
