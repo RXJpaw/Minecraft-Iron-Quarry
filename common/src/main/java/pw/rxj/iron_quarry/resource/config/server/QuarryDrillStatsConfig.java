@@ -15,7 +15,7 @@ import java.util.Optional;
 public class QuarryDrillStatsConfig {
     public static final QuarryDrillStatsConfig DEFAULTS = new QuarryDrillStatsConfig();
 
-    public final Entry copperDrill = new Entry(649, 2, "minecraft:stone_pickaxe");
+    public final Entry copperDrill = new Entry(649, 2, "minecraft:copper_pickaxe");
     public final Entry ironDrill = new Entry(1_284, 5, "minecraft:iron_pickaxe");
     public final Entry diamondDrill = new Entry(6_649, 4, "minecraft:diamond_pickaxe");
     public final Entry netheriteDrill = new Entry(93_750,  5, "minecraft:netherite_pickaxe");
