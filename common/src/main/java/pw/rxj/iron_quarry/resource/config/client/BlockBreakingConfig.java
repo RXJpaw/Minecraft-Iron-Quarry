@@ -2,9 +2,15 @@ package pw.rxj.iron_quarry.resource.config.client;
 
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
+import pw.rxj.iron_quarry.resource.config.util.Comment;
+import pw.rxj.iron_quarry.resource.config.util.Range;
 
 public class BlockBreakingConfig {
+    @Comment("Block breaking sound volume.")
+    @Range(min = 0, max = 1)
     public float volume = 1.0F;
+    @Comment("Max. distance for particles & sounds.")
+    @Range(min = 0, max = 64)
     public float distance = 64.0F;
 
     public static class Handler extends AbstractInnerConfigHandler {

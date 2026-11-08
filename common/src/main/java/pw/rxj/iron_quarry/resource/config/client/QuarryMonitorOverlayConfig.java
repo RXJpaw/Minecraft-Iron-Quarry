@@ -3,11 +3,18 @@ package pw.rxj.iron_quarry.resource.config.client;
 import com.mojang.blaze3d.platform.Window;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
+import pw.rxj.iron_quarry.resource.config.util.Comment;
+import pw.rxj.iron_quarry.resource.config.util.Range;
 import pw.rxj.iron_quarry.types.AbsAlignment;
 
 public class QuarryMonitorOverlayConfig {
+    @Comment("Screen corner (top_left, top_right, bottom_left, bottom_right).")
     public String alignment = AbsAlignment.BOTTOM_LEFT.getTranslationKey();
+    @Comment("Horizontal distance to the screen edge of the chosen corner.")
+    @Range(min = 0, max = 128)
     public int x = 8;
+    @Comment("Vertical distance to the screen edge of the chosen corner.")
+    @Range(min = 0, max = 128)
     public int y = 8;
 
     public static class Handler extends AbstractInnerConfigHandler {

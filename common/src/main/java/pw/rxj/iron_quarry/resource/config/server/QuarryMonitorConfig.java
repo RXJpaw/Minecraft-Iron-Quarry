@@ -3,6 +3,8 @@ package pw.rxj.iron_quarry.resource.config.server;
 import lombok.AllArgsConstructor;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
+import pw.rxj.iron_quarry.resource.config.util.Comment;
+import pw.rxj.iron_quarry.resource.config.util.Range;
 
 public class QuarryMonitorConfig {
     public final Entry ironMonitor = new Entry(1_024, false);
@@ -12,7 +14,10 @@ public class QuarryMonitorConfig {
 
     @AllArgsConstructor
     public static class Entry {
+        @Comment("Horizontal distance in blocks up to which the monitor reaches its quarry.\nIn other dimensions, coordinates are scaled like portals (e.g. The Nether 1:8).")
+        @Range(min = 0)
         public final int range;
+        @Comment("Reaches quarries in other dimensions.")
         public final boolean interdimensional;
     }
 

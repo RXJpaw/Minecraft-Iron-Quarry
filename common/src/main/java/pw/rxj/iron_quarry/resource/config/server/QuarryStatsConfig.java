@@ -3,6 +3,8 @@ package pw.rxj.iron_quarry.resource.config.server;
 import lombok.AllArgsConstructor;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
+import pw.rxj.iron_quarry.resource.config.util.Comment;
+import pw.rxj.iron_quarry.resource.config.util.Range;
 
 public class QuarryStatsConfig {
     public final Entry copperQuarry = new Entry(0, 40, 20_000, 20);           //       74 RF/t * 269t |   800 RF ~ 1-2 Coal Generators
@@ -14,9 +16,17 @@ public class QuarryStatsConfig {
 
     @AllArgsConstructor
     public static class Entry {
+        @Comment("Usable augment slots.")
+        @Range(min = 0, max = 6)
         public final int augmentLimit;
+        @Comment("Ticks required to mine a block, before augments.")
+        @Range(min = 1)
         public final int ticksPerOperation;
+        @Comment("Energy buffer in RF.")
+        @Range(min = 1)
         public final int energyCapacity;
+        @Comment("RF/t while mining, before augments. One block costs baseConsumption * ticksPerOperation.")
+        @Range(min = 0)
         public final int baseConsumption;
     }
 

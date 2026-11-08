@@ -7,6 +7,8 @@ import net.minecraft.world.item.Item;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
+import pw.rxj.iron_quarry.resource.config.util.Comment;
+import pw.rxj.iron_quarry.resource.config.util.Range;
 
 import java.util.Optional;
 
@@ -22,8 +24,13 @@ public class QuarryDrillStatsConfig {
 
     @AllArgsConstructor
     public static class Entry {
+        @Comment("Blocks the drill can mine before it breaks. Unbreaking makes it last longer.")
+        @Range(min = 1)
         public final int durability;
+        @Comment("Enchantability like on vanilla tools. Higher gives better enchantments.")
+        @Range(min = 1)
         public final int enchantability;
+        @Comment("ID of the tool whose mining rules the drill copies, e.g. minecraft:iron_pickaxe. Modded tools work too.\nDecides which blocks drop items. An unknown ID falls back to the default tool. An item without a tool component only gets drops that need no tool.")
         public final String toolEquivalent;
 
         public Optional<Item> getToolItem() {
