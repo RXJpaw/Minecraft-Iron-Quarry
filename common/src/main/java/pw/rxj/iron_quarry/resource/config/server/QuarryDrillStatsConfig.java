@@ -40,22 +40,22 @@ public class QuarryDrillStatsConfig {
         }
 
         public QuarryDrillStatsConfig.Entry getCopperDrill() {
-            return this.server.quarryDrillStats.copperDrill;
+            return this.getServer().quarryDrillStats.copperDrill;
         }
         public QuarryDrillStatsConfig.Entry getIronDrill() {
-            return this.server.quarryDrillStats.ironDrill;
+            return this.getServer().quarryDrillStats.ironDrill;
         }
         public QuarryDrillStatsConfig.Entry getDiamondDrill() {
-            return this.server.quarryDrillStats.diamondDrill;
+            return this.getServer().quarryDrillStats.diamondDrill;
         }
         public QuarryDrillStatsConfig.Entry getNetheriteDrill() {
-            return this.server.quarryDrillStats.netheriteDrill;
+            return this.getServer().quarryDrillStats.netheriteDrill;
         }
         public QuarryDrillStatsConfig.Entry getShulkerDrill() {
-            return this.server.quarryDrillStats.shulkerDrill;
+            return this.getServer().quarryDrillStats.shulkerDrill;
         }
         public QuarryDrillStatsConfig.Entry getNetherStarDrill() {
-            return this.server.quarryDrillStats.netherStarDrill;
+            return this.getServer().quarryDrillStats.netherStarDrill;
         }
 
         public void validate() {

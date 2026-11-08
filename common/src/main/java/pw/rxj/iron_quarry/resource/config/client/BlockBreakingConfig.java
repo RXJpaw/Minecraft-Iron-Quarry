@@ -16,10 +16,10 @@ public class BlockBreakingConfig {
         }
 
         public void setVolume(float volume) {
-            this.client.blockBreaking.volume = volume;
+            this.getClient().blockBreaking.volume = volume;
         }
         public float getVolume() {
-            return this.client.blockBreaking.volume;
+            return this.getClient().blockBreaking.volume;
         }
         public void setOptionVolume(int volume) {
             this.setVolume(volume / 100.0F);
@@ -29,10 +29,10 @@ public class BlockBreakingConfig {
         }
 
         public void setDistance(float distance) {
-            this.client.blockBreaking.distance = distance;
+            this.getClient().blockBreaking.distance = distance;
         }
         public float getDistance() {
-            return this.client.blockBreaking.distance;
+            return this.getClient().blockBreaking.distance;
         }
         public void setOptionDistance(int distance) {
             this.setDistance(distance);

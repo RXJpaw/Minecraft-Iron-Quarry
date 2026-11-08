@@ -21,10 +21,10 @@ public class AugmentingTemplateConfig {
         }
 
         public int getDurability() {
-            return this.server.augmentingTemplate.durability;
+            return this.getServer().augmentingTemplate.durability;
         }
         public int getCapacityUpgradeCost() {
-            return this.server.augmentingTemplate.capacityUpgradeCost;
+            return this.getServer().augmentingTemplate.capacityUpgradeCost;
         }
     }
 }

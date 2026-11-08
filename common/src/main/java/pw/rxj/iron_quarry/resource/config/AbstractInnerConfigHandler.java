@@ -1,11 +1,16 @@
 package pw.rxj.iron_quarry.resource.config;
 
 public abstract class AbstractInnerConfigHandler {
-    protected final Config.Server server;
-    protected final Config.Client client;
+    private final Config config;
 
     protected AbstractInnerConfigHandler(ConfigHandler handler) {
-        this.server = handler.getConfig().SERVER;
-        this.client = handler.getConfig().CLIENT;
+        this.config = handler.getConfig();
+    }
+
+    protected Config.Client getClient() {
+        return this.config.getClient();
+    }
+    protected Config.Server getServer() {
+        return this.config.getServer();
     }
 }

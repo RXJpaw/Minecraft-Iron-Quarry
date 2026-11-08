@@ -5,43 +5,46 @@ import pw.rxj.iron_quarry.resource.config.client.QuarryMonitorOverlayConfig;
 import pw.rxj.iron_quarry.resource.config.server.*;
 
 public class Config {
-    public final Config.Client CLIENT = new Config.Client();
-    public final Config.Server SERVER = new Config.Server();
+    //Only used on the client thread.
+    private Config.Client client = new Config.Client();
+    //Swapped by the integrated server on /reload while the client thread reads it.
+    private volatile Config.Server server = new Config.Server();
 
     private Config() { }
     protected static Config empty() {
         return new Config();
     }
 
+    protected Config.Client getClient() {
+        return this.client;
+    }
     protected void overrideClient(Config.Client newClientConfig) {
-        this.CLIENT.blockBreaking = newClientConfig.blockBreaking;
-        this.CLIENT.quarryMonitorOverlay = newClientConfig.quarryMonitorOverlay;
+        this.client = newClientConfig;
+    }
+    protected Config.Server getServer() {
+        return this.server;
     }
     protected void overrideServer(Config.Server newServerConfig) {
-        this.SERVER.quarryStats = newServerConfig.quarryStats;
-        this.SERVER.augments = newServerConfig.augments;
-        this.SERVER.augmentingTemplate = newServerConfig.augmentingTemplate;
-        this.SERVER.quarryMonitor = newServerConfig.quarryMonitor;
-        this.SERVER.quarryDrillStats = newServerConfig.quarryDrillStats;
+        this.server = newServerConfig;
     }
 
     public static class Client {
         private Client() { }
 
-        public BlockBreakingConfig blockBreaking = new BlockBreakingConfig();
-        public QuarryMonitorOverlayConfig quarryMonitorOverlay = new QuarryMonitorOverlayConfig();
+        public final BlockBreakingConfig blockBreaking = new BlockBreakingConfig();
+        public final QuarryMonitorOverlayConfig quarryMonitorOverlay = new QuarryMonitorOverlayConfig();
     }
     public static class Server {
         private Server() { }
 
-        public QuarryStatsConfig quarryStats = new QuarryStatsConfig();
+        public final QuarryStatsConfig quarryStats = new QuarryStatsConfig();
 
-        public AugmentsConfig augments = new AugmentsConfig();
+        public final AugmentsConfig augments = new AugmentsConfig();
 
-        public AugmentingTemplateConfig augmentingTemplate = new AugmentingTemplateConfig();
+        public final AugmentingTemplateConfig augmentingTemplate = new AugmentingTemplateConfig();
 
-        public QuarryMonitorConfig quarryMonitor = new QuarryMonitorConfig();
+        public final QuarryMonitorConfig quarryMonitor = new QuarryMonitorConfig();
 
-        public QuarryDrillStatsConfig quarryDrillStats = new QuarryDrillStatsConfig();
+        public final QuarryDrillStatsConfig quarryDrillStats = new QuarryDrillStatsConfig();
     }
 }

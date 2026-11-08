@@ -25,17 +25,17 @@ public class QuarryMonitorOverlayConfig {
             return AbsAlignment.byTranslationKey(this.getOptionAlignment());
         }
         public void setOptionAlignment(String alignment) {
-            this.client.quarryMonitorOverlay.alignment = alignment;
+            this.getClient().quarryMonitorOverlay.alignment = alignment;
         }
         public String getOptionAlignment() {
-            return this.client.quarryMonitorOverlay.alignment;
+            return this.getClient().quarryMonitorOverlay.alignment;
         }
 
         public void setX(int x) {
-            this.client.quarryMonitorOverlay.x = x;
+            this.getClient().quarryMonitorOverlay.x = x;
         }
         public int getX() {
-            return this.client.quarryMonitorOverlay.x;
+            return this.getClient().quarryMonitorOverlay.x;
         }
         public int getComputedWindowX(Window window, int width) {
             return switch (this.getAlignment()) {
@@ -46,10 +46,10 @@ public class QuarryMonitorOverlayConfig {
         }
 
         public void setY(int y) {
-            this.client.quarryMonitorOverlay.y = y;
+            this.getClient().quarryMonitorOverlay.y = y;
         }
         public int getY() {
-            return this.client.quarryMonitorOverlay.y;
+            return this.getClient().quarryMonitorOverlay.y;
         }
         public int getComputedWindowY(Window window, int height) {
             return switch (this.getAlignment()) {

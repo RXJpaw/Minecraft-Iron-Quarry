@@ -83,8 +83,8 @@ public class ConfigHandler {
     //Reading
     public synchronized void read(ConfigSide side) {
         boolean safeToWrite = switch (side) {
-            case CLIENT -> this.readFile(this.clientConfigPath, Config.Client.class, this.config.CLIENT, Config.empty().CLIENT, this.config::overrideClient);
-            case SERVER -> this.readFile(this.serverConfigPath, Config.Server.class, this.config.SERVER, Config.empty().SERVER, this.config::overrideServer);
+            case CLIENT -> this.readFile(this.clientConfigPath, Config.Client.class, this.config.getClient(), Config.empty().getClient(), this.config::overrideClient);
+            case SERVER -> this.readFile(this.serverConfigPath, Config.Server.class, this.config.getServer(), Config.empty().getServer(), this.config::overrideServer);
         };
 
         //Make sure a complete version is saved on disk!
@@ -113,8 +113,8 @@ public class ConfigHandler {
     //Writing
     public synchronized void write(ConfigSide side) {
         switch (side) {
-            case CLIENT -> this.writeFile(this.clientConfigPath, CLIENT_HEADER, this.config.CLIENT, Config.empty().CLIENT);
-            case SERVER -> this.writeFile(this.serverConfigPath, SERVER_HEADER, this.config.SERVER, Config.empty().SERVER);
+            case CLIENT -> this.writeFile(this.clientConfigPath, CLIENT_HEADER, this.config.getClient(), Config.empty().getClient());
+            case SERVER -> this.writeFile(this.serverConfigPath, SERVER_HEADER, this.config.getServer(), Config.empty().getServer());
         }
     }
     private void writeFile(Path path, String header, Object config, Object defaults) {
@@ -150,18 +150,18 @@ public class ConfigHandler {
 
     //Server Sync
     public byte[] asServerByteArray() {
-        return this.gson.toJson(this.config.SERVER).getBytes(StandardCharsets.UTF_8);
+        return this.gson.toJson(this.config.getServer()).getBytes(StandardCharsets.UTF_8);
     }
     public synchronized void readServerByteArray(byte[] bytes) {
         String json = new String(bytes, StandardCharsets.UTF_8);
 
-        this.config.overrideServer(JsoncReader.read(this.gson, json, Config.Server.class, Config.empty().SERVER));
+        this.config.overrideServer(JsoncReader.read(this.gson, json, Config.Server.class, Config.empty().getServer()));
         this.hasReceivedServerConfig = true;
     }
     private synchronized void restoreLocalServerConfig() {
         if(!this.hasReceivedServerConfig) return;
 
-        this.config.overrideServer(Config.empty().SERVER);
+        this.config.overrideServer(Config.empty().getServer());
         this.hasReceivedServerConfig = false;
 
         this.read(ConfigSide.SERVER);

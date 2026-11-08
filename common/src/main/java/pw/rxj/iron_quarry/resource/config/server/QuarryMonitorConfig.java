@@ -25,16 +25,16 @@ public class QuarryMonitorConfig {
         }
 
         public QuarryMonitorConfig.Entry getIronMonitor() {
-            return this.server.quarryMonitor.ironMonitor;
+            return this.getServer().quarryMonitor.ironMonitor;
         }
         public QuarryMonitorConfig.Entry getDiamondMonitor() {
-            return this.server.quarryMonitor.diamondMonitor;
+            return this.getServer().quarryMonitor.diamondMonitor;
         }
         public QuarryMonitorConfig.Entry getNetheriteMonitor() {
-            return this.server.quarryMonitor.netheriteMonitor;
+            return this.getServer().quarryMonitor.netheriteMonitor;
         }
         public QuarryMonitorConfig.Entry getSculkMonitor() {
-            return this.server.quarryMonitor.sculkMonitor;
+            return this.getServer().quarryMonitor.sculkMonitor;
         }
     }
 }

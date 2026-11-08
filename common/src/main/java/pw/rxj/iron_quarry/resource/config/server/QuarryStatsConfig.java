@@ -29,22 +29,22 @@ public class QuarryStatsConfig {
         }
 
         public QuarryStatsConfig.Entry getCopperQuarry() {
-            return this.server.quarryStats.copperQuarry;
+            return this.getServer().quarryStats.copperQuarry;
         }
         public QuarryStatsConfig.Entry getIronQuarry() {
-            return this.server.quarryStats.ironQuarry;
+            return this.getServer().quarryStats.ironQuarry;
         }
         public QuarryStatsConfig.Entry getGoldQuarry() {
-            return this.server.quarryStats.goldQuarry;
+            return this.getServer().quarryStats.goldQuarry;
         }
         public QuarryStatsConfig.Entry getDiamondQuarry() {
-            return this.server.quarryStats.diamondQuarry;
+            return this.getServer().quarryStats.diamondQuarry;
         }
         public QuarryStatsConfig.Entry getNetheriteQuarry() {
-            return this.server.quarryStats.netheriteQuarry;
+            return this.getServer().quarryStats.netheriteQuarry;
         }
         public QuarryStatsConfig.Entry getNetherStarQuarry() {
-            return this.server.quarryStats.netherStarQuarry;
+            return this.getServer().quarryStats.netherStarQuarry;
         }
     }
 }

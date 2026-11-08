@@ -109,16 +109,16 @@ public class AugmentsConfig {
         }
 
         public AugmentsConfig.Speed getSpeed() {
-            return this.server.augments.speed;
+            return this.getServer().augments.speed;
         }
         public AugmentsConfig.Fortune getFortune() {
-            return this.server.augments.fortune;
+            return this.getServer().augments.fortune;
         }
         public AugmentsConfig.SilkTouch getSilkTouch() {
-            return this.server.augments.silkTouch;
+            return this.getServer().augments.silkTouch;
         }
         public AugmentsConfig.ChestLooting getChestLooting() {
-            return this.server.augments.chestLooting;
+            return this.getServer().augments.chestLooting;
         }
     }
 }
