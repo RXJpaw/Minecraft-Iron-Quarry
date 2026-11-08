@@ -1,0 +1,13 @@
+{
+    "type": "minecraft:smithing_transform",
+    "template": "iron_quarry:circuit_mk5",
+    "base": "iron_quarry:augmenting_template",
+    "addition": "#c:storage_blocks/netherite",
+    "result": {
+        "count": 1,
+        "id": "iron_quarry:celestial_augmenting_template",
+        "components": {
+            "!iron_quarry:custom_damage": {}
+        }
+    }
+}

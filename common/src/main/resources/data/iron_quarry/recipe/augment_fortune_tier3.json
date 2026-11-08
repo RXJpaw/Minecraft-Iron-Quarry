@@ -1,6 +1,6 @@
 {
     "type": "iron_quarry:smithing_augment",
-    "template": "iron_quarry:augmenting_template",
+    "template": "#iron_quarry:augmenting_templates",
     "base": "iron_quarry:augment",
     "addition": "#iron_quarry:augment_fortune_tier3_enhancers",
     "result": {

@@ -20,6 +20,7 @@ public class ZItems {
     private static final QuarryMonitorConfig.Handler QUARRY_MONITOR_CONFIG = Main.CONFIG.getQuarryMonitorConfig();
 
     public static final ItemEntry<DamageableAugmentingTemplateItem> AUGMENTING_TEMPLATE = ItemEntry.of("augmenting_template", settings -> DamageableAugmentingTemplateItem.of(settings, AUGMENTING_TEMPLATE_CONFIG::getDurability));
+    public static final ItemEntry<UnbreakableAugmentingTemplateItem> CELESTIAL_AUGMENTING_TEMPLATE = ItemEntry.of("celestial_augmenting_template", settings -> UnbreakableAugmentingTemplateItem.of(settings));
 
     public static final ItemEntry<BlueprintItem> BLUEPRINT = ItemEntry.of("blueprint", settings -> new BlueprintItem(settings.stacksTo(1).rarity(Rarity.UNCOMMON)));
 
@@ -54,6 +55,7 @@ public class ZItems {
 
     private static final List<ItemEntry<?>> itemEntryList = List.of(
             AUGMENTING_TEMPLATE,
+            CELESTIAL_AUGMENTING_TEMPLATE,
 
             BLUEPRINT,
 

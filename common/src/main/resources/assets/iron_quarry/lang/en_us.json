@@ -99,6 +99,7 @@
     "item.iron_quarry.quarry_monitor.overlay.pos_set": "Position set to: %s",
 
     "item.iron_quarry.augmenting_template": "Augmenting Template",
+    "item.iron_quarry.celestial_augmenting_template": "Celestial Augmenting Template",
     "item.iron_quarry.augmenting_template.lore.any_augment": "Any Augment",
     "item.iron_quarry.augmenting_template.lore.use_rei": "Press U in EMI/JEI/REI",
     "item.iron_quarry.augmenting_template.base_slot_description": "Add any augment",
