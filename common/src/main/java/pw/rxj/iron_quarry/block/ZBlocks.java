@@ -4,7 +4,6 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.PoweredBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.resource.config.server.QuarryStatsConfig;
@@ -30,18 +29,13 @@ public class ZBlocks {
             NETHER_STAR_QUARRY
     );
 
-    public static final BlockEntry<PoweredBlock> REINFORCED_REDSTONE_BLOCK = BlockEntry.of("reinforced_redstone_block", BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_BLOCK), PoweredBlock::new);
-    public static final BlockEntry<Block> REINFORCED_LAPIS_BLOCK = BlockEntry.of("reinforced_lapis_block", BlockBehaviour.Properties.ofFullCopy(Blocks.LAPIS_BLOCK), Block::new);
-
     private static final List<BlockEntry<? extends Block>> blockEntryList = List.of(
             COPPER_QUARRY,
             IRON_QUARRY,
             GOLD_QUARRY,
             DIAMOND_QUARRY,
             NETHERITE_QUARRY,
-            NETHER_STAR_QUARRY,
-            REINFORCED_REDSTONE_BLOCK,
-            REINFORCED_LAPIS_BLOCK
+            NETHER_STAR_QUARRY
     );
 
     public static List<QuarryBlock> getQuarryBlocks() {

@@ -32,6 +32,9 @@ public class ZItems {
     public static final ItemEntry<Item> CIRCUIT_MK4 = ItemEntry.of("circuit_mk4", settings -> new Item(settings.stacksTo(64)));
     public static final ItemEntry<Item> CIRCUIT_MK5 = ItemEntry.of("circuit_mk5", settings -> new Item(settings.stacksTo(64)));
 
+    public static final ItemEntry<Item> REDSTONE_CORE = ItemEntry.of("redstone_core", settings -> new Item(settings.stacksTo(64)));
+    public static final ItemEntry<Item> LAPIS_CORE = ItemEntry.of("lapis_core", settings -> new Item(settings.stacksTo(64)));
+
     public static final ItemEntry<AugmentItem> AUGMENT = ItemEntry.of("augment", settings -> new AugmentItem(settings.stacksTo(1), AUGMENTING_TEMPLATE_CONFIG::getCapacityUpgradeCost));
     public static final ItemEntry<AugmentItem> CHEST_LOOTING_AUGMENT = ItemEntry.of("chest_looting_augment", settings -> new AugmentItem(settings.stacksTo(1), AUGMENTING_TEMPLATE_CONFIG::getCapacityUpgradeCost)
                     .dynamicName(DynamicText.GOLD)
@@ -66,6 +69,9 @@ public class ZItems {
             CIRCUIT_MK3,
             CIRCUIT_MK4,
             CIRCUIT_MK5,
+
+            REDSTONE_CORE,
+            LAPIS_CORE,
 
             AUGMENT,
             CHEST_LOOTING_AUGMENT,

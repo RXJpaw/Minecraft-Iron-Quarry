@@ -8,9 +8,6 @@
     "block.iron_quarry.netherite_quarry": "Netherite Quarry",
     "block.iron_quarry.nether_star_quarry": "Nether Star Quarry",
 
-    "block.iron_quarry.reinforced_redstone_block": "Reinforced Block of Redstone",
-    "block.iron_quarry.reinforced_lapis_block": "Reinforced Block of Lapis Lazuli",
-
     "item.iron_quarry.circuit_blank": "Blank Circuit Board",
     "item.iron_quarry.circuit_mk1": "Lesser Circuit Board",
     "item.iron_quarry.circuit_mk2": "Greater Circuit Board",
@@ -18,6 +15,9 @@
     "item.iron_quarry.circuit_mk3": "Supreme Circuit Board",
     "item.iron_quarry.circuit_mk4": "Divine Circuit Board",
     "item.iron_quarry.circuit_mk5": "Celestial Circuit Board",
+
+    "item.iron_quarry.redstone_core": "Core of Redstone",
+    "item.iron_quarry.lapis_core": "Core of Lapis Lazuli",
 
     "item.iron_quarry.copper_drill": "Copper Drill",
     "item.iron_quarry.iron_drill": "Iron Drill",

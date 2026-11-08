@@ -1,6 +1,6 @@
 {
     "replace": false,
     "values": [
-        "iron_quarry:reinforced_redstone_block"
+        "iron_quarry:redstone_core"
     ]
 }

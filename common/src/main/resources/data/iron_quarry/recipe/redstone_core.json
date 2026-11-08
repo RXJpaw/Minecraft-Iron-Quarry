@@ -1,0 +1,16 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "EEE",
+        "ECE",
+        "EEE"
+    ],
+    "key": {
+        "E": "#c:storage_blocks/redstone",
+        "C": "#c:storage_blocks/raw_copper"
+    },
+    "result": {
+        "count": 1,
+        "id": "iron_quarry:redstone_core"
+    }
+}
