@@ -17,7 +17,7 @@ public class SilkTouchTradingCondition implements LootItemCondition {
 
     @Override
     public boolean test(LootContext context) {
-        return ZAugments.SILK_TOUCH.isTradingEnabled();
+        return ZAugments.SILK_TOUCH.isTradingEnabled() && !ZAugments.SILK_TOUCH.isDisabled();
     }
 
     @Override
