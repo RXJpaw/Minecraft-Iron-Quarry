@@ -30,7 +30,10 @@ public class QuarryDrillStatsConfig {
         @Comment("Enchantability like on vanilla tools. Higher gives better enchantments.")
         @Range(min = 1)
         public final int enchantability;
-        @Comment("ID of the tool whose mining rules the drill copies, e.g. minecraft:iron_pickaxe. Modded tools work too.\nDecides which blocks drop items. An unknown ID falls back to the default tool. An item without a tool component only gets drops that need no tool.")
+        @Comment("""
+        ID of the tool whose mining rules the drill copies, e.g. minecraft:iron_pickaxe. Modded tools work too.
+        Decides which blocks drop items. An unknown ID falls back to the default tool. An item without a tool component only gets drops that need no tool.
+        Modded tools need a language key for the mining level tooltip, e.g. mining_level.iron_quarry.somemod:pickaxe_of_the_void -> "Void".""")
         public final String toolEquivalent;
 
         public Optional<Item> getToolItem() {
