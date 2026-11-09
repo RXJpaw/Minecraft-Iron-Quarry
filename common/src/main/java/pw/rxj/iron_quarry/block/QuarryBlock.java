@@ -166,10 +166,9 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
             return blockState.getFluidState().isSource() ? this.getMinEnergyConsumption(upgradesUtil) : 0;
         }
 
-        float blockHardnessPenalty = Math.clamp(blockState.getBlock().defaultDestroyTime() / 10, 1.0F, 5.0F);
         float fortunePenalty = upgradesUtil.getFortuneEnergyMultiplier();
 
-        return (long) (this.getEnergyPerOperation(upgradesUtil) * blockHardnessPenalty * fortunePenalty);
+        return (long) (this.getEnergyPerOperation(upgradesUtil) * fortunePenalty);
     }
 
     /**
