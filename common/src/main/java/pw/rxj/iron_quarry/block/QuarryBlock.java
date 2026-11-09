@@ -86,6 +86,9 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
     public int getAugmentLimit(){
         return this.config.get().augmentLimit;
     }
+    public int getExpansionLimit(){
+        return this.config.get().expansionLimit;
+    }
 
     public @NotNull MachineConfiguration getMachineConfiguration(ItemStack stack) {
         return stack.getOrDefault(MachineConfiguration.COMPONENT, MachineConfiguration.empty().snapshot());
@@ -95,6 +98,12 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
         augmentInventory.read(stack.get(QuarryInventory.MachineUpgrades.COMPONENT));
 
         return augmentInventory;
+    }
+    public @NotNull ComplexInventory getExpansionInventory(ItemStack stack) {
+        ComplexInventory expansionInventory = QuarryInventory.Expansions.noRef();
+        expansionInventory.read(stack.get(QuarryInventory.Expansions.COMPONENT));
+
+        return expansionInventory;
     }
     public @NotNull ComplexInventory getOutputInventory(ItemStack stack) {
         ComplexInventory outputInventory = QuarryInventory.Output.noRef();

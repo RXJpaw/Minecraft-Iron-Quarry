@@ -29,6 +29,7 @@ public class QuarryBlockScreenHandler extends AbstractContainerMenu {
     private final ComplexInventory BatteryInputInventory;
     private final ComplexEnergyContainer EnergyContainer;
     private final ComplexInventory MachineUpgradesInventory;
+    private final ComplexInventory ExpansionsInventory;
 
     private final Player player;
     private final QuarryBlock quarryBlock;
@@ -41,13 +42,13 @@ public class QuarryBlockScreenHandler extends AbstractContainerMenu {
     //The client will call the other constructor with an empty Inventory and the screenHandler will automatically
     //sync this empty inventory with the inventory on the server.
     public QuarryBlockScreenHandler(int syncId, Inventory playerInventory, QuarryBlockScreenData data) {
-        this(syncId, playerInventory, QuarryInventory.Output.noRef(), QuarryInventory.BatteryInput.noRef(), QuarryInventory.MachineUpgrades.noRef(),
+        this(syncId, playerInventory, QuarryInventory.Output.noRef(), QuarryInventory.BatteryInput.noRef(), QuarryInventory.MachineUpgrades.noRef(), QuarryInventory.Expansions.noRef(),
                 QuarryInventory.Blueprint.noRef(), QuarryInventory.Drill.noRef(), QuarryEnergyContainer.noRef(data.getQuarryBlock()), MachineConfiguration.empty(), data.getQuarryBlock(), data.getBlockPos());
     }
 
     //This constructor gets called from the BlockEntity on the server without calling the other constructor first, the server knows the inventory of the container
     //and can therefore directly provide it as an argument. This inventory will then be synced to the client.
-    public QuarryBlockScreenHandler(int syncId, Inventory playerInventory, ComplexInventory outputInventory, ComplexInventory batteryInputInventory, ComplexInventory machineUpgradesInventory,
+    public QuarryBlockScreenHandler(int syncId, Inventory playerInventory, ComplexInventory outputInventory, ComplexInventory batteryInputInventory, ComplexInventory machineUpgradesInventory, ComplexInventory expansionsInventory,
                                                 ComplexInventory blueprintInventory, ComplexInventory drillInventory, ComplexEnergyContainer energyContainer, MachineConfiguration configuration, QuarryBlock quarryBlock, BlockPos blockPos) {
         super(Main.QUARRY_BLOCK_SCREEN_HANDLER, syncId);
 
@@ -57,12 +58,14 @@ public class QuarryBlockScreenHandler extends AbstractContainerMenu {
         this.world = playerInventory.player.level();
 
         checkContainerSize(machineUpgradesInventory, 6);
+        checkContainerSize(expansionsInventory, 6);
         checkContainerSize(blueprintInventory, 1);
         checkContainerSize(drillInventory, 1);
         checkContainerSize(batteryInputInventory, 1);
         checkContainerSize(outputInventory, 18);
 
         this.MachineUpgradesInventory = machineUpgradesInventory;
+        this.ExpansionsInventory = expansionsInventory;
         this.BlueprintInventory = blueprintInventory;
         this.DrillInventory = drillInventory;
         this.BatteryInputInventory = batteryInputInventory;
@@ -73,6 +76,7 @@ public class QuarryBlockScreenHandler extends AbstractContainerMenu {
 
         //Some inventories do custom logic when a player opens it
         machineUpgradesInventory.startOpen(playerInventory.player);
+        expansionsInventory.startOpen(playerInventory.player);
         blueprintInventory.startOpen(playerInventory.player);
         drillInventory.startOpen(playerInventory.player);
         batteryInputInventory.startOpen(playerInventory.player);
@@ -87,6 +91,18 @@ public class QuarryBlockScreenHandler extends AbstractContainerMenu {
                     @Override
                     public boolean isLocked() {
                         return super.isLocked() || this.getContainerSlot() >= QuarryBlockScreenHandler.this.quarryBlock.getAugmentLimit();
+                    }
+                });
+            }
+        }
+
+        //Expansions Inventory
+        for (var row = 0; row < 2; ++row) {
+            for (var slot = 0; slot < 3; ++slot) {
+                this.addSlot(new ManagedSlot(expansionsInventory, (row * 3) + slot, 199 + slot * SLOT_SIZE, 74 + row * SLOT_SIZE) {
+                    @Override
+                    public boolean isLocked() {
+                        return super.isLocked() || this.getContainerSlot() >= QuarryBlockScreenHandler.this.quarryBlock.getExpansionLimit();
                     }
                 });
             }
@@ -155,6 +171,9 @@ public class QuarryBlockScreenHandler extends AbstractContainerMenu {
     public ComplexInventory getMachineUpgradesInventory() {
         return this.MachineUpgradesInventory;
     }
+    public ComplexInventory getExpansionsInventory() {
+        return this.ExpansionsInventory;
+    }
 
     //This getter will be used by our Screen class
     public BlockPos getBlockPos() {
@@ -214,7 +233,7 @@ public class QuarryBlockScreenHandler extends AbstractContainerMenu {
     @Override
     public ItemStack quickMoveStack(Player player, int invSlot) {
         ItemStack newStack = ItemStack.EMPTY;
-        int maxInvSize = this.DrillInventory.getContainerSize() + this.OutputInventory.getContainerSize() + this.BlueprintInventory.getContainerSize() + this.BatteryInputInventory.getContainerSize() + this.MachineUpgradesInventory.getContainerSize();
+        int maxInvSize = this.DrillInventory.getContainerSize() + this.OutputInventory.getContainerSize() + this.BlueprintInventory.getContainerSize() + this.BatteryInputInventory.getContainerSize() + this.MachineUpgradesInventory.getContainerSize() + this.ExpansionsInventory.getContainerSize();
 
         Slot slot = this.slots.get(invSlot);
         if (slot != null && slot.hasItem()) {

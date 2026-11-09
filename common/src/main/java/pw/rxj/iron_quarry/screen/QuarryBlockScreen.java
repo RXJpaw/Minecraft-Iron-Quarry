@@ -37,6 +37,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
     public static final Identifier OPTIONS_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/options.png");
     public static final Identifier OPTIONS_CONFIGURATION_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/options_configuration.png");
     public static final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/augmentation_configuration.png");
+    public static final Identifier EXPANSION_CONFIGURATION_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/expansion_configuration.png");
     public static final Identifier BUTTON_SPRITE = Identifier.withDefaultNamespace("widget/button");
     public static final Identifier BUTTON_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("widget/button_highlighted");
     public static final Identifier BUTTON_DISABLED_SPRITE = Identifier.withDefaultNamespace("widget/button_disabled");
@@ -46,6 +47,11 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
     private final TrackableZone PreviousChunkButton = TrackableZone.empty();
     private final TrackableZone NextChunkButton = TrackableZone.empty();
     private final TrackableZone AugmentsConfig = TrackableZone.empty()
+            .onTickDelta(2.5F, (zone, ticks) -> {
+                zone.width = (int) Math.min(22 + ticks * 31.2F, 100);
+                zone.height = (int) Math.min(22 + ticks * 28.0F, 92);
+            });
+    private final TrackableZone ExpansionsConfig = TrackableZone.empty()
             .onTickDelta(2.5F, (zone, ticks) -> {
                 zone.width = (int) Math.min(22 + ticks * 31.2F, 100);
                 zone.height = (int) Math.min(22 + ticks * 28.0F, 92);
@@ -71,17 +77,18 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
             new IoOption(Face.BACK, Face.BACK, 60, 64)
     );
     private final List<ManagedSlot> AUGMENT_SLOTS = new ArrayList<>();
+    private final List<ManagedSlot> EXPANSION_SLOTS = new ArrayList<>();
     private final ManagedSlot BLUEPRINT_SLOT;
     private final ManagedSlot DRILL_SLOT;
     private final ManagedSlot BATTERY_SLOT;
 
-    private void drawLockedSlot(GuiGraphicsExtractor context, Slot slot, int width, int height) {
+    private void drawLockedSlot(GuiGraphicsExtractor context, Identifier texture, Slot slot, int width, int height) {
         if(width < 0) Main.LOGGER.warn("Tried to drawLockedSlot with width < 0 ({})", width);
         if(width > 18) Main.LOGGER.warn("Tried to drawLockedSlot with width > 18 ({})", width);
         if(height < 0) Main.LOGGER.warn("Tried to drawLockedSlot with height < 0 ({})", height);
         if(height > 18) Main.LOGGER.warn("Tried to drawLockedSlot with height > 18 ({})", height);
 
-        RenderUtil.drawTexture(context, AUGMENTATION_CONFIGURATION_TEXTURE, this.leftPos + slot.x - 1, this.topPos + slot.y - 1, 100, 0, width, height);
+        RenderUtil.drawTexture(context, texture, this.leftPos + slot.x - 1, this.topPos + slot.y - 1, 100, 0, width, height);
     }
 
     public QuarryBlockScreen(QuarryBlockScreenHandler handler, Inventory inventory, Component title) {
@@ -101,9 +108,10 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
         blockPos = handler.getBlockPos();
 
         for (int i = 0; i < 6; i++) AUGMENT_SLOTS.add((ManagedSlot) handler.getSlot(i));
-        BLUEPRINT_SLOT = (ManagedSlot) handler.getSlot(6);
-        DRILL_SLOT = (ManagedSlot) handler.getSlot(7);
-        BATTERY_SLOT = (ManagedSlot) handler.getSlot(8);
+        for (int i = 6; i < 12; i++) EXPANSION_SLOTS.add((ManagedSlot) handler.getSlot(i));
+        BLUEPRINT_SLOT = (ManagedSlot) handler.getSlot(12);
+        DRILL_SLOT = (ManagedSlot) handler.getSlot(13);
+        BATTERY_SLOT = (ManagedSlot) handler.getSlot(14);
     }
 
     @Override
@@ -179,6 +187,43 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
         this.drawChunkButton(context, PreviousChunkButton, this.hasPreviousChunk(), 180, mouseX, mouseY);
         this.drawChunkButton(context, NextChunkButton, this.hasNextChunk(), 197, mouseX, mouseY);
 
+        //Expansion Configuration
+        TrackableZone.Zone expansionsMenuZone = ExpansionsConfig.zone;
+        expansionsMenuZone.x = backgroundX + this.realBackgroundWidth;
+        expansionsMenuZone.y = backgroundY + 48;
+
+        ExpansionsConfig.consume(expansionsMenuZone, mouseX, mouseY);
+
+        if(IoConfig.isUnused() && AugmentsConfig.isUnused() && ExpansionsConfig.consumeTickDelta(delta)){
+            int expansionsMenuX = ExpansionsConfig.zone.x;
+            int expansionsMenuY = ExpansionsConfig.zone.y;
+            int expansionsMenuWidth = ExpansionsConfig.zone.width;
+            int expansionsMenuHeight = ExpansionsConfig.zone.height;
+
+            RenderUtil.drawTexture(context, EXPANSION_CONFIGURATION_TEXTURE, expansionsMenuX, expansionsMenuY, 0, 0, expansionsMenuWidth, expansionsMenuHeight);
+
+            RenderUtil.runScissored(context, expansionsMenuX, expansionsMenuY, expansionsMenuWidth, expansionsMenuHeight, () -> {
+                context.text(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.title.expansion"), expansionsMenuX + 20, expansionsMenuY + 7, 0xFFFFFFFF);
+            });
+
+            for (ManagedSlot slot: EXPANSION_SLOTS) {
+                int testX = expansionsMenuWidth + this.realBackgroundWidth;
+                int testY = expansionsMenuHeight + 48;
+
+                boolean slotVisible = (testX >= slot.x - 1) && (testY >= slot.y - 1);
+                slot.setEnabled(slotVisible);
+
+                if(slot.isLocked() && slotVisible) {
+                    this.drawLockedSlot(context, EXPANSION_CONFIGURATION_TEXTURE, slot, Math.min(testX - slot.x + 1, 18), Math.min(testY - slot.y + 1, 18));
+                }
+            }
+
+        } else {
+            RenderUtil.drawTexture(context, OPTIONS_TEXTURE, expansionsMenuZone.x, expansionsMenuZone.y, 0, 44, 22, 22);
+
+            EXPANSION_SLOTS.forEach(slot -> slot.setEnabled(false));
+        }
+
         //Augmentation Configuration
         TrackableZone.Zone augmentsMenuZone = AugmentsConfig.zone;
         augmentsMenuZone.x = backgroundX + this.realBackgroundWidth;
@@ -186,7 +231,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
 
         AugmentsConfig.consume(augmentsMenuZone, mouseX, mouseY);
 
-        if(IoConfig.isUnused() && AugmentsConfig.consumeTickDelta(delta)){
+        if(IoConfig.isUnused() && ExpansionsConfig.isUnused() && AugmentsConfig.consumeTickDelta(delta)){
             int augmentsMenuX = AugmentsConfig.zone.x;
             int augmentsMenuY = AugmentsConfig.zone.y;
             int augmentsMenuWidth = AugmentsConfig.zone.width;
@@ -206,7 +251,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
                 slot.setEnabled(slotVisible);
 
                 if(slot.isLocked() && slotVisible) {
-                    this.drawLockedSlot(context, slot, Math.min(testX - slot.x + 1, 18), Math.min(testY - slot.y + 1, 18));
+                    this.drawLockedSlot(context, AUGMENTATION_CONFIGURATION_TEXTURE, slot, Math.min(testX - slot.x + 1, 18), Math.min(testY - slot.y + 1, 18));
                 }
             }
 
@@ -223,7 +268,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
 
         IoConfig.consume(ioConfigZone, mouseX, mouseY);
 
-        if(AugmentsConfig.isUnused() && IoConfig.consumeTickDelta(delta)){
+        if(AugmentsConfig.isUnused() && ExpansionsConfig.isUnused() && IoConfig.consumeTickDelta(delta)){
             int ioConfigX = IoConfig.zone.x;
             int ioConfigY = IoConfig.zone.y;
             int ioConfigWidth = IoConfig.zone.width;
@@ -290,13 +335,18 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
             RenderUtil.runScissored(context, zone.x - this.leftPos, zone.y - this.topPos, zone.width, zone.height, () -> {
                 super.extractSlot(context, slot, mouseX, mouseY);
             });
+        } else if(EXPANSION_SLOTS.contains((ManagedSlot) slot)) {
+            TrackableZone.Zone zone = ExpansionsConfig.zone;
+            RenderUtil.runScissored(context, zone.x - this.leftPos, zone.y - this.topPos, zone.width, zone.height, () -> {
+                super.extractSlot(context, slot, mouseX, mouseY);
+            });
         } else {
             super.extractSlot(context, slot, mouseX, mouseY);
         }
     }
 
     public List<TrackableZone.Zone> getExclusionZones(){
-        return List.of(IoConfig.zone, AugmentsConfig.zone);
+        return List.of(IoConfig.zone, AugmentsConfig.zone, ExpansionsConfig.zone);
     }
 
     @Override
@@ -331,6 +381,14 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
                     break;
                 }
             }
+        } else if(ExpansionsConfig.isMouseOver()) {
+            for (ManagedSlot slot : EXPANSION_SLOTS) {
+                if(slot.isLockedAndEmpty() && TrackableZone.isMouseOver(slot, this.leftPos, this.topPos, mouseX, mouseY)) {
+                    context.setTooltipForNextFrame(this.font, ReadableString.translatable("screen.iron_quarry.quarry_block.tooltip.locked_expansion_slot"), mouseX, mouseY);
+
+                    break;
+                }
+            }
         }
 
         matrices.popMatrix();
@@ -338,7 +396,7 @@ public class QuarryBlockScreen extends AbstractContainerScreen<QuarryBlockScreen
 
     @Override
     protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top) {
-        if(IoConfig.isMouseOver() || AugmentsConfig.isMouseOver()) return false;
+        if(IoConfig.isMouseOver() || AugmentsConfig.isMouseOver() || ExpansionsConfig.isMouseOver()) return false;
 
         int offsetX = 0;
         int offsetY = 0;

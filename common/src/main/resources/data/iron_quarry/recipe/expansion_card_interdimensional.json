@@ -1,0 +1,18 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "OOO",
+        "OMO",
+        "ECE"
+    ],
+    "key": {
+        "O": "#c:obsidians/crying",
+        "M": "iron_quarry:blank_expansion_card",
+        "E": "minecraft:ender_eye",
+        "C": "iron_quarry:circuit_mk3"
+    },
+    "result": {
+        "count": 1,
+        "id": "iron_quarry:interdimensional_expansion_card"
+    }
+}

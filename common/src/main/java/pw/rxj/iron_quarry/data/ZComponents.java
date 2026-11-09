@@ -90,6 +90,7 @@ public class ZComponents {
                 QuarryInventory.BatteryInput.COMPONENT,
                 QuarryInventory.Blueprint.COMPONENT,
                 QuarryInventory.Drill.COMPONENT,
-                QuarryInventory.MachineUpgrades.COMPONENT
+                QuarryInventory.MachineUpgrades.COMPONENT,
+                QuarryInventory.Expansions.COMPONENT
         );
     }}

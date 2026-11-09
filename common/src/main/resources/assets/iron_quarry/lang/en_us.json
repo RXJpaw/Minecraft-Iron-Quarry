@@ -47,6 +47,8 @@
 
     "item.iron_quarry.augment": "Empty Augment",
     "item.iron_quarry.silk_touch_augment": "Silk Touch Augment",
+    "item.iron_quarry.blank_expansion_card": "Blank Expansion Card",
+    "item.iron_quarry.interdimensional_expansion_card": "Interdimensional Expansion Card",
     "item.iron_quarry.chest_looting_augment": "Chest Looting Augment",
 
     "item.iron_quarry.augment.empty": "Empty Augment",
@@ -61,6 +63,7 @@
     "item.iron_quarry.augment.lore.benefit.fortune": "§{RGB_BENEFIT +%s Fortune}",
     "item.iron_quarry.augment.lore.benefit.silk_touch": "§{RGB_BENEFIT Mines blocks with Silk Touch}",
     "item.iron_quarry.augment.lore.benefit.chest_looting": "§{RGB_BENEFIT Pulls items from lootable containers}",
+    "item.iron_quarry.expansion.lore.benefit.interdimensional": "§{RGB_BENEFIT Allows mining in other dimensions}",
     "item.iron_quarry.augment.lore.drawback.speed_energy_factor": "§{RGB_DRAWBACK +%s Speed energy factor}",
     "item.iron_quarry.augment.lore.drawback.fortune_energy_factor": "§{RGB_DRAWBACK +%s Fortune energy factor}",
     "item.iron_quarry.augment.lore.drawback.speed": "§{RGB_DRAWBACK Takes %s-times longer per operation}",
@@ -124,6 +127,7 @@
     "item.iron_quarry.conflict.fortune_limit": "§{RGB_WARNING ⚠ Fortune Augments are limited to Fortune %s}",
     "item.iron_quarry.conflict.silk_touch_fortune": "§{RGB_WARNING ⚠ Silk Touch overrides Fortune Augment}",
     "item.iron_quarry.conflict.locked_augment": "§{RGB_WARNING ⚠ Augments in locked slots are ignored}",
+    "item.iron_quarry.conflict.locked_expansion": "§{RGB_WARNING ⚠ Expansion Cards in locked slots are ignored}",
 
     "item.iron_quarry.warning.quarry_status_unknown": "§{RGB_CRITICAL ⚠ Quarry unloaded or destroyed}",
     "item.iron_quarry.warning.quarry_energy_depleted": "§{RGB_CRITICAL ⚠ Energy fully depleted}",
@@ -139,6 +143,7 @@
     "item.iron_quarry.warning.quarry_mining_denied.block": "§{RGB_DARK_GRAY ℹ Block: %s}",
 
     "screen.iron_quarry.quarry_block.tooltip.locked_augment_slot": "§{RGB_TAB_TITLE Upgrade the quarry to unlock this augment slot!}",
+    "screen.iron_quarry.quarry_block.tooltip.locked_expansion_slot": "§{RGB_TAB_TITLE Upgrade the quarry to unlock this expansion slot!}",
     "screen.iron_quarry.quarry_block.tooltip.blueprint_info": "§{RGB_TAB_TITLE Insert §lSealed Blueprint§r to start the quarry.}",
     "screen.iron_quarry.quarry_block.tooltip.battery_info": "§{RGB_TAB_TITLE Insert §la Battery§r to charge the quarry externally.}",
     "screen.iron_quarry.quarry_block.tooltip.drill_info": "§{RGB_TAB_TITLE Insert §lany Drill§r to start the quarry.}",
@@ -148,6 +153,7 @@
     "screen.iron_quarry.quarry_block.tooltip.next_chunk.disabled": "§{RGB_MUTED_TAB_TITLE No Next Chunk}",
     "screen.iron_quarry.quarry_block.title.configuration": "§{RGB_TAB_TITLE Configuration}",
     "screen.iron_quarry.quarry_block.title.augmentation": "§{RGB_TAB_TITLE Augmentation}",
+    "screen.iron_quarry.quarry_block.title.expansion": "§{RGB_TAB_TITLE Expansion}",
     "screen.iron_quarry.quarry_block.title.info_display": "§{RGB_WEAK_HIGHLIGHT Quarry of %s}",
     "screen.iron_quarry.quarry_block.title.info_display.no_owner": "§{RGB_WEAK_HIGHLIGHT Quarry Details}",
 

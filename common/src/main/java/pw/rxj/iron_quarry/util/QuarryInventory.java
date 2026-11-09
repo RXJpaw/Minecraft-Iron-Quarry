@@ -10,6 +10,7 @@ import pw.rxj.iron_quarry.data.ZComponents;
 import pw.rxj.iron_quarry.item.AugmentItem;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.DrillItem;
+import pw.rxj.iron_quarry.item.ExpansionCardItem;
 import pw.rxj.iron_quarry.platform.Platform;
 
 public class QuarryInventory {
@@ -101,6 +102,29 @@ public class QuarryInventory {
         @Override
         public boolean canPlaceItem(int slot, ItemStack stack) {
             return stack.getItem() instanceof AugmentItem;
+        }
+    }
+    public static class Expansions extends ReferencedQuarryInventory {
+        public static DataComponentType<ItemContainerContents> COMPONENT = registerComponent("quarry_inventory_expansions");
+
+        private Expansions(@Nullable QuarryBlockEntity ref) {
+            super(6, ref);
+        }
+        public static Expansions noRef() {
+            return new Expansions(null);
+        }
+        public static Expansions ofRef(@Nullable QuarryBlockEntity ref) {
+            return new Expansions(ref);
+        }
+
+
+        @Override
+        public int getMaxStackSize() {
+            return 1;
+        }
+        @Override
+        public boolean canPlaceItem(int slot, ItemStack stack) {
+            return stack.getItem() instanceof ExpansionCardItem;
         }
     }
     public static class Blueprint extends ReferencedQuarryInventory {

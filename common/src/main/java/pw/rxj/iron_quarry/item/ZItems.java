@@ -10,6 +10,7 @@ import pw.rxj.iron_quarry.resource.config.server.QuarryDrillStatsConfig;
 import pw.rxj.iron_quarry.resource.config.server.QuarryMonitorConfig;
 import pw.rxj.iron_quarry.types.AugmentType;
 import pw.rxj.iron_quarry.types.DynamicText;
+import pw.rxj.iron_quarry.types.ExpansionType;
 import pw.rxj.iron_quarry.util.ItemEntry;
 
 import java.util.List;
@@ -43,6 +44,8 @@ public class ZItems {
                     .dynamicName(DynamicText.EMERALD)
                     .unique(AugmentType.SILK_TOUCH));
 
+    public static final ItemEntry<Item> BLANK_EXPANSION_CARD = ItemEntry.of("blank_expansion_card", settings -> new Item(settings.stacksTo(16)));
+    public static final ItemEntry<ExpansionCardItem> INTERDIMENSIONAL_EXPANSION_CARD = ItemEntry.of("interdimensional_expansion_card", settings -> ExpansionCardItem.of(settings.stacksTo(1), ExpansionType.INTERDIMENSIONAL));
 
     public static final ItemEntry<DrillItem> COPPER_DRILL = ItemEntry.of("copper_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getCopperDrill, QuarryDrillStatsConfig.DEFAULTS.copperDrill));
     public static final ItemEntry<DrillItem> IRON_DRILL = ItemEntry.of("iron_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getIronDrill, QuarryDrillStatsConfig.DEFAULTS.ironDrill));
@@ -76,6 +79,9 @@ public class ZItems {
             AUGMENT,
             CHEST_LOOTING_AUGMENT,
             SILK_TOUCH_AUGMENT,
+
+            BLANK_EXPANSION_CARD,
+            INTERDIMENSIONAL_EXPANSION_CARD,
 
             COPPER_DRILL,
             IRON_DRILL,

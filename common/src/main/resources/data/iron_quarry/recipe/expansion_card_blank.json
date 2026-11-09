@@ -1,0 +1,17 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "III",
+        "IMI",
+        "GGG"
+    ],
+    "key": {
+        "I": "#c:ingots/iron",
+        "M": "iron_quarry:circuit_blank",
+        "G": "#c:nuggets/gold"
+    },
+    "result": {
+        "count": 1,
+        "id": "iron_quarry:blank_expansion_card"
+    }
+}

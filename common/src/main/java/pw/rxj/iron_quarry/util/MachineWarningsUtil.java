@@ -43,20 +43,22 @@ public class MachineWarningsUtil {
     );
     public static final int CRITICAL_FLAG = toFlag(CRITICAL_FLAG_LIST);
 
-    private static final MachineWarningsUtil UNKNOWN = new MachineWarningsUtil(1 << WARNING_QUARRY_UNKNOWN, null, MachineUpgradesUtil.empty());
-    private static final MachineWarningsUtil OUT_OF_RANGE = new MachineWarningsUtil(1 << WARNING_QUARRY_OUT_OF_RANGE, null, MachineUpgradesUtil.empty());
+    private static final MachineWarningsUtil UNKNOWN = new MachineWarningsUtil(1 << WARNING_QUARRY_UNKNOWN, null, MachineUpgradesUtil.empty(), MachineExpansionsUtil.empty());
+    private static final MachineWarningsUtil OUT_OF_RANGE = new MachineWarningsUtil(1 << WARNING_QUARRY_OUT_OF_RANGE, null, MachineUpgradesUtil.empty(), MachineExpansionsUtil.empty());
 
     private final int flag;
     private final @Nullable QuarryBlockedDataComponent blocked;
     private final MachineUpgradesUtil upgradesUtil;
+    private final MachineExpansionsUtil expansionsUtil;
 
-    private MachineWarningsUtil(int flag, @Nullable QuarryBlockedDataComponent blocked, MachineUpgradesUtil upgradesUtil) {
+    private MachineWarningsUtil(int flag, @Nullable QuarryBlockedDataComponent blocked, MachineUpgradesUtil upgradesUtil, MachineExpansionsUtil expansionsUtil) {
         this.flag = flag;
         this.blocked = blocked;
         this.upgradesUtil = upgradesUtil;
+        this.expansionsUtil = expansionsUtil;
     }
-    private MachineWarningsUtil(QuarryBlock quarryBlock, long energyStored, ComplexInventory outputInventory, ItemStack blueprintStack, ItemStack drillStack, MachineUpgradesUtil upgradesUtil,
-                                @Nullable QuarryOwnerComponent owner, @Nullable QuarryBlockedDataComponent blocked) {
+    private MachineWarningsUtil(QuarryBlock quarryBlock, long energyStored, ComplexInventory outputInventory, ItemStack blueprintStack, ItemStack drillStack,
+                                MachineUpgradesUtil upgradesUtil, MachineExpansionsUtil expansionsUtil, @Nullable QuarryOwnerComponent owner, @Nullable QuarryBlockedDataComponent blocked) {
         long energyRequired = quarryBlock.getMinEnergyConsumption(upgradesUtil);
         int occupiedSlots = outputInventory.occupiedSlots();
         int slots = outputInventory.getContainerSize();
@@ -88,6 +90,7 @@ public class MachineWarningsUtil {
         this.flag = flag;
         this.blocked = blocked;
         this.upgradesUtil = upgradesUtil;
+        this.expansionsUtil = expansionsUtil;
     }
 
     public static MachineWarningsUtil from(QuarryBlockScreenHandler screenHandler) {
@@ -97,7 +100,7 @@ public class MachineWarningsUtil {
         if(quarryBlock == null) return UNKNOWN;
 
         return new MachineWarningsUtil(quarryBlock, screenHandler.getEnergyContainer().getStored(), screenHandler.getOutputInventory(), screenHandler.getBlueprintInventory().getItem(0), screenHandler.getDrillInventory().getItem(0),
-                MachineUpgradesUtil.from(screenHandler), blockEntity.getOwner(), blockEntity.getBlocked());
+                MachineUpgradesUtil.from(screenHandler), MachineExpansionsUtil.from(screenHandler), blockEntity.getOwner(), blockEntity.getBlocked());
     }
     public static MachineWarningsUtil from(ItemStack quarryMonitorStack) {
         if(!(quarryMonitorStack.getItem() instanceof QuarryMonitorItem quarryMonitorItem)) return UNKNOWN;
@@ -108,7 +111,7 @@ public class MachineWarningsUtil {
         if(!(ZUtil.getBlockOrItem(quarryStack) instanceof QuarryBlock quarryBlock)) return UNKNOWN;
 
         return new MachineWarningsUtil(quarryBlock, quarryBlock.getEnergyStored(quarryStack), quarryBlock.getOutputInventory(quarryStack), quarryBlock.getBlueprintStack(quarryStack), quarryBlock.getDrillStack(quarryStack),
-                MachineUpgradesUtil.from(quarryStack), quarryMonitorItem.getCachedOwner(quarryMonitorStack), quarryMonitorItem.getCachedBlockedData(quarryMonitorStack));
+                MachineUpgradesUtil.from(quarryStack), MachineExpansionsUtil.from(quarryMonitorStack), quarryMonitorItem.getCachedOwner(quarryMonitorStack), quarryMonitorItem.getCachedBlockedData(quarryMonitorStack));
     }
 
     private static int toFlag(List<Integer> warningList) {
@@ -137,7 +140,7 @@ public class MachineWarningsUtil {
         return this.flag;
     }
     public boolean hasWarnings() {
-        return hasWarnings(this.flag) || this.upgradesUtil.hasConflicts();
+        return hasWarnings(this.flag) || this.upgradesUtil.hasConflicts() || this.expansionsUtil.hasConflicts();
     }
     public boolean hasCriticalWarnings() {
         return hasCriticalWarnings(this.flag);
@@ -179,5 +182,6 @@ public class MachineWarningsUtil {
         }
 
         this.upgradesUtil.appendConflictTooltip(textConsumer);
+        this.expansionsUtil.appendConflictTooltip(textConsumer);
     }
 }
