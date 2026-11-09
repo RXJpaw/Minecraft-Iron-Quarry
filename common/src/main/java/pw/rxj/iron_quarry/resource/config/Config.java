@@ -49,6 +49,9 @@ public class Config {
         @Comment("Smithing template that fills augments with augment points.")
         public final AugmentingTemplateConfig augmentingTemplate = new AugmentingTemplateConfig();
 
+        @Comment("Expansion cards that change a quarry's abilities.")
+        public final ExpansionsConfig expansions = new ExpansionsConfig();
+
         @Comment("Stats of each quarry monitor tier.")
         public final QuarryMonitorConfig quarryMonitor = new QuarryMonitorConfig();
 

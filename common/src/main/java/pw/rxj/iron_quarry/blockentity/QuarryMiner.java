@@ -26,6 +26,7 @@ import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.DrillItem;
 import pw.rxj.iron_quarry.network.PacketQuarryBlockBreak;
 import pw.rxj.iron_quarry.network.ZNetwork;
+import pw.rxj.iron_quarry.types.MiningPattern;
 import pw.rxj.iron_quarry.util.*;
 
 import java.util.ArrayDeque;
@@ -36,7 +37,6 @@ import java.util.function.IntPredicate;
 import java.util.function.Supplier;
 
 public class QuarryMiner {
-    private static final IMiningIterator.Factory MINING_ITERATOR_FACTORY = (box, seed) -> ColumnMiningIterator.of(box);
     private static final int SCAN_BLOCKS_PER_TICK = 10_000;
     private static final int BLOCKED_RETRY_TICKS = 100;
 
@@ -64,6 +64,8 @@ public class QuarryMiner {
         ItemStack drillStack = quarryBlockEntity.DrillInventory.getItem(0);
         this.resetIfDrillOrBlueprintChanged(blueprintStack, drillStack);
 
+        if(quarryBlockEntity.getOwner() == null) return;
+
         if(!(drillStack.getItem() instanceof DrillItem drillItem)) return;
         if(!(blueprintStack.getItem() instanceof BlueprintItem blueprintItem)) return;
         if(!blueprintItem.isSealed(blueprintStack) || blueprintItem.allChunksMined(blueprintStack)) return;
@@ -76,8 +78,9 @@ public class QuarryMiner {
         ResourceKey<Level> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack).orElse(null);
         ServerLevel serverWorldToBreak = quarryWorld.getServer().getLevel(worldRegistryKey);
         if(serverWorldToBreak == null) return;
-        if(!MachineExpansionsUtil.from(quarryBlockEntity).canMineIn(serverWorldToBreak.dimension())) return;
-        if(quarryBlockEntity.getOwner() == null) return;
+
+        MachineExpansionsUtil expansionsUtil = MachineExpansionsUtil.from(quarryBlockEntity);
+        if(!expansionsUtil.canMineIn(serverWorldToBreak.dimension())) return;
 
         ChunkLoadingManager.keepLoaded(serverWorldToBreak, this.loadedChunks);
 
@@ -94,7 +97,7 @@ public class QuarryMiner {
 
         int threads = this.rollThreads(quarryBlock, upgradesUtil, quarryWorld.getRandom());
 
-        ChunkPos currentChunk = this.prepareCurrentChunk(serverWorldToBreak, quarryPos, blueprintStack, blueprintItem);
+        ChunkPos currentChunk = this.prepareCurrentChunk(serverWorldToBreak, quarryPos, blueprintStack, blueprintItem, expansionsUtil);
         if(currentChunk == null) return;
 
         LevelChunk worldChunk = serverWorldToBreak.getChunkSource().getChunkNow(currentChunk.x(), currentChunk.z());
@@ -119,9 +122,7 @@ public class QuarryMiner {
         this.blueprintHash = blueprintHash;
         this.drillHash = drillHash;
 
-        this.miningIterator = IMiningIterator.EMPTY;
-        this.currentChunk = null;
-        this.MiningQueue.clear();
+        this.dropCurrentChunk();
         this.ref.setBlocked(null);
         this.blockedCooldown = 0;
         this.miningPos = null;
@@ -150,7 +151,8 @@ public class QuarryMiner {
 
         return threads;
     }
-    private @Nullable ChunkPos prepareCurrentChunk(ServerLevel serverWorldToBreak, BlockPos quarryPos, ItemStack blueprintStack, BlueprintItem blueprintItem) {
+
+    private @Nullable ChunkPos prepareCurrentChunk(ServerLevel serverWorldToBreak, BlockPos quarryPos, ItemStack blueprintStack, BlueprintItem blueprintItem, MachineExpansionsUtil expansionsUtil) {
         if(this.isCurrentChunkFinished()) {
             this.loadedChunks = List.of();
 
@@ -158,9 +160,10 @@ public class QuarryMiner {
             this.blueprintHash = ItemStack.hashItemAndComponents(blueprintStack);
             this.ref.setChanged();
 
-            this.miningIterator = IMiningIterator.EMPTY;
-            this.currentChunk = null;
+            this.dropCurrentChunk();
         }
+
+        if(this.currentChunk != null && this.miningPattern != expansionsUtil.getMiningPattern(this.currentChunk)) this.dropCurrentChunk();
 
         if(this.currentChunk == null) {
             List<ChunkPos> chunkPosList = blueprintItem.getNextChunkPos(blueprintStack, 2);
@@ -174,7 +177,9 @@ public class QuarryMiner {
             this.loadedChunks = List.copyOf(chunkPosList);
             ChunkLoadingManager.keepLoaded(serverWorldToBreak, this.loadedChunks);
 
-            this.miningIterator = MINING_ITERATOR_FACTORY.create(chunkBox, IMiningIterator.seedOf(quarryPos, chunkPos));
+            MiningPattern miningPattern = expansionsUtil.getMiningPattern(chunkPos);
+            this.miningIterator = miningPattern.create(chunkBox, IMiningIterator.seedOf(quarryPos, chunkPos));
+            this.miningPattern = miningPattern;
             this.currentChunk = chunkPos;
         }
 
@@ -183,6 +188,12 @@ public class QuarryMiner {
     private boolean isCurrentChunkFinished() {
         return this.currentChunk != null && this.MiningQueue.isEmpty() && !this.miningIterator.hasNext();
     }
+    private void dropCurrentChunk() {
+        this.miningIterator = IMiningIterator.EMPTY;
+        this.currentChunk = null;
+        this.MiningQueue.clear();
+    }
+
     private static void sendBlockBreakEffectsToNearbyPlayers(ServerLevel serverWorldToBreak, List<BlockPosState> drillResults) {
         ZNetwork.sendToAllInLevel(serverWorldToBreak, player -> {
             List<BlockPosState> nearbyDrillResults = drillResults.stream()
@@ -195,6 +206,7 @@ public class QuarryMiner {
 
     //Mining
     private IMiningIterator miningIterator = IMiningIterator.EMPTY;
+    private @Nullable MiningPattern miningPattern;
     private final ArrayDeque<BlockPos> MiningQueue = new ArrayDeque<>();
     private @Nullable BlockPos miningPos;
 

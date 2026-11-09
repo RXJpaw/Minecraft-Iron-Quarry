@@ -47,9 +47,10 @@
 
     "item.iron_quarry.augment": "Empty Augment",
     "item.iron_quarry.silk_touch_augment": "Silk Touch Augment",
+    "item.iron_quarry.chest_looting_augment": "Chest Looting Augment",
     "item.iron_quarry.blank_expansion_card": "Blank Expansion Card",
     "item.iron_quarry.interdimensional_expansion_card": "Interdimensional Expansion Card",
-    "item.iron_quarry.chest_looting_augment": "Chest Looting Augment",
+    "item.iron_quarry.gilbert_pattern_expansion_card": "Gilbert Pattern Expansion Card",
 
     "item.iron_quarry.augment.empty": "Empty Augment",
     "item.iron_quarry.augment.speed": "Speed Augment",
@@ -64,6 +65,8 @@
     "item.iron_quarry.augment.lore.benefit.silk_touch": "§{RGB_BENEFIT Mines blocks with Silk Touch}",
     "item.iron_quarry.augment.lore.benefit.chest_looting": "§{RGB_BENEFIT Pulls items from lootable containers}",
     "item.iron_quarry.expansion.lore.benefit.interdimensional": "§{RGB_BENEFIT Allows mining in other dimensions}",
+    "item.iron_quarry.expansion.lore.benefit.mining_pattern.gilbert": "§{RGB_BENEFIT Mines along a space-filling curve}",
+    "item.iron_quarry.expansion.lore.mining_pattern": "§{RGB_LIGHT_GRAY Several unique patterns alternate}",
     "item.iron_quarry.augment.lore.drawback.speed_energy_factor": "§{RGB_DRAWBACK +%s Speed energy factor}",
     "item.iron_quarry.augment.lore.drawback.fortune_energy_factor": "§{RGB_DRAWBACK +%s Fortune energy factor}",
     "item.iron_quarry.augment.lore.drawback.speed": "§{RGB_DRAWBACK Takes %s-times longer per operation}",

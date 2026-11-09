@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.resource.config.server;
 
-import lombok.AllArgsConstructor;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 import pw.rxj.iron_quarry.resource.config.util.Comment;
@@ -87,52 +86,27 @@ public class AugmentsConfig {
         @Comment("Turns the augment off: It has no effect, is hidden from the creative inventory and no longer appears in chest loot.")
         public final boolean disabled;
         @Comment("Loot tables that can contain the chest looting augment.")
-        public final Entry[] lootPools = new Entry[]{
-                Entry.common("minecraft:chests/abandoned_mineshaft"),
-                Entry.common("minecraft:chests/desert_pyramid"),
-                Entry.common("minecraft:chests/igloo_chest"),
-                Entry.common("minecraft:chests/jungle_temple"),
-                Entry.common("minecraft:chests/simple_dungeon"),
-                Entry.common("minecraft:chests/shipwreck_treasure"),
-                Entry.common("minecraft:chests/underwater_ruin_small"),
-                Entry.common("minecraft:chests/village/village_weaponsmith"),
-                Entry.common("minecraft:chests/village/village_armorer"),
-                Entry.common("minecraft:chests/village/village_toolsmith"),
+        public final LootPoolEntry[] lootPools = new LootPoolEntry[]{
+                LootPoolEntry.lowChance("minecraft:chests/abandoned_mineshaft"),
+                LootPoolEntry.lowChance("minecraft:chests/desert_pyramid"),
+                LootPoolEntry.lowChance("minecraft:chests/igloo_chest"),
+                LootPoolEntry.lowChance("minecraft:chests/jungle_temple"),
+                LootPoolEntry.lowChance("minecraft:chests/simple_dungeon"),
+                LootPoolEntry.lowChance("minecraft:chests/shipwreck_treasure"),
+                LootPoolEntry.lowChance("minecraft:chests/underwater_ruin_small"),
+                LootPoolEntry.lowChance("minecraft:chests/village/village_weaponsmith"),
+                LootPoolEntry.lowChance("minecraft:chests/village/village_armorer"),
+                LootPoolEntry.lowChance("minecraft:chests/village/village_toolsmith"),
 
-                Entry.uncommon("minecraft:chests/stronghold_corridor"),
-                Entry.uncommon("minecraft:chests/stronghold_crossing"),
-                Entry.uncommon("minecraft:chests/stronghold_library"),
-                Entry.uncommon("minecraft:chests/underwater_ruin_big"),
-                Entry.uncommon("minecraft:chests/pillager_outpost"),
+                LootPoolEntry.mediumChance("minecraft:chests/stronghold_corridor"),
+                LootPoolEntry.mediumChance("minecraft:chests/stronghold_crossing"),
+                LootPoolEntry.mediumChance("minecraft:chests/stronghold_library"),
+                LootPoolEntry.mediumChance("minecraft:chests/underwater_ruin_big"),
+                LootPoolEntry.mediumChance("minecraft:chests/pillager_outpost"),
 
-                Entry.rare("minecraft:chests/woodland_mansion"),
-                Entry.rare("minecraft:chests/ancient_city")
+                LootPoolEntry.highChance("minecraft:chests/woodland_mansion"),
+                LootPoolEntry.highChance("minecraft:chests/ancient_city")
         };
-
-        @AllArgsConstructor
-        public static class Entry {
-            @Comment("ID of the loot table.")
-            public final String lootTable;
-            @Comment("Least rolls of the pool.")
-            @Range(min = 0)
-            public final float rollsMin;
-            @Comment("Most rolls of the pool.")
-            @Range(min = 0)
-            public final float rollsMax;
-            @Comment("Chance that the pool is rolled at all.")
-            @Range(min = 0, max = 1)
-            public final float chance;
-
-            public static Entry common(String lootTable) {
-                return new Entry(lootTable, 1.0F, 1.0F, 0.05F);
-            }
-            public static Entry uncommon(String lootTable) {
-                return new Entry(lootTable, 1.0F, 1.0F, 0.12F);
-            }
-            public static Entry rare(String lootTable) {
-                return new Entry(lootTable, 1.0F, 1.0F, 0.26F);
-            }
-        }
 
         public ChestLooting() {
             this.disabled = false;

@@ -4,6 +4,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
@@ -11,12 +12,16 @@ import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.item.ExpansionCardItem;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreenHandler;
+import pw.rxj.iron_quarry.types.MiningPattern;
 
+import java.util.EnumSet;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class MachineExpansionsUtil {
     private boolean isInterdimensional = false;
     private boolean hasLockedExpansions = false;
+    private final EnumSet<MiningPattern> miningPatterns = EnumSet.noneOf(MiningPattern.class);
     private final @Nullable ResourceKey<Level> quarryWorldKey;
 
     private MachineExpansionsUtil() {
@@ -35,6 +40,7 @@ public class MachineExpansionsUtil {
 
                 switch (expansionCardItem.getType()) {
                     case INTERDIMENSIONAL -> this.isInterdimensional = true;
+                    case MINING_PATTERN -> this.miningPatterns.add(expansionCardItem.getMiningPattern());
                 }
             }
         }
@@ -69,6 +75,11 @@ public class MachineExpansionsUtil {
     }
     public boolean canMineIn(ResourceKey<Level> miningWorldKey) {
         return this.isInterdimensional() || miningWorldKey.equals(this.quarryWorldKey);
+    }
+    public MiningPattern getMiningPattern(ChunkPos chunkPos) {
+        if(this.miningPatterns.isEmpty()) return MiningPattern.COLUMN;
+
+        return List.copyOf(this.miningPatterns).get(Math.floorMod(chunkPos.x() + chunkPos.z(), this.miningPatterns.size()));
     }
 
     public boolean hasLockedExpansions() {

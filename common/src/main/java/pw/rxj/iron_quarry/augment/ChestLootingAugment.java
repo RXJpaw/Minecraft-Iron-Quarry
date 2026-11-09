@@ -5,17 +5,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.loot.LootPool;
-import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.compat.Compat;
+import pw.rxj.iron_quarry.factory.ZLootTables;
 import pw.rxj.iron_quarry.item.ZItems;
 import pw.rxj.iron_quarry.resource.config.server.AugmentsConfig;
 import pw.rxj.iron_quarry.util.ReadableString;
 
-import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 public class ChestLootingAugment extends AbstractAugment {
@@ -40,14 +36,7 @@ public class ChestLootingAugment extends AbstractAugment {
     public @Nullable LootPool.Builder getLootPoolBuilder(Identifier id) {
         if(this.isDisabled()) return null;
 
-        Optional<AugmentsConfig.ChestLooting.Entry> optionalEntry = Arrays.stream(this.config.getChestLooting().lootPools).filter(el -> id.toString().equals(el.lootTable)).findAny();
-        if(optionalEntry.isEmpty()) return null;
-        AugmentsConfig.ChestLooting.Entry entry = optionalEntry.get();
-
-        return LootPool.lootPool()
-                .setRolls(UniformGenerator.between(entry.rollsMin, entry.rollsMax))
-                .when(LootItemRandomChanceCondition.randomChance(entry.chance))
-                .add(LootItem.lootTableItem(ZItems.CHEST_LOOTING_AUGMENT));
+        return ZLootTables.poolOf(id, this.config.getChestLooting().lootPools, ZItems.CHEST_LOOTING_AUGMENT);
     }
 
     @Override

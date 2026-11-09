@@ -73,6 +73,9 @@ public class ConfigHandler {
     public AugmentingTemplateConfig.Handler getAugmentingTemplateConfig() {
         return AugmentingTemplateConfig.Handler.of(this);
     }
+    public ExpansionsConfig.Handler getExpansionsConfig() {
+        return ExpansionsConfig.Handler.of(this);
+    }
     public QuarryMonitorConfig.Handler getQuarryMonitorConfig() {
         return QuarryMonitorConfig.Handler.of(this);
     }
