@@ -120,12 +120,7 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
 
     @Override
     public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
-        return Minecraft.getInstance().hasShiftDown() ? Optional.of(TooltipQuarryInventoryData.from(
-                this.getBlueprintStack(stack),
-                this.getDrillStack(stack),
-                this.getAugmentInventory(stack),
-                this.getAugmentLimit()))
-            : Optional.empty();
+        return Minecraft.getInstance().hasShiftDown() ? Optional.of(TooltipQuarryInventoryData.from(this, stack)) : Optional.empty();
     }
     @Override
     public void appendTooltip(ItemStack stack, Item.TooltipContext context, Consumer<Component> textConsumer, TooltipFlag options) {

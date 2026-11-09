@@ -10,20 +10,25 @@ import pw.rxj.iron_quarry.util.ComplexInventory;
 
 public class TooltipQuarryInventoryComponent implements CustomTooltipComponent {
     private static final Identifier AUGMENTATION_CONFIGURATION_TEXTURE = QuarryBlockScreen.AUGMENTATION_CONFIGURATION_TEXTURE;
+    private static final Identifier EXPANSION_CONFIGURATION_TEXTURE = QuarryBlockScreen.EXPANSION_CONFIGURATION_TEXTURE;
     private static final Identifier QUARRY_SCREEN_BACKGROUND_TEXTURE = QuarryBlockScreen.INVENTORY_LOCATION;
 
     public final TooltipQuarryInventoryData quarryInventoryData;
     public final ItemStack blueprintStack;
     public final ItemStack drillStack;
-    public final ComplexInventory MachineUpgradesInventory;
+    public final ComplexInventory augmentInventory;
     public final int augmentLimit;
+    public final ComplexInventory expansionInventory;
+    public final int expansionLimit;
 
     private TooltipQuarryInventoryComponent(TooltipQuarryInventoryData tooltipData) {
         this.quarryInventoryData = tooltipData;
         this.blueprintStack = tooltipData.getBlueprintStack();
         this.drillStack = tooltipData.getDrillStack();
-        this.MachineUpgradesInventory = tooltipData.getMachineUpgradesInventory();
+        this.augmentInventory = tooltipData.getAugmentInventory();
         this.augmentLimit = tooltipData.getAugmentLimit();
+        this.expansionInventory = tooltipData.getExpansionInventory();
+        this.expansionLimit = tooltipData.getExpansionLimit();
     }
 
     @Override
@@ -37,12 +42,12 @@ public class TooltipQuarryInventoryComponent implements CustomTooltipComponent {
 
     @Override
     public int getHeight(Font textRenderer) {
-        return 22;
+        return 42;
     }
 
     @Override
     public int getWidth(Font textRenderer) {
-        return 40 + 108;
+        return 20 + 108;
     }
 
     @Override
@@ -55,21 +60,11 @@ public class TooltipQuarryInventoryComponent implements CustomTooltipComponent {
         RenderUtil.drawTexture(context, QUARRY_SCREEN_BACKGROUND_TEXTURE, x, y + 2, 79, 26, 18, 18, 256, 256);
         this.drawItemStack(x, y + 2, this.blueprintStack, textRenderer, context);
 
-        RenderUtil.drawTexture(context, QUARRY_SCREEN_BACKGROUND_TEXTURE, x + 20, y + 2, 79, 47, 18, 18, 256, 256);
-        this.drawItemStack(x + 20, y + 2, this.drillStack, textRenderer, context);
+        RenderUtil.drawTexture(context, QUARRY_SCREEN_BACKGROUND_TEXTURE, x, y + 22, 79, 47, 18, 18, 256, 256);
+        this.drawItemStack(x, y + 22, this.drillStack, textRenderer, context);
 
-        for(int index = 0; index < 6; ++index) {
-            int slotX = x + 40 + index * 18;
-            int slotY = y + 2;
-
-            if(index >= this.augmentLimit) {
-                RenderUtil.drawTexture(context, AUGMENTATION_CONFIGURATION_TEXTURE, slotX, slotY, 100, 0, 18, 18, 256, 256);
-            } else {
-                RenderUtil.drawTexture(context, AUGMENTATION_CONFIGURATION_TEXTURE, slotX, slotY, 22, 25, 18, 18, 256, 256);
-            }
-
-            this.drawAugmentSlot(slotX, slotY, index, textRenderer, context);
-        }
+        this.drawSlotRow(x + 20, y + 2, AUGMENTATION_CONFIGURATION_TEXTURE, this.augmentInventory, this.augmentLimit, textRenderer, context);
+        this.drawSlotRow(x + 20, y + 22, EXPANSION_CONFIGURATION_TEXTURE, this.expansionInventory, this.expansionLimit, textRenderer, context);
     }
 
     private void drawItemStack(int x, int y, ItemStack stack, Font textRenderer, GuiGraphicsExtractor context) {
@@ -77,10 +72,19 @@ public class TooltipQuarryInventoryComponent implements CustomTooltipComponent {
         context.itemDecorations(textRenderer, stack, x + 1, y + 1);
     }
 
-    private void drawAugmentSlot(int x, int y, int index, Font textRenderer, GuiGraphicsExtractor context) {
-        if(index >= this.MachineUpgradesInventory.getContainerSize()) return;
+    private void drawSlotRow(int x, int y, Identifier texture, ComplexInventory inventory, int limit, Font textRenderer, GuiGraphicsExtractor context) {
+        for(int index = 0; index < 6; ++index) {
+            int slotX = x + index * 18;
 
-        ItemStack stack = this.MachineUpgradesInventory.getItem(index);
-        this.drawItemStack(x, y, stack, textRenderer, context);
+            if(index >= limit) {
+                RenderUtil.drawTexture(context, texture, slotX, y, 100, 0, 18, 18, 256, 256);
+            } else {
+                RenderUtil.drawTexture(context, texture, slotX, y, 22, 25, 18, 18, 256, 256);
+            }
+
+            if(index < inventory.getContainerSize()) {
+                this.drawItemStack(slotX, y, inventory.getItem(index), textRenderer, context);
+            }
+        }
     }
 }
