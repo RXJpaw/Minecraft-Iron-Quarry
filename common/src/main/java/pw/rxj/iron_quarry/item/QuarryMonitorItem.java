@@ -332,7 +332,7 @@ public class QuarryMonitorItem extends Item implements ITickingInventoryItem, IT
             stack.remove(ZComponents.QUARRY_MONITOR_CACHED_BLOCKED_DATA);
         }
 
-        BlockPos miningPos = blockEntity.getMiningPos();
+        BlockPos miningPos = blockEntity.Miner.getMiningPos();
         if(miningPos != null) {
             stack.set(ZComponents.QUARRY_MONITOR_CACHED_MINING_POS, miningPos);
         } else {
