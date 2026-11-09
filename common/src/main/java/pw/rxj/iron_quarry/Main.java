@@ -41,6 +41,7 @@ import pw.rxj.iron_quarry.recipe.SmithingAugmentCapacityRecipe;
 import pw.rxj.iron_quarry.recipe.SmithingAugmentRecipe;
 import pw.rxj.iron_quarry.recipe.SmithingBlueprintSealRecipe;
 import pw.rxj.iron_quarry.resource.SilkTouchTradingCondition;
+import pw.rxj.iron_quarry.resource.SnakePatternTradingCondition;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigSide;
 import pw.rxj.iron_quarry.screen.QuarryBlockScreenHandler;
@@ -149,6 +150,7 @@ public class Main {
 		Platform.RECIPE.synchronizeRecipes(SmithingBlueprintSealRecipe.SERIALIZER, RecipeType.SMITHING);
 
 		Platform.REGISTRY.register(Registries.LOOT_CONDITION_TYPE, SilkTouchTradingCondition.ID, () -> SilkTouchTradingCondition.CODEC);
+		Platform.REGISTRY.register(Registries.LOOT_CONDITION_TYPE, SnakePatternTradingCondition.ID, () -> SnakePatternTradingCondition.CODEC);
 
 		Platform.REGISTRY.register(Registries.CREATIVE_MODE_TAB, ITEM_GROUP.identifier(), () -> Platform.REGISTRY.createCreativeTabBuilder()
 				.title(Component.translatable("itemGroup.iron_quarry.universal"))

@@ -4,9 +4,11 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import pw.rxj.iron_quarry.util.ColumnMiningIterator;
 import pw.rxj.iron_quarry.util.GilbertMiningIterator;
 import pw.rxj.iron_quarry.util.IMiningIterator;
+import pw.rxj.iron_quarry.util.SnakeMiningIterator;
 
 public enum MiningPattern {
     COLUMN("column", (box, seed) -> ColumnMiningIterator.of(box)),
+    SNAKE("snake", (box, seed) -> SnakeMiningIterator.of(box, seed)),
     GILBERT("gilbert", (box, seed) -> GilbertMiningIterator.of(box));
 
     private final String name;

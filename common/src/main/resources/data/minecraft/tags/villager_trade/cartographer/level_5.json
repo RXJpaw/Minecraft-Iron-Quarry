@@ -1,0 +1,9 @@
+{
+    "replace": false,
+    "values": [
+        {
+            "id": "iron_quarry:snake_pattern_expansion_card",
+            "required": false
+        }
+    ]
+}
