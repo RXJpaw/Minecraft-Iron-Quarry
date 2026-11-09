@@ -103,7 +103,7 @@ public class BlueprintPreviewRenderer {
     }
 
     public static void register() {
-        ResourceReloadListener.include(BlueprintMarkerRenderer.BLUEPRINT_POSITIONS_TEXTURE);
+        ResourceReloadListener.include(BlueprintMarkerRenderer.MARKERS_TEXTURE);
 
         WorldRenderCallback.END_MAIN.register(BlueprintPreviewRenderer::renderInWorld);
 

@@ -14,7 +14,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BlueprintMarkerRenderer {
-    public static final Identifier BLUEPRINT_POSITIONS_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/blueprint_positions.png");
+    public static final Identifier MARKERS_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/blueprint_markers.png");
+    public static final int MARKERS_TEXTURE_SIZE = 64;
+
+    private static final Vec2 FIRST_POS_UV = new Vec2(0, 0);
+    private static final Vec2 SECOND_POS_UV = new Vec2(13, 0);
+    private static final Vec2 SAME_POS_UV = new Vec2(26, 0);
+    private static final Vec2 BLOCKED_POS_UV = new Vec2(0, 13);
+    private static final Vec2 MINING_POS_UV = new Vec2(13, 13);
 
     protected static class ScreenPosData {
         public final ScreenPos screenPos;
@@ -54,12 +61,29 @@ public abstract class BlueprintMarkerRenderer {
 
         List<ScreenPosData> screenPosList = new ArrayList<>();
 
+        this.addPositionMarkers(screenPosList, firstPos, secondPos);
+
+        if(blockedPos != null) {
+            this.addQuarryMarker(screenPosList, blockedPos, BLOCKED_POS_UV);
+        } else if(miningPos != null) {
+            this.addQuarryMarker(screenPosList, miningPos, MINING_POS_UV);
+        }
+
+        this.screenPosList = screenPosList;
+    }
+
+    private void addPositionMarkers(List<ScreenPosData> screenPosList, @Nullable BlockPos firstPos, @Nullable BlockPos secondPos) {
+        if(firstPos != null && firstPos.equals(secondPos)) {
+            screenPosList.add(this.toScreenPosData(firstPos, SAME_POS_UV));
+            return;
+        }
+
         if(firstPos != null) {
-            screenPosList.add(this.toScreenPosData(firstPos, new Vec2(0, 0)));
+            screenPosList.add(this.toScreenPosData(firstPos, FIRST_POS_UV));
         }
 
         if(secondPos != null) {
-            screenPosList.add(this.toScreenPosData(secondPos, new Vec2(13, 0)));
+            screenPosList.add(this.toScreenPosData(secondPos, SECOND_POS_UV));
         }
 
         if(firstPos != null && secondPos != null) {
@@ -67,16 +91,7 @@ public abstract class BlueprintMarkerRenderer {
 
             screenPosList.set(0, fadeBehind(screenPosList.get(0), screenPosList.get(1)));
         }
-
-        if(blockedPos != null) {
-            this.addQuarryMarker(screenPosList, blockedPos, new Vec2(0, 13));
-        } else if(miningPos != null) {
-            this.addQuarryMarker(screenPosList, miningPos, new Vec2(13, 13));
-        }
-
-        this.screenPosList = screenPosList;
     }
-
     private void addQuarryMarker(List<ScreenPosData> screenPosList, BlockPos blockPos, Vec2 texUV) {
         ScreenPosData quarryMarker = this.toScreenPosData(blockPos, texUV);
 

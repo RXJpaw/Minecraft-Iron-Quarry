@@ -4,11 +4,11 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -43,7 +43,7 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
             matrices.scale(scale, scale, 1.0F);
             matrices.translate(-6.0F, -6.0F, 0.0F);
 
-            RenderUtil.drawWorldTexture(matrices, BLUEPRINT_POSITIONS_TEXTURE, 0, 0, texUV.x, texUV.y, 13, 13, 36, 36, RenderUtil.whiteWithAlpha(alpha));
+            RenderUtil.drawWorldTexture(matrices, MARKERS_TEXTURE, 0, 0, texUV.x, texUV.y, 13, 13, MARKERS_TEXTURE_SIZE, MARKERS_TEXTURE_SIZE, RenderUtil.whiteWithAlpha(alpha));
 
             matrices.popPose();
 
