@@ -137,6 +137,8 @@
     "item.iron_quarry.warning.quarry_out_of_range": "§{RGB_WARNING ⚠ Quarry out of range}",
     "item.iron_quarry.warning.quarry_blueprint_empty": "§{RGB_CRITICAL ⚠ Blueprint slot empty}",
     "item.iron_quarry.warning.quarry_blueprint_unsealed": "§{RGB_CRITICAL ⚠ Blueprint not sealed}",
+    "item.iron_quarry.warning.quarry_other_dimension_denied": "§{RGB_CRITICAL ⚠ Can't mine in other dimensions}",
+    "item.iron_quarry.warning.quarry_other_dimension_denied.hint": "§{RGB_DARK_GRAY ℹ Maybe some kind of Expansion Card helps?}",
     "item.iron_quarry.warning.quarry_drill_empty": "§{RGB_CRITICAL ⚠ Drill slot empty}",
     "item.iron_quarry.warning.quarry_owner_missing": "§{RGB_CRITICAL ⚠ Quarry has no owner; place it again}",
     "item.iron_quarry.warning.quarry_mining_denied": "§{RGB_CRITICAL ⚠ Not allowed to mine at %s, %s, %s}",

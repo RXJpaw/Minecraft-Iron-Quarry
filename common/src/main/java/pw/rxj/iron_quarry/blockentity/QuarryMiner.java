@@ -76,6 +76,7 @@ public class QuarryMiner {
         ResourceKey<Level> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack).orElse(null);
         ServerLevel serverWorldToBreak = quarryWorld.getServer().getLevel(worldRegistryKey);
         if(serverWorldToBreak == null) return;
+        if(!MachineExpansionsUtil.from(quarryBlockEntity).canMineIn(serverWorldToBreak.dimension())) return;
         if(quarryBlockEntity.getOwner() == null) return;
 
         ChunkLoadingManager.keepLoaded(serverWorldToBreak, this.loadedChunks);
