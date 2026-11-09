@@ -40,6 +40,9 @@ tasks.withType(Jar).configureEach {
 	from(rootProject.file('LICENSE.md')) {
 		rename { "${it}_${base.archivesName.get()}" }
 	}
+	from(rootProject.file('licenses/LICENSE_gilbert.md')) {
+		rename { "${it}_${base.archivesName.get()}" }
+	}
 }
 
 processResources {
