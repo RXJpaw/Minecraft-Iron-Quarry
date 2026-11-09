@@ -3,6 +3,7 @@ package pw.rxj.iron_quarry.util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.data.QuarryBlockedDataComponent;
@@ -26,12 +27,13 @@ public class MachineWarningsUtil {
     public static final int WARNING_MINING_DENIED = 3;
     public static final int WARNING_BLUEPRINT_EMPTY = 4;
     public static final int WARNING_BLUEPRINT_UNSEALED = 5;
-    public static final int WARNING_INTERDIMENSIONAL_EXPANSION_MISSING = 6;
-    public static final int WARNING_DRILL_EMPTY = 7;
-    public static final int WARNING_ENERGY_DEPLETED = 8;
-    public static final int WARNING_INV_FULL = 9;
-    public static final int WARNING_ENERGY_30 = 10;
-    public static final int WARNING_INV_70 = 11;
+    public static final int WARNING_DIMENSION_DISABLED = 6;
+    public static final int WARNING_INTERDIMENSIONAL_EXPANSION_MISSING = 7;
+    public static final int WARNING_DRILL_EMPTY = 8;
+    public static final int WARNING_ENERGY_DEPLETED = 9;
+    public static final int WARNING_INV_FULL = 10;
+    public static final int WARNING_ENERGY_30 = 11;
+    public static final int WARNING_INV_70 = 12;
 
     public static final List<Integer> CRITICAL_FLAG_LIST = List.of(
             WARNING_QUARRY_UNKNOWN,
@@ -39,6 +41,7 @@ public class MachineWarningsUtil {
             WARNING_MINING_DENIED,
             WARNING_BLUEPRINT_EMPTY,
             WARNING_BLUEPRINT_UNSEALED,
+            WARNING_DIMENSION_DISABLED,
             WARNING_INTERDIMENSIONAL_EXPANSION_MISSING,
             WARNING_DRILL_EMPTY,
             WARNING_ENERGY_DEPLETED,
@@ -74,6 +77,8 @@ public class MachineWarningsUtil {
             flag += 1 << WARNING_BLUEPRINT_EMPTY;
         } else if(!blueprintItem.isSealed(blueprintStack)) {
             flag += 1 << WARNING_BLUEPRINT_UNSEALED;
+        } else if(!blueprintItem.getWorldRegistryKey(blueprintStack).map(Main.CONFIG.getDimensionsConfig()::canMineIn).orElse(true)) {
+            flag += 1 << WARNING_DIMENSION_DISABLED;
         } else if(!blueprintItem.getWorldRegistryKey(blueprintStack).map(expansionsUtil::canMineIn).orElse(true)) {
             flag += 1 << WARNING_INTERDIMENSIONAL_EXPANSION_MISSING;
         }
@@ -169,6 +174,9 @@ public class MachineWarningsUtil {
         }
         if(hasWarning(this.flag, WARNING_BLUEPRINT_UNSEALED)) {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_blueprint_unsealed"));
+        }
+        if(hasWarning(this.flag, WARNING_DIMENSION_DISABLED)) {
+            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_dimension_disabled"));
         }
         if(hasWarning(this.flag, WARNING_INTERDIMENSIONAL_EXPANSION_MISSING)) {
             ZExpansions.INTERDIMENSIONAL.appendOtherDimensionDeniedTooltip(textConsumer);

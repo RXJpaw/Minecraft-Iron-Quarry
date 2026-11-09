@@ -67,6 +67,9 @@ public class ConfigHandler {
     public QuarryStatsConfig.Handler getQuarryStatsConfig() {
         return QuarryStatsConfig.Handler.of(this);
     }
+    public DimensionsConfig.Handler getDimensionsConfig() {
+        return DimensionsConfig.Handler.of(this);
+    }
     public AugmentsConfig.Handler getAugmentsConfig() {
         return AugmentsConfig.Handler.of(this);
     }
@@ -174,6 +177,7 @@ public class ConfigHandler {
     //Lifecycle
     public void validateServerConfig() {
         this.getQuarryDrillStatsConfig().validate();
+        this.getDimensionsConfig().validate();
     }
     public void registerServer() {
         ServerLifecycleCallback.SYNC_DATA_PACK_CONTENTS.register(player -> {

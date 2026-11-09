@@ -43,6 +43,9 @@ public class Config {
         @Comment("Stats of each quarry tier.")
         public final QuarryStatsConfig quarryStats = new QuarryStatsConfig();
 
+        @Comment("Dimensions quarries are allowed to mine in.")
+        public final DimensionsConfig dimensions = new DimensionsConfig();
+
         @Comment("Augments that improve quarries.")
         public final AugmentsConfig augments = new AugmentsConfig();
 

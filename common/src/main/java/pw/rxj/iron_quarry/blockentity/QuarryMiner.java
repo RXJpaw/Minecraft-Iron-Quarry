@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.block.ZBlockTags;
 import pw.rxj.iron_quarry.compat.Compat;
@@ -78,6 +79,8 @@ public class QuarryMiner {
         ResourceKey<Level> worldRegistryKey = blueprintItem.getWorldRegistryKey(blueprintStack).orElse(null);
         ServerLevel serverWorldToBreak = quarryWorld.getServer().getLevel(worldRegistryKey);
         if(serverWorldToBreak == null) return;
+
+        if(!Main.CONFIG.getDimensionsConfig().canMineIn(serverWorldToBreak.dimension())) return;
 
         MachineExpansionsUtil expansionsUtil = MachineExpansionsUtil.from(quarryBlockEntity);
         if(!expansionsUtil.canMineIn(serverWorldToBreak.dimension())) return;
