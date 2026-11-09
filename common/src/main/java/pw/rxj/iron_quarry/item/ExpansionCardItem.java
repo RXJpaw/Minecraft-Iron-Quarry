@@ -1,18 +1,21 @@
 package pw.rxj.iron_quarry.item;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.interfaces.IModifyCreativeTabEntries;
 import pw.rxj.iron_quarry.types.ExpansionType;
 import pw.rxj.iron_quarry.types.MiningPattern;
 import pw.rxj.iron_quarry.util.ReadableString;
 
 import java.util.function.Consumer;
 
-public class ExpansionCardItem extends Item {
+public class ExpansionCardItem extends Item implements IModifyCreativeTabEntries {
     private final ExpansionType type;
     private final @Nullable MiningPattern miningPattern;
 
@@ -51,5 +54,19 @@ public class ExpansionCardItem extends Item {
         } else {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.expansion.lore.benefit." + this.type.getName()));
         }
+
+        if(this.type.getExpansion().isDisabled()) {
+            MutableComponent LORE_DISABLED = ReadableString.translatable("item.iron_quarry.lore.disabled");
+
+            textConsumer.accept(ReadableString.space());
+            textConsumer.accept(LORE_DISABLED);
+        }
+    }
+
+    @Override
+    public void modifyCreativeTabEntries(CreativeModeTab.Output entries) {
+        if(this.type.getExpansion().isDisabled()) return;
+
+        entries.accept(this);
     }
 }

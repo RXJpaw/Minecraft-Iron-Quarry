@@ -38,6 +38,8 @@ public class MachineExpansionsUtil {
                     this.hasLockedExpansions = true; continue;
                 }
 
+                if(expansionCardItem.getType().getExpansion().isDisabled()) continue;
+
                 switch (expansionCardItem.getType()) {
                     case INTERDIMENSIONAL -> this.isInterdimensional = true;
                     case MINING_PATTERN -> this.miningPatterns.add(expansionCardItem.getMiningPattern());

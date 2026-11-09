@@ -1,6 +1,5 @@
 package pw.rxj.iron_quarry.util;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -8,6 +7,7 @@ import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
 import pw.rxj.iron_quarry.data.QuarryBlockedDataComponent;
 import pw.rxj.iron_quarry.data.QuarryOwnerComponent;
+import pw.rxj.iron_quarry.expansion.ZExpansions;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.DrillItem;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
@@ -171,8 +171,7 @@ public class MachineWarningsUtil {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_blueprint_unsealed"));
         }
         if(hasWarning(this.flag, WARNING_INTERDIMENSIONAL_EXPANSION_MISSING)) {
-            textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_other_dimension_denied"));
-            if(Minecraft.getInstance().hasShiftDown()) textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_other_dimension_denied.hint"));
+            ZExpansions.INTERDIMENSIONAL.appendOtherDimensionDeniedTooltip(textConsumer);
         }
         if(hasWarning(this.flag, WARNING_DRILL_EMPTY)) {
             textConsumer.accept(ReadableString.translatable("item.iron_quarry.warning.quarry_drill_empty"));

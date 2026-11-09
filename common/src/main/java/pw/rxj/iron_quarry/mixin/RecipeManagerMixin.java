@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.augment.ZAugments;
+import pw.rxj.iron_quarry.expansion.ZExpansions;
 
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +30,9 @@ public abstract class RecipeManagerMixin {
             disabled.add(Identifier.fromNamespaceAndPath(Main.MOD_ID, "augment_fortune_tier1"));
             disabled.add(Identifier.fromNamespaceAndPath(Main.MOD_ID, "augment_fortune_tier2"));
             disabled.add(Identifier.fromNamespaceAndPath(Main.MOD_ID, "augment_fortune_tier3"));
+        }
+        if(ZExpansions.INTERDIMENSIONAL.isDisabled()) {
+            disabled.add(Identifier.fromNamespaceAndPath(Main.MOD_ID, "expansion_card_interdimensional"));
         }
 
         if(disabled.isEmpty()) return preparedRecipes;
