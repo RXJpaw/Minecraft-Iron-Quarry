@@ -11,6 +11,7 @@
 
 <a href="https://github.com/RXJpaw/Minecraft-Iron-Quarry/blob/HEAD/LICENSE.md">![Apache License 2.0](https://img.shields.io/github/license/RXJpaw/Minecraft-Iron-Quarry)</a>
 <a href="https://github.com/RXJpaw/Minecraft-Iron-Quarry/issues">![Open Issues](https://img.shields.io/github/issues-raw/RXJpaw/Minecraft-Iron-Quarry)</a>
+<a href="https://github.com/RXJpaw/Minecraft-Iron-Quarry/blob/HEAD/docs/README.md">![Documentation](https://img.shields.io/badge/docs-read-blue)</a>
 
 </div>
 
@@ -18,8 +19,6 @@
 
 Programmed in [Java](https://github.com/openjdk/jdk), for [Fabric](https://fabricmc.net/) and [NeoForge](https://neoforged.net/),
 this mod enables you to destroy the world you live in while consuming excessive amounts of energy, so you can finally ask yourself how to satisfy your energy demands for the first time ever!
-
-
 
 ## Dependencies
 
