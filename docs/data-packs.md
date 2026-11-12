@@ -78,7 +78,7 @@ Any item in the common tag `c:tools/wrench` works as a [wrench](quarries.md#side
 
 ## Loot
 
-The [Chest Looting Augment](augments.md#chest-looting-augment) and the [Gilbert Pattern Expansion Card](expansion-cards.md#mining-pattern-cards) are added to loot tables through the config, not through data packs. See [Loot pools](configuration.md#loot-pools).
+The [Chest Looting Augment](augments.md#chest-looting-augment) and the [Gilbert Pattern Expansion Card](expansion-cards.md#mining-pattern-cards) are added to loot tables through the config, not through data packs. See [Loot tables](configuration.md#loot-tables).
 
 ## Recipes
 

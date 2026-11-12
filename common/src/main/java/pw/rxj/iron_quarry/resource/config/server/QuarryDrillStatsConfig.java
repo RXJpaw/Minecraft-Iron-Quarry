@@ -15,12 +15,12 @@ import java.util.Optional;
 public class QuarryDrillStatsConfig {
     public static final QuarryDrillStatsConfig DEFAULTS = new QuarryDrillStatsConfig();
 
-    public final Entry copperDrill = new Entry(649, 2, "minecraft:copper_pickaxe");
-    public final Entry ironDrill = new Entry(1_284, 5, "minecraft:iron_pickaxe");
-    public final Entry diamondDrill = new Entry(6_649, 4, "minecraft:diamond_pickaxe");
-    public final Entry netheriteDrill = new Entry(93_750,  5, "minecraft:netherite_pickaxe");
-    public final Entry shulkerDrill = new Entry(159_375, 7, "minecraft:netherite_pickaxe");
-    public final Entry netherStarDrill = new Entry(796_875, 9, "minecraft:netherite_pickaxe");
+    public final Entry copper = new Entry(649, 2, "minecraft:copper_pickaxe");
+    public final Entry iron = new Entry(1_284, 5, "minecraft:iron_pickaxe");
+    public final Entry diamond = new Entry(6_649, 4, "minecraft:diamond_pickaxe");
+    public final Entry netherite = new Entry(93_750,  5, "minecraft:netherite_pickaxe");
+    public final Entry shulker = new Entry(159_375, 7, "minecraft:netherite_pickaxe");
+    public final Entry netherStar = new Entry(796_875, 9, "minecraft:netherite_pickaxe");
 
     @AllArgsConstructor
     public static class Entry {
@@ -50,36 +50,36 @@ public class QuarryDrillStatsConfig {
         }
 
         public QuarryDrillStatsConfig.Entry getCopperDrill() {
-            return this.getServer().quarryDrillStats.copperDrill;
+            return this.getServer().drills.copper;
         }
         public QuarryDrillStatsConfig.Entry getIronDrill() {
-            return this.getServer().quarryDrillStats.ironDrill;
+            return this.getServer().drills.iron;
         }
         public QuarryDrillStatsConfig.Entry getDiamondDrill() {
-            return this.getServer().quarryDrillStats.diamondDrill;
+            return this.getServer().drills.diamond;
         }
         public QuarryDrillStatsConfig.Entry getNetheriteDrill() {
-            return this.getServer().quarryDrillStats.netheriteDrill;
+            return this.getServer().drills.netherite;
         }
         public QuarryDrillStatsConfig.Entry getShulkerDrill() {
-            return this.getServer().quarryDrillStats.shulkerDrill;
+            return this.getServer().drills.shulker;
         }
         public QuarryDrillStatsConfig.Entry getNetherStarDrill() {
-            return this.getServer().quarryDrillStats.netherStarDrill;
+            return this.getServer().drills.netherStar;
         }
 
         public void validate() {
-            validateTool("copperDrill", this.getCopperDrill(), DEFAULTS.copperDrill);
-            validateTool("ironDrill", this.getIronDrill(), DEFAULTS.ironDrill);
-            validateTool("diamondDrill", this.getDiamondDrill(), DEFAULTS.diamondDrill);
-            validateTool("netheriteDrill", this.getNetheriteDrill(), DEFAULTS.netheriteDrill);
-            validateTool("shulkerDrill", this.getShulkerDrill(), DEFAULTS.shulkerDrill);
-            validateTool("netherStarDrill", this.getNetherStarDrill(), DEFAULTS.netherStarDrill);
+            validateTool("copper", this.getCopperDrill(), DEFAULTS.copper);
+            validateTool("iron", this.getIronDrill(), DEFAULTS.iron);
+            validateTool("diamond", this.getDiamondDrill(), DEFAULTS.diamond);
+            validateTool("netherite", this.getNetheriteDrill(), DEFAULTS.netherite);
+            validateTool("shulker", this.getShulkerDrill(), DEFAULTS.shulker);
+            validateTool("netherStar", this.getNetherStarDrill(), DEFAULTS.netherStar);
         }
         private static void validateTool(String name, QuarryDrillStatsConfig.Entry entry, QuarryDrillStatsConfig.Entry defaultEntry) {
             if(entry.getToolItem().isPresent()) return;
 
-            Main.LOGGER.error("Config quarryDrillStats.{}.toolEquivalent ({}) is not an existing item, using {} instead!", name, entry.toolEquivalent, defaultEntry.toolEquivalent);
+            Main.LOGGER.error("Config drills.{}.toolEquivalent ({}) is not an existing item, using {} instead!", name, entry.toolEquivalent, defaultEntry.toolEquivalent);
         }
     }
 }

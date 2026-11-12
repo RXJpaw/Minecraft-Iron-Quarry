@@ -41,7 +41,7 @@ public class Config {
         private Server() { }
 
         @Comment("Stats of each quarry tier.")
-        public final QuarryStatsConfig quarryStats = new QuarryStatsConfig();
+        public final QuarryStatsConfig quarries = new QuarryStatsConfig();
 
         @Comment("Dimensions quarries are allowed to mine in.")
         public final DimensionsConfig dimensions = new DimensionsConfig();
@@ -56,9 +56,9 @@ public class Config {
         public final ExpansionsConfig expansions = new ExpansionsConfig();
 
         @Comment("Stats of each quarry monitor tier.")
-        public final QuarryMonitorConfig quarryMonitor = new QuarryMonitorConfig();
+        public final QuarryMonitorConfig monitors = new QuarryMonitorConfig();
 
         @Comment("Stats of each drill tier.")
-        public final QuarryDrillStatsConfig quarryDrillStats = new QuarryDrillStatsConfig();
+        public final QuarryDrillStatsConfig drills = new QuarryDrillStatsConfig();
     }
 }

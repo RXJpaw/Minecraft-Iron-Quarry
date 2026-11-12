@@ -13,11 +13,11 @@ public class ExpansionsConfig {
     public final GilbertPattern gilbertPattern = new GilbertPattern();
 
     public static class Interdimensional {
-        @Comment("Turns the expansion card off: It has no effect, is hidden from the creative inventory and can't be crafted.")
-        public final boolean disabled;
+        @Comment("Turns the expansion card on: If false, it has no effect, is hidden from the creative inventory and can't be crafted.")
+        public final boolean enabled;
 
         public Interdimensional() {
-            this.disabled = false;
+            this.enabled = true;
         }
     }
     public static class SnakePattern {
@@ -30,7 +30,7 @@ public class ExpansionsConfig {
     }
     public static class GilbertPattern {
         @Comment("Loot tables that can contain the gilbert pattern expansion card.")
-        public final LootPoolEntry[] lootPools = new LootPoolEntry[]{
+        public final LootPoolEntry[] lootTables = new LootPoolEntry[]{
                 LootPoolEntry.lowChance("minecraft:chests/ancient_city"),
                 LootPoolEntry.lowChance("minecraft:chests/end_city_treasure")
         };

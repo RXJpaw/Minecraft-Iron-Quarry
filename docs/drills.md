@@ -20,7 +20,7 @@ Default values:
 | Nether Star Drill | Netherite | 796,875 | 9 |
 
 > [!NOTE]
-> Modpacks and servers can change these values, including the mining level (see [Configuration](configuration.md#quarrydrillstats)). A drill's tooltip shows its actual `Mining Level` and `Durability`.
+> Modpacks and servers can change these values, including the mining level (see [Configuration](configuration.md#drills)). A drill's tooltip shows its actual `Mining Level` and `Durability`.
 
 ## Mining level
 

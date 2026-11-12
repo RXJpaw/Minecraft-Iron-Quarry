@@ -21,7 +21,7 @@ public class SpeedAugment extends AbstractAugment {
 
     @Override
     public boolean isDisabled() {
-        return this.config.getSpeed().disabled;
+        return !this.config.getSpeed().enabled;
     }
     @Override
     public int getBaseAmount() {

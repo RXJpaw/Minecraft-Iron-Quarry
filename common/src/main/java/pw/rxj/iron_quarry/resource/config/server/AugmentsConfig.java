@@ -16,8 +16,8 @@ public class AugmentsConfig {
     public final ChestLooting chestLooting = new ChestLooting();
 
     public static class Speed {
-        @Comment("Turns the augment off: It has no effect, is hidden from the creative inventory and can't be filled at the smithing table.")
-        public final boolean disabled;
+        @Comment("Turns the augment on: If false, it has no effect, is hidden from the creative inventory and can't be filled at the smithing table.")
+        public final boolean enabled;
         @Comment("Augment points of an augment without capacity upgrades. Each capacity upgrade raises this.")
         @Range(min = 1)
         public final int baseAmount;
@@ -35,7 +35,7 @@ public class AugmentsConfig {
         public final float speedFactorLimit;
 
         public Speed() {
-            this.disabled = false;
+            this.enabled = true;
             this.baseAmount = 1_000;
             this.maxSpeedBonus = 15.0F;
             this.maxEnergyBonus = 45.0F;
@@ -44,8 +44,8 @@ public class AugmentsConfig {
         }
     }
     public static class Fortune {
-        @Comment("Turns the augment off: It has no effect, is hidden from the creative inventory and can't be filled at the smithing table.")
-        public final boolean disabled;
+        @Comment("Turns the augment on: If false, it has no effect, is hidden from the creative inventory and can't be filled at the smithing table.")
+        public final boolean enabled;
         @Comment("Augment points of an augment without capacity upgrades. Each capacity upgrade raises this.")
         @Range(min = 1)
         public final int baseAmount;
@@ -60,7 +60,7 @@ public class AugmentsConfig {
         public final float levelLimit;
 
         public Fortune() {
-            this.disabled = false;
+            this.enabled = true;
             this.baseAmount = 1_500;
             this.maxLevel = 4.7F;
             this.maxEnergyBonus = 2.0F;
@@ -68,8 +68,8 @@ public class AugmentsConfig {
         }
     }
     public static class SilkTouch {
-        @Comment("Turns the augment off: It has no effect, is hidden from the creative inventory and isn't sold by villagers (see tradingEnabled).")
-        public final boolean disabled;
+        @Comment("Turns the augment on: If false, it has no effect, is hidden from the creative inventory and isn't sold by villagers (see tradingEnabled).")
+        public final boolean enabled;
         @Comment("Divides the speed of the quarry.")
         @Range(min = 1)
         public final float slowness;
@@ -77,16 +77,16 @@ public class AugmentsConfig {
         public final boolean tradingEnabled;
 
         public SilkTouch() {
-            this.disabled = false;
+            this.enabled = true;
             this.slowness = 2.0F;
             this.tradingEnabled = true;
         }
     }
     public static class ChestLooting {
-        @Comment("Turns the augment off: It has no effect, is hidden from the creative inventory and no longer appears in chest loot.")
-        public final boolean disabled;
+        @Comment("Turns the augment on: If false, it has no effect, is hidden from the creative inventory and no longer appears in chest loot.")
+        public final boolean enabled;
         @Comment("Loot tables that can contain the chest looting augment.")
-        public final LootPoolEntry[] lootPools = new LootPoolEntry[]{
+        public final LootPoolEntry[] lootTables = new LootPoolEntry[]{
                 LootPoolEntry.lowChance("minecraft:chests/abandoned_mineshaft"),
                 LootPoolEntry.lowChance("minecraft:chests/desert_pyramid"),
                 LootPoolEntry.lowChance("minecraft:chests/igloo_chest"),
@@ -109,7 +109,7 @@ public class AugmentsConfig {
         };
 
         public ChestLooting() {
-            this.disabled = false;
+            this.enabled = true;
         }
     }
 

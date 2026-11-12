@@ -26,15 +26,15 @@ The player pages of this documentation show the default values and point players
 These changes are not visible in the game until a player runs into them, so you may want to mention them in your modpack's notes:
 
 - the `dimensions` list (players only see a warning once a quarry stops),
-- loot pools of the Chest Looting Augment and the Gilbert Pattern Expansion Card,
+- loot tables that contain the Chest Looting Augment and the Gilbert Pattern Expansion Card,
 - villager trades that you turned off, moved or repriced,
 - blocks you added to the `iron_quarry:ignored_by_quarry` tag ([Data Packs and Tags](data-packs.md#blocks)).
 
 ## Server config
 
-### `quarryStats`
+### `quarries`
 
-One entry per quarry tier: `copperQuarry`, `ironQuarry`, `goldQuarry`, `diamondQuarry`, `netheriteQuarry`, `netherStarQuarry`.
+One entry per quarry tier: `copper`, `iron`, `gold`, `diamond`, `netherite`, `netherStar`.
 
 | Option | Meaning |
 |---|---|
@@ -48,12 +48,12 @@ Defaults:
 
 | Tier | `augmentLimit` | `expansionLimit` | `ticksPerOperation` | `energyCapacity` | `baseConsumption` |
 |---|---|---|---|---|---|
-| `copperQuarry` | 0 | 1 | 40 | 20,000 | 20 |
-| `ironQuarry` | 1 | 2 | 30 | 100,000 | 40 |
-| `goldQuarry` | 2 | 3 | 20 | 500,000 | 90 |
-| `diamondQuarry` | 3 | 4 | 10 | 2,500,000 | 270 |
-| `netheriteQuarry` | 4 | 5 | 5 | 10,000,000 | 810 |
-| `netherStarQuarry` | 6 | 6 | 2 | 50,000,000 | 3,040 |
+| `copper` | 0 | 1 | 40 | 20,000 | 20 |
+| `iron` | 1 | 2 | 30 | 100,000 | 40 |
+| `gold` | 2 | 3 | 20 | 500,000 | 90 |
+| `diamond` | 3 | 4 | 10 | 2,500,000 | 270 |
+| `netherite` | 4 | 5 | 5 | 10,000,000 | 810 |
+| `netherStar` | 6 | 6 | 2 | 50,000,000 | 3,040 |
 
 If you lower `augmentLimit` or `expansionLimit`, items in slots that become locked stop working (see [The quarry screen](quarries.md#the-quarry-screen)).
 
@@ -92,7 +92,7 @@ A quarry with a Blueprint from a forbidden dimension stops with the red warning 
 
 | Option | Default | Meaning |
 |---|---|---|
-| `disabled` | `false` | Turns the augment off: it has no effect, is hidden from the creative inventory and can't be filled at the Smithing Table. |
+| `enabled` | `true` | Turns the augment on: if `false`, it has no effect, is hidden from the creative inventory and can't be filled at the Smithing Table. |
 | `baseAmount` | `1000` | Points an augment holds without capacity upgrades. Capacity upgrades raise it, see [Capacity upgrades](augments.md#capacity-upgrades). |
 | `maxSpeedBonus` | `15.0` | Speed factor of a completely filled augment with all capacity upgrades. |
 | `maxEnergyBonus` | `45.0` | Speed energy factor of a completely filled augment with all capacity upgrades. |
@@ -103,7 +103,7 @@ A quarry with a Blueprint from a forbidden dimension stops with the red warning 
 
 | Option | Default | Meaning |
 |---|---|---|
-| `disabled` | `false` | Turns the augment off, like for speed. |
+| `enabled` | `true` | Turns the augment on: if `false`, it has no effect, is hidden from the creative inventory and can't be filled at the Smithing Table. |
 | `baseAmount` | `1500` | Points an augment holds without capacity upgrades. |
 | `maxLevel` | `4.7` | Fortune level of a completely filled augment with all capacity upgrades. Fractions give a chance for one more level. |
 | `maxEnergyBonus` | `2.0` | Fortune energy factor of a completely filled augment with all capacity upgrades. |
@@ -113,7 +113,7 @@ A quarry with a Blueprint from a forbidden dimension stops with the red warning 
 
 | Option | Default | Meaning |
 |---|---|---|
-| `disabled` | `false` | Turns the augment off: it has no effect, is hidden from the creative inventory and isn't sold by villagers. |
+| `enabled` | `true` | Turns the augment on: if `false`, it has no effect, is hidden from the creative inventory and isn't sold by villagers. |
 | `slowness` | `2.0` | The quarry's speed is divided by this value. |
 | `tradingEnabled` | `true` | Lets Toolsmiths and Wandering Traders sell the augment. Only checked when a villager's trades are created; existing trades stay. |
 
@@ -121,8 +121,8 @@ A quarry with a Blueprint from a forbidden dimension stops with the red warning 
 
 | Option | Default | Meaning |
 |---|---|---|
-| `disabled` | `false` | Turns the augment off: it has no effect, is hidden from the creative inventory and no longer appears in chest loot. |
-| `lootPools` | see [Augments](augments.md#chest-looting-augment) | Loot tables that can contain the augment, see [Loot pools](#loot-pools). |
+| `enabled` | `true` | Turns the augment on: if `false`, it has no effect, is hidden from the creative inventory and no longer appears in chest loot. |
+| `lootTables` | see [Augments](augments.md#chest-looting-augment) | Loot tables that can contain the augment, see [Loot tables](#loot-tables). |
 
 ### `augmentingTemplate`
 
@@ -137,13 +137,13 @@ The Celestial Augmenting Template never breaks, no matter what you set here.
 
 | Option | Default | Meaning |
 |---|---|---|
-| `interdimensional.disabled` | `false` | Turns the Interdimensional Expansion Card off: it has no effect, is hidden from the creative inventory and can't be crafted. Quarries then only mine in their own dimension. |
+| `interdimensional.enabled` | `true` | Turns the Interdimensional Expansion Card on: if `false`, it has no effect, is hidden from the creative inventory and can't be crafted. Quarries then only mine in their own dimension. |
 | `snakePattern.tradingEnabled` | `true` | Lets Cartographers sell the Snake Pattern Expansion Card. Only checked when a villager's trades are created. |
-| `gilbertPattern.lootPools` | Ancient City and End City treasure, 5% each | Loot tables that can contain the Gilbert Pattern Expansion Card, see [Loot pools](#loot-pools). An empty list removes it from all loot. |
+| `gilbertPattern.lootTables` | Ancient City and End City treasure, 5% each | Loot tables that can contain the Gilbert Pattern Expansion Card, see [Loot tables](#loot-tables). An empty list removes it from all loot. |
 
-### `quarryMonitor`
+### `monitors`
 
-One entry per monitor: `ironMonitor`, `diamondMonitor`, `netheriteMonitor`, `sculkMonitor`.
+One entry per monitor: `iron`, `diamond`, `netherite`, `sculk`.
 
 | Option | Meaning |
 |---|---|
@@ -152,14 +152,14 @@ One entry per monitor: `ironMonitor`, `diamondMonitor`, `netheriteMonitor`, `scu
 
 | Monitor | `range` | `interdimensional` |
 |---|---|---|
-| `ironMonitor` | 1,024 | `false` |
-| `diamondMonitor` | 4,096 | `false` |
-| `netheriteMonitor` | 16,384 | `true` |
-| `sculkMonitor` | 65,536 | `true` |
+| `iron` | 1,024 | `false` |
+| `diamond` | 4,096 | `false` |
+| `netherite` | 16,384 | `true` |
+| `sculk` | 65,536 | `true` |
 
-### `quarryDrillStats`
+### `drills`
 
-One entry per drill: `copperDrill`, `ironDrill`, `diamondDrill`, `netheriteDrill`, `shulkerDrill`, `netherStarDrill`.
+One entry per drill: `copper`, `iron`, `diamond`, `netherite`, `shulker`, `netherStar`.
 
 | Option | Meaning |
 |---|---|
@@ -169,18 +169,18 @@ One entry per drill: `copperDrill`, `ironDrill`, `diamondDrill`, `netheriteDrill
 
 | Drill | `durability` | `enchantability` | `toolEquivalent` |
 |---|---|---|---|
-| `copperDrill` | 649 | 2 | `minecraft:copper_pickaxe` |
-| `ironDrill` | 1,284 | 5 | `minecraft:iron_pickaxe` |
-| `diamondDrill` | 6,649 | 4 | `minecraft:diamond_pickaxe` |
-| `netheriteDrill` | 93,750 | 5 | `minecraft:netherite_pickaxe` |
-| `shulkerDrill` | 159,375 | 7 | `minecraft:netherite_pickaxe` |
-| `netherStarDrill` | 796,875 | 9 | `minecraft:netherite_pickaxe` |
+| `copper` | 649 | 2 | `minecraft:copper_pickaxe` |
+| `iron` | 1,284 | 5 | `minecraft:iron_pickaxe` |
+| `diamond` | 6,649 | 4 | `minecraft:diamond_pickaxe` |
+| `netherite` | 93,750 | 5 | `minecraft:netherite_pickaxe` |
+| `shulker` | 159,375 | 7 | `minecraft:netherite_pickaxe` |
+| `netherStar` | 796,875 | 9 | `minecraft:netherite_pickaxe` |
 
 An unknown `toolEquivalent` falls back to the default tool and is reported in the log. An item that isn't a tool only gets drops that need no tool. For a tool from another mod, the drill's tooltip needs a name for the mining level. Add a language entry like `"mining_level.iron_quarry.somemod:void_pickaxe": "Void"` with a resource pack.
 
-### Loot pools
+### Loot tables
 
-`augments.chestLooting.lootPools` and `expansions.gilbertPattern.lootPools` are lists of entries like this:
+`augments.chestLooting.lootTables` and `expansions.gilbertPattern.lootTables` are lists of entries like this:
 
 ```jsonc
 {

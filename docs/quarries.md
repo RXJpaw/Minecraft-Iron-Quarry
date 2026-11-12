@@ -16,7 +16,7 @@ Higher tiers mine faster and have more slots for [augments](augments.md) and [ex
 | Nether Star Quarry | 10 | 6,080 RF | 3,040 RF/t | 50,000,000 RF | 6 | 6 |
 
 > [!NOTE]
-> Modpacks and servers can change all of these values (see [Configuration](configuration.md#quarrystats)). The tooltip of a quarry shows the values of your game including its augments: `Usage` (energy per tick, or per block while holding Shift), `Speed` in operations per second, and `Fortune`. With Shift it also shows the `Energy capacity`.
+> Modpacks and servers can change all of these values (see [Configuration](configuration.md#quarries)). The tooltip of a quarry shows the values of your game including its augments: `Usage` (energy per tick, or per block while holding Shift), `Speed` in operations per second, and `Fortune`. With Shift it also shows the `Energy capacity`.
 
 ### Upgrading and moving a quarry
 

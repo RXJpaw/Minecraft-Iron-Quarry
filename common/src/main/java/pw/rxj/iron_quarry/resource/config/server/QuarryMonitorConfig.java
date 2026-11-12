@@ -7,10 +7,10 @@ import pw.rxj.iron_quarry.resource.config.util.Comment;
 import pw.rxj.iron_quarry.resource.config.util.Range;
 
 public class QuarryMonitorConfig {
-    public final Entry ironMonitor = new Entry(1_024, false);
-    public final Entry diamondMonitor = new Entry(4_096, false);
-    public final Entry netheriteMonitor = new Entry(16_384, true);
-    public final Entry sculkMonitor = new Entry(65_536, true);
+    public final Entry iron = new Entry(1_024, false);
+    public final Entry diamond = new Entry(4_096, false);
+    public final Entry netherite = new Entry(16_384, true);
+    public final Entry sculk = new Entry(65_536, true);
 
     @AllArgsConstructor
     public static class Entry {
@@ -30,16 +30,16 @@ public class QuarryMonitorConfig {
         }
 
         public QuarryMonitorConfig.Entry getIronMonitor() {
-            return this.getServer().quarryMonitor.ironMonitor;
+            return this.getServer().monitors.iron;
         }
         public QuarryMonitorConfig.Entry getDiamondMonitor() {
-            return this.getServer().quarryMonitor.diamondMonitor;
+            return this.getServer().monitors.diamond;
         }
         public QuarryMonitorConfig.Entry getNetheriteMonitor() {
-            return this.getServer().quarryMonitor.netheriteMonitor;
+            return this.getServer().monitors.netherite;
         }
         public QuarryMonitorConfig.Entry getSculkMonitor() {
-            return this.getServer().quarryMonitor.sculkMonitor;
+            return this.getServer().monitors.sculk;
         }
     }
 }

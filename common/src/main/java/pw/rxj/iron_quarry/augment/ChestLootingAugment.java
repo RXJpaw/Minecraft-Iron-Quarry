@@ -26,7 +26,7 @@ public class ChestLootingAugment extends AbstractAugment {
 
     @Override
     public boolean isDisabled() {
-        return this.config.getChestLooting().disabled;
+        return !this.config.getChestLooting().enabled;
     }
     @Override
     public int getBaseAmount() {
@@ -36,7 +36,7 @@ public class ChestLootingAugment extends AbstractAugment {
     public @Nullable LootPool.Builder getLootPoolBuilder(Identifier id) {
         if(this.isDisabled()) return null;
 
-        return ZLootTables.poolOf(id, this.config.getChestLooting().lootPools, ZItems.CHEST_LOOTING_AUGMENT);
+        return ZLootTables.poolOf(id, this.config.getChestLooting().lootTables, ZItems.CHEST_LOOTING_AUGMENT);
     }
 
     @Override

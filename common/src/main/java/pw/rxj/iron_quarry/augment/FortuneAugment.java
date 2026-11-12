@@ -21,7 +21,7 @@ public class FortuneAugment extends AbstractAugment {
 
     @Override
     public boolean isDisabled() {
-        return this.config.getFortune().disabled;
+        return !this.config.getFortune().enabled;
     }
     @Override
     public int getBaseAmount() {

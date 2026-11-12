@@ -50,12 +50,12 @@ public class ZItems {
     public static final ItemEntry<ExpansionCardItem> SNAKE_PATTERN_EXPANSION_CARD = ItemEntry.of("snake_pattern_expansion_card", settings -> ExpansionCardItem.ofMiningPattern(settings.stacksTo(1), MiningPattern.SNAKE));
     public static final ItemEntry<ExpansionCardItem> GILBERT_PATTERN_EXPANSION_CARD = ItemEntry.of("gilbert_pattern_expansion_card", settings -> ExpansionCardItem.ofMiningPattern(settings.stacksTo(1), MiningPattern.GILBERT));
 
-    public static final ItemEntry<DrillItem> COPPER_DRILL = ItemEntry.of("copper_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getCopperDrill, QuarryDrillStatsConfig.DEFAULTS.copperDrill));
-    public static final ItemEntry<DrillItem> IRON_DRILL = ItemEntry.of("iron_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getIronDrill, QuarryDrillStatsConfig.DEFAULTS.ironDrill));
-    public static final ItemEntry<DrillItem> DIAMOND_DRILL = ItemEntry.of("diamond_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getDiamondDrill, QuarryDrillStatsConfig.DEFAULTS.diamondDrill));
-    public static final ItemEntry<DrillItem> NETHERITE_DRILL = ItemEntry.of("netherite_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getNetheriteDrill, QuarryDrillStatsConfig.DEFAULTS.netheriteDrill));
-    public static final ItemEntry<DrillItem> SHULKER_DRILL = ItemEntry.of("shulker_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getShulkerDrill, QuarryDrillStatsConfig.DEFAULTS.shulkerDrill));
-    public static final ItemEntry<DrillItem> NETHER_STAR_DRILL = ItemEntry.of("nether_star_drill", settings -> new DrillItem(settings.stacksTo(1).rarity(Rarity.UNCOMMON), QUARRY_DRILL_STATS_CONFIG::getNetherStarDrill, QuarryDrillStatsConfig.DEFAULTS.netherStarDrill));
+    public static final ItemEntry<DrillItem> COPPER_DRILL = ItemEntry.of("copper_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getCopperDrill, QuarryDrillStatsConfig.DEFAULTS.copper));
+    public static final ItemEntry<DrillItem> IRON_DRILL = ItemEntry.of("iron_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getIronDrill, QuarryDrillStatsConfig.DEFAULTS.iron));
+    public static final ItemEntry<DrillItem> DIAMOND_DRILL = ItemEntry.of("diamond_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getDiamondDrill, QuarryDrillStatsConfig.DEFAULTS.diamond));
+    public static final ItemEntry<DrillItem> NETHERITE_DRILL = ItemEntry.of("netherite_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getNetheriteDrill, QuarryDrillStatsConfig.DEFAULTS.netherite));
+    public static final ItemEntry<DrillItem> SHULKER_DRILL = ItemEntry.of("shulker_drill", settings -> new DrillItem(settings.stacksTo(1), QUARRY_DRILL_STATS_CONFIG::getShulkerDrill, QuarryDrillStatsConfig.DEFAULTS.shulker));
+    public static final ItemEntry<DrillItem> NETHER_STAR_DRILL = ItemEntry.of("nether_star_drill", settings -> new DrillItem(settings.stacksTo(1).rarity(Rarity.UNCOMMON), QUARRY_DRILL_STATS_CONFIG::getNetherStarDrill, QuarryDrillStatsConfig.DEFAULTS.netherStar));
 
     public static final ItemEntry<QuarryMonitorItem> IRON_QUARRY_MONITOR = ItemEntry.of("iron_quarry_monitor", settings -> new QuarryMonitorItem(settings.stacksTo(1), QUARRY_MONITOR_CONFIG::getIronMonitor));
     public static final ItemEntry<QuarryMonitorItem> DIAMOND_QUARRY_MONITOR = ItemEntry.of("diamond_quarry_monitor", settings -> new QuarryMonitorItem(settings.stacksTo(1), QUARRY_MONITOR_CONFIG::getDiamondMonitor));

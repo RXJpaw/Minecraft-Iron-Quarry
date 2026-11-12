@@ -27,7 +27,7 @@ public class ZLootTables {
             LootPool.Builder chestLootingPool = ZAugments.CHEST_LOOTING.getLootPoolBuilder(lootTableId);
             if(chestLootingPool != null) poolAdder.accept(chestLootingPool);
 
-            LootPool.Builder gilbertPatternPool = poolOf(lootTableId, EXPANSIONS_CONFIG.getGilbertPattern().lootPools, ZItems.GILBERT_PATTERN_EXPANSION_CARD);
+            LootPool.Builder gilbertPatternPool = poolOf(lootTableId, EXPANSIONS_CONFIG.getGilbertPattern().lootTables, ZItems.GILBERT_PATTERN_EXPANSION_CARD);
             if(gilbertPatternPool != null) poolAdder.accept(gilbertPatternPool);
         });
     }

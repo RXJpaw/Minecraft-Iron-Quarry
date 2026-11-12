@@ -18,7 +18,7 @@ Default values:
 Only the horizontal distance counts. In another dimension the distance is converted like portal coordinates, so in the Nether one block counts as eight.
 
 > [!NOTE]
-> Modpacks and servers can change the ranges and which monitors reach other dimensions (see [Configuration](configuration.md#quarrymonitor)). A monitor's tooltip shows its `Update range` and says `Works across dimensions` if it reaches other dimensions.
+> Modpacks and servers can change the ranges and which monitors reach other dimensions (see [Configuration](configuration.md#monitors)). A monitor's tooltip shows its `Update range` and says `Works across dimensions` if it reaches other dimensions.
 
 ## Linking
 

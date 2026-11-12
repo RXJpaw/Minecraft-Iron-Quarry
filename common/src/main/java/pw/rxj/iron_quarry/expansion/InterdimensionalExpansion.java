@@ -19,7 +19,7 @@ public class InterdimensionalExpansion extends AbstractExpansion {
 
     @Override
     public boolean isDisabled() {
-        return this.config.getInterdimensional().disabled;
+        return !this.config.getInterdimensional().enabled;
     }
 
     public void appendOtherDimensionDeniedTooltip(Consumer<Component> textConsumer) {

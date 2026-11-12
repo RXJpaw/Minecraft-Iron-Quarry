@@ -19,7 +19,7 @@ public class SilkTouchAugment extends AbstractAugment {
 
     @Override
     public boolean isDisabled() {
-        return this.config.getSilkTouch().disabled;
+        return !this.config.getSilkTouch().enabled;
     }
     @Override
     public int getBaseAmount() {
