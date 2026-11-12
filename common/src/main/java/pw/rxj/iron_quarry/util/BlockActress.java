@@ -86,12 +86,6 @@ public class BlockActress {
         return this.setBlockState(block.defaultBlockState());
     }
 
-    public boolean isFluidStateEmpty() {
-        return this.blockState.getFluidState().isEmpty();
-    }
-    public boolean isFluidStatePresent() {
-        return !this.isFluidStateEmpty();
-    }
     public static boolean isLiquid(BlockState blockState) {
         return blockState.getBlock() instanceof LiquidBlock || blockState.getBlock() instanceof BubbleColumnBlock;
     }
