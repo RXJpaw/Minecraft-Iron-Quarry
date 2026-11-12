@@ -28,10 +28,13 @@ bin/
 
 *.DS_Store
 
+# archive
+
+archive/
+
 # fabric
 
 run/
-textures/item/augment/alts/
 
 # java
 
