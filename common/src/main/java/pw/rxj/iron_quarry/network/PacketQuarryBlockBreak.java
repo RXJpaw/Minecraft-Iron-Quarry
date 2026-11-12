@@ -11,7 +11,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -19,6 +18,7 @@ import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.network.packet.BlockPosStateListPacket;
 import pw.rxj.iron_quarry.render.RenderUtil;
 import pw.rxj.iron_quarry.resource.config.client.BlockBreakingConfig;
+import pw.rxj.iron_quarry.util.BlockActress;
 import pw.rxj.iron_quarry.util.BlockPosState;
 import pw.rxj.iron_quarry.util.ZUtil;
 
@@ -62,7 +62,7 @@ public class PacketQuarryBlockBreak extends BlockPosStateListPacket {
             if(distance > BLOCK_BREAKING_CONFIG.getDistance()) continue;
             if(blockPosState.blockState.isAir()) continue;
 
-            if(!isLiquidBlock(blockPosState.blockState)) visibleBlockPosStates.add(blockPosState);
+            if(!BlockActress.isLiquid(blockPosState.blockState)) visibleBlockPosStates.add(blockPosState);
             if(isAudible(blockPosState, distance)) audibleBlockPosStates.add(blockPosState);
         }
 
@@ -103,10 +103,6 @@ public class PacketQuarryBlockBreak extends BlockPosStateListPacket {
         return random.nextFloat() < share - wholeSounds ? wholeSounds + 1 : wholeSounds;
     }
 
-    private static boolean isLiquidBlock(BlockState blockState) {
-        return blockState.getBlock() instanceof LiquidBlock;
-    }
-
     private static boolean isAudible(BlockPosState blockPosState, double distance) {
         float volume = getBreakVolume(blockPosState.blockState);
 
@@ -114,20 +110,20 @@ public class PacketQuarryBlockBreak extends BlockPosStateListPacket {
     }
 
     private static SoundEvent getBreakSound(BlockState blockState) {
-        if(isLiquidBlock(blockState)) return blockState.getFluidState().getType().getPickupSound().orElse(SoundEvents.BUCKET_FILL);
+        if(BlockActress.isLiquid(blockState)) return blockState.getFluidState().getType().getPickupSound().orElse(SoundEvents.BUCKET_FILL);
 
         return blockState.getSoundType().getBreakSound();
     }
 
     private static float getBreakVolume(BlockState blockState) {
-        if(isLiquidBlock(blockState)) return BLOCK_BREAKING_CONFIG.getVolume();
+        if(BlockActress.isLiquid(blockState)) return BLOCK_BREAKING_CONFIG.getVolume();
 
         SoundType soundType = blockState.getSoundType();
         return ((soundType.getVolume() + 1.0F) / 2.0F) * BLOCK_BREAKING_CONFIG.getVolume();
     }
 
     private static float getBreakPitch(BlockState blockState) {
-        if(isLiquidBlock(blockState)) return 1.0F;
+        if(BlockActress.isLiquid(blockState)) return 1.0F;
 
         return blockState.getSoundType().getPitch() * 0.8F;
     }

@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BubbleColumnBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -91,8 +92,11 @@ public class BlockActress {
     public boolean isFluidStatePresent() {
         return !this.isFluidStateEmpty();
     }
+    public static boolean isLiquid(BlockState blockState) {
+        return blockState.getBlock() instanceof LiquidBlock || blockState.getBlock() instanceof BubbleColumnBlock;
+    }
     public boolean isLiquidBlock() {
-        return this.block instanceof LiquidBlock;
+        return isLiquid(this.blockState);
     }
     public boolean isLiquidSource() {
         return this.isLiquidBlock() && this.blockState.getFluidState().isSource();

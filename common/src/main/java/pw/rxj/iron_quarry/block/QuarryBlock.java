@@ -25,7 +25,6 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -166,7 +165,7 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
         return (long) this.getEnergyPerOperation(upgradesUtil);
     }
     public long getEnergyConsumption(MachineUpgradesUtil upgradesUtil, BlockState blockState) {
-        if(blockState.getBlock() instanceof LiquidBlock) {
+        if(BlockActress.isLiquid(blockState)) {
             return blockState.getFluidState().isSource() ? this.getMinEnergyConsumption(upgradesUtil) : 0;
         }
 
