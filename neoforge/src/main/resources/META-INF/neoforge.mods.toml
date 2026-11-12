@@ -7,6 +7,8 @@ issueTrackerURL = "https://github.com/RXJpaw/Minecraft-Iron-Quarry/issues"
 modId = "iron_quarry"
 version = "${version}"
 displayName = "Iron Quarry"
+logoFile = "assets/iron_quarry/icon.png"
+displayURL = "https://github.com/RXJpaw/Minecraft-Iron-Quarry"
 authors = "RXJpaw"
 description = '''Ever wanted to excavate 5 Chunks in a minute? No? Well.. now you can!'''
 
