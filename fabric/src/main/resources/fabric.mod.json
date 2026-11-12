@@ -10,7 +10,7 @@
         "RXJpaw"
     ],
     "contact": {
-        "homepage": "https://www.curseforge.com/minecraft/mc-mods/iron-quarry",
+        "homepage": "https://github.com/RXJpaw/Minecraft-Iron-Quarry",
         "sources": "https://github.com/RXJpaw/Minecraft-Iron-Quarry",
         "issues": "https://github.com/RXJpaw/Minecraft-Iron-Quarry/issues"
     },
@@ -48,9 +48,6 @@
         "fabric-api": ">=0.155.3",
         "minecraft": "~26.1.2",
         "java": ">=25"
-    },
-    "suggests": {
-        "roughlyenoughitems": "*"
     },
     "breaks": {
         "lootr": "<1.22.36.108"
