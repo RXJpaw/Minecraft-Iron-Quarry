@@ -177,6 +177,7 @@ public class ZUtil {
 
     public static HashSet<Integer> getNSpacedIndexes(int listSize, int n) {
         if(listSize <= 0 || n <= 0) return new HashSet<>();
+        if(n == 1) return new HashSet<>(List.of(listSize / 2));
 
         HashSet<Integer> indexSet = new HashSet<>();
         float step = (listSize - 1.0F) / (n - 1.0F);
