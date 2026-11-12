@@ -1,6 +1,6 @@
 <p align="center" style="text-align: center">
   <a href="https://github.com/RXJpaw/Minecraft-Iron-Quarry/">
-    <img src="./common/src/main/resources/assets/iron_quarry/icon.png" alt="Logo" width="128" height="128">
+    <img src="https://github.com/RXJpaw/Minecraft-Iron-Quarry/raw/HEAD/common/src/main/resources/assets/iron_quarry/icon.png" alt="Logo" width="128" height="128">
   </a>
 </p>
 
