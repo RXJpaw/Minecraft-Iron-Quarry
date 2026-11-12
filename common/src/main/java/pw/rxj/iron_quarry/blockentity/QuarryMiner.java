@@ -311,6 +311,7 @@ public class QuarryMiner {
             ItemStack mockPickaxe = this.createMockPickaxe(toolStack, serverWorldToBreak, upgradesUtil);
 
             boolean isLiquidBlock = blockActress.isLiquidBlock();
+            boolean hasBreakEffects = blockActress.hasBreakEffects();
 
             //only drop item if required mining level is present
             if(!isLiquidBlock && blockActress.isCorrectForDrops(toolComponent)) {
@@ -330,12 +331,12 @@ public class QuarryMiner {
             blockActress.setBlockState(Blocks.AIR);
             this.MiningQueue.removeFirst();
 
-            if(isLiquidBlock) continue;
+            if(!isLiquidBlock) {
+                boolean drillBroke = drillItem.cdamage(drillStack, 1, serverWorldToBreak, null);
+                if(drillBroke) drillItem.triggerBreakEvent(drillStack, quarryPos.getCenter(), serverWorldToBreak);
+            }
 
-            boolean drillBroke = drillItem.cdamage(drillStack, 1, serverWorldToBreak, null);
-            if(drillBroke) drillItem.triggerBreakEvent(drillStack, quarryPos.getCenter(), serverWorldToBreak);
-
-            drillResults.add(blockPosState);
+            if(hasBreakEffects) drillResults.add(blockPosState);
         }
 
         return drillResults;

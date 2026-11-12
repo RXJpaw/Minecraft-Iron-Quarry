@@ -1,11 +1,5 @@
 package pw.rxj.iron_quarry.util;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import pw.rxj.iron_quarry.render.RenderUtil;
-
-import java.util.List;
-import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -18,6 +12,12 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.render.RenderUtil;
+
+import java.util.List;
+import java.util.Optional;
 
 public class BlockActress {
     public static int DEFAULT_MAX_UPDATE_DEPTH = 512;
@@ -93,6 +93,12 @@ public class BlockActress {
     }
     public boolean isLiquidBlock() {
         return this.block instanceof LiquidBlock;
+    }
+    public boolean isLiquidSource() {
+        return this.isLiquidBlock() && this.blockState.getFluidState().isSource();
+    }
+    public boolean hasBreakEffects() {
+        return !this.isLiquidBlock() || this.isLiquidSource();
     }
     public boolean isUnbreakable() {
         return this.block.defaultDestroyTime() < 0;

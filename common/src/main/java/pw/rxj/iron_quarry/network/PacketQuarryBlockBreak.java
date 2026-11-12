@@ -7,9 +7,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.network.packet.BlockPosStateListPacket;
@@ -56,9 +60,9 @@ public class PacketQuarryBlockBreak extends BlockPosStateListPacket {
             Vec3 blockPosVec = RenderUtil.vec3dFrom(blockPosState.blockPos);
             double distance = client.player.position().distanceTo(blockPosVec);
             if(distance > BLOCK_BREAKING_CONFIG.getDistance()) continue;
-            if(blockPosState.blockState.isAir() || !blockPosState.blockState.getFluidState().isEmpty()) continue;
+            if(blockPosState.blockState.isAir()) continue;
 
-            visibleBlockPosStates.add(blockPosState);
+            if(!isLiquidBlock(blockPosState.blockState)) visibleBlockPosStates.add(blockPosState);
             if(isAudible(blockPosState, distance)) audibleBlockPosStates.add(blockPosState);
         }
 
@@ -99,23 +103,40 @@ public class PacketQuarryBlockBreak extends BlockPosStateListPacket {
         return random.nextFloat() < share - wholeSounds ? wholeSounds + 1 : wholeSounds;
     }
 
-    private static boolean isAudible(BlockPosState blockPosState, double distance) {
-        SoundType soundType = blockPosState.blockState.getSoundType();
-        float volume = getBreakVolume(soundType);
-
-        return volume > 0 && distance <= soundType.getBreakSound().getRange(volume);
+    private static boolean isLiquidBlock(BlockState blockState) {
+        return blockState.getBlock() instanceof LiquidBlock;
     }
 
-    private static float getBreakVolume(SoundType soundType) {
+    private static boolean isAudible(BlockPosState blockPosState, double distance) {
+        float volume = getBreakVolume(blockPosState.blockState);
+
+        return volume > 0 && distance <= getBreakSound(blockPosState.blockState).getRange(volume);
+    }
+
+    private static SoundEvent getBreakSound(BlockState blockState) {
+        if(isLiquidBlock(blockState)) return blockState.getFluidState().getType().getPickupSound().orElse(SoundEvents.BUCKET_FILL);
+
+        return blockState.getSoundType().getBreakSound();
+    }
+
+    private static float getBreakVolume(BlockState blockState) {
+        if(isLiquidBlock(blockState)) return BLOCK_BREAKING_CONFIG.getVolume();
+
+        SoundType soundType = blockState.getSoundType();
         return ((soundType.getVolume() + 1.0F) / 2.0F) * BLOCK_BREAKING_CONFIG.getVolume();
     }
 
-    private static void playBreakSound(ClientLevel level, BlockPosState blockPosState) {
-        SoundType soundType = blockPosState.blockState.getSoundType();
-        float pitch = soundType.getPitch() * 0.8F;
+    private static float getBreakPitch(BlockState blockState) {
+        if(isLiquidBlock(blockState)) return 1.0F;
 
+        return blockState.getSoundType().getPitch() * 0.8F;
+    }
+
+    private static void playBreakSound(ClientLevel level, BlockPosState blockPosState) {
+        BlockState blockState = blockPosState.blockState;
         BlockPos blockPos = blockPosState.blockPos;
-        level.playLocalSound(blockPos.getX(), blockPos.getY(), blockPos.getZ(), soundType.getBreakSound(), SoundSource.BLOCKS, getBreakVolume(soundType), pitch, false);
+
+        level.playLocalSound(blockPos.getX(), blockPos.getY(), blockPos.getZ(), getBreakSound(blockState), SoundSource.BLOCKS, getBreakVolume(blockState), getBreakPitch(blockState), false);
     }
 
     public static PacketQuarryBlockBreak bake(List<BlockPosState> blockPosStates) {
