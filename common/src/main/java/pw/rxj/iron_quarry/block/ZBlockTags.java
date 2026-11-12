@@ -14,4 +14,5 @@ public class ZBlockTags {
 
     public static final TagKey<Block> IGNORED_BY_QUARRY = of("ignored_by_quarry");
     public static final TagKey<Block> MODIFIABLE_WITHOUT_BREAK_CHECK = of("modifiable_without_break_check");
+    public static final TagKey<Block> MINED_DESPITE_BLOCK_ENTITY = of("mined_despite_block_entity");
 }

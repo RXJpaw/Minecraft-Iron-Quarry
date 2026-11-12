@@ -55,11 +55,15 @@ For example, to accept a Block of Diamond or a Block of Emerald for slot 1, `iro
 | Block tag | Default | Meaning |
 |---|---|---|
 | `iron_quarry:ignored_by_quarry` | `#minecraft:wither_immune` (bedrock, reinforced deepslate, end portal frames and more) | Quarries skip these blocks and leave them in place. |
+| `iron_quarry:mined_despite_block_entity` | Bells, beds, banners, signs, heads, sculk sensors, sculk shriekers, sculk catalysts, creaking hearts, beacons, conduits, enchanting tables, ender chests, daylight detectors, comparators, copper golem statues | Quarries mine these blocks even though they store data. Other blocks that store data are skipped. |
 | `iron_quarry:modifiable_without_break_check` | Lootr containers (only if Lootr is installed) | See below. |
 
-About `modifiable_without_break_check`: before a quarry changes a block, it asks claim and protection mods whether its owner may break it. Some mods always say no to machines; Lootr, for example, does this for its chests. For blocks in this tag, the quarry doesn't ask. This only applies to blocks with stored data, like chests, which the quarry empties but never breaks.
+About `modifiable_without_break_check`: before a quarry changes a block, it asks claim and protection mods whether its owner may break it. Some mods always say no to machines; Lootr, for example, does this for its chests. For blocks in this tag, the quarry doesn't ask. This only applies to blocks with stored data, like chests, which the quarry empties but never breaks. If a block is also in `mined_despite_block_entity`, the quarry breaks it, and claim and protection mods decide whether it may, as for any other block. `modifiable_without_break_check` then has no effect.
 
 Blocks that can't be broken in survival (like bedrock) are always skipped, whatever the tags say.
+
+> [!WARNING]
+> Don't add blocks that hold items to `mined_despite_block_entity`, like containers, campfires, lecterns or jukeboxes. The quarry would break them, and the items inside would be dropped in the world instead of going into its output.
 
 ## Wrenches
 

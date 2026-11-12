@@ -31,7 +31,6 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import pw.rxj.iron_quarry.block.QuarryBlock;
-import pw.rxj.iron_quarry.block.ZBlockTags;
 import pw.rxj.iron_quarry.data.QuarryBlockScreenData;
 import pw.rxj.iron_quarry.data.QuarryBlockedDataComponent;
 import pw.rxj.iron_quarry.data.QuarryOwnerComponent;
@@ -199,8 +198,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     boolean canModify(ServerLevel world, BlockActress blockActress) {
         if(this.owner == null) return false;
 
-        boolean modifiableWithoutBreakCheck = blockActress.blockEntity != null && blockActress.blockState.is(ZBlockTags.MODIFIABLE_WITHOUT_BREAK_CHECK);
-        boolean allowed = modifiableWithoutBreakCheck || Platform.BLOCK_BREAK.canOwnerBreak(world, new GameProfile(this.owner.getUuid(), this.owner.getName()), blockActress.blockPos, blockActress.blockState, blockActress.blockEntity);
+        boolean allowed = blockActress.isModifiableWithoutBreakCheck() || Platform.BLOCK_BREAK.canOwnerBreak(world, new GameProfile(this.owner.getUuid(), this.owner.getName()), blockActress.blockPos, blockActress.blockState, blockActress.blockEntity);
 
         if(allowed) {
             this.setBlocked(null);

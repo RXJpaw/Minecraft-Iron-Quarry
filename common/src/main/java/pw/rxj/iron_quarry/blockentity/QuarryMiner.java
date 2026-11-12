@@ -247,6 +247,7 @@ public class QuarryMiner {
         Block block = blockState.getBlock();
         //The block hardness check will render any chest looting augment useless.
         if(block.defaultDestroyTime() < 0) return false;
+        if(BlockActress.isMinedDespiteBlockEntity(blockState)) return true;
 
         BlockEntity blockEntity = blockEntitySupplier.get();
         if(blockEntity == null) return true;
@@ -292,7 +293,7 @@ public class QuarryMiner {
 
             //handle special block entities
             //will only work if canDrill conditions are met! like if the container is not empty
-            if(blockActress.blockEntity != null) {
+            if(blockActress.hasKeptBlockEntity()) {
                 int lootedItems = this.lootBlockEntity(blockActress.blockEntity, threads - threadIndex, quarryBlock, upgradesUtil);
                 //not enough space in quarry inventory
                 if(lootedItems == 0) return drillResults;

@@ -79,7 +79,7 @@ It skips and leaves in place:
 
 - blocks that can't be broken in survival, like bedrock,
 - blocks on its skip list, which by default contains every block the Wither can't break, such as reinforced deepslate (modpacks can add more, see [Data Packs and Tags](data-packs.md#blocks)),
-- blocks that store data, like chests, furnaces, signs and spawners. With the [Chest Looting Augment](augments.md#chest-looting-augment) it empties containers that hold items, but still leaves the block.
+- most blocks that store data, like chests, furnaces, spawners and beehives. With the [Chest Looting Augment](augments.md#chest-looting-augment) it empties containers that hold items, but still leaves the block. Some blocks that store data are mined anyway, such as bells, beds, banners, signs, heads and sculk blocks (modpacks can change this, see [Data Packs and Tags](data-packs.md#blocks)).
 
 A block that needs a better tool than the drill is still removed, but drops nothing (see [Mining level](drills.md#mining-level)).
 

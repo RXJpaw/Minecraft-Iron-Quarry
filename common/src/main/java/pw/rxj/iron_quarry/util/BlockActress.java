@@ -15,6 +15,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pw.rxj.iron_quarry.block.ZBlockTags;
 import pw.rxj.iron_quarry.render.RenderUtil;
 
 import java.util.List;
@@ -105,6 +106,16 @@ public class BlockActress {
         return this.blockState.isAir();
     }
 
+    public static boolean isMinedDespiteBlockEntity(BlockState blockState) {
+        return blockState.is(ZBlockTags.MINED_DESPITE_BLOCK_ENTITY);
+    }
+    public boolean hasKeptBlockEntity() {
+        return this.blockEntity != null && !isMinedDespiteBlockEntity(this.blockState);
+    }
+    public boolean isModifiableWithoutBreakCheck() {
+        return this.hasKeptBlockEntity() && this.blockState.is(ZBlockTags.MODIFIABLE_WITHOUT_BREAK_CHECK);
+    }
+
     public List<ItemStack> getDroppedStacks(BlockState originBlockState, BlockPos originBlockPos, ItemStack miningTool) {
         Vec3 originVec3d = RenderUtil.vec3dFrom(originBlockPos);
 
@@ -113,6 +124,7 @@ public class BlockActress {
                         .withParameter(LootContextParams.BLOCK_STATE, originBlockState)
                         .withParameter(LootContextParams.ORIGIN, originVec3d)
                         .withParameter(LootContextParams.TOOL, miningTool)
+                        .withOptionalParameter(LootContextParams.BLOCK_ENTITY, this.blockEntity)
         );
     }
     public boolean isCorrectForDrops(Tool toolComponent) {
