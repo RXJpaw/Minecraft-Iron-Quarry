@@ -30,7 +30,7 @@ Before a quarry breaks a block, it uses the loader's normal block-breaking event
 
 ## Shaders
 
-With [Iris](https://modrinth.com/mod/iris) and a shader pack, the Blueprint outline can be harder to see in bright daylight.
+With [Iris](https://modrinth.com/mod/iris) and a shader pack, the Blueprint outline can be harder to see in bright daylight. Some shader packs also affect the [Quarry Monitor](quarry-monitor.md#in-the-world): close to the quarry, the highlighted quarry can flicker or appear in front of the item in your hand.
 
 ## Mod Menu
 
