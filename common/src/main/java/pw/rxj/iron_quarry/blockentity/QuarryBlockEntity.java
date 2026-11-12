@@ -112,17 +112,21 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         if(level == null) return;
         if(level.isClientSide()) return;
 
-        long chargeEnergy = Math.min(EnergyContainer.getFreeSpace(), EnergyContainer.getMaxInsert(null));
-        if(chargeEnergy <= 0) return;
-
         ItemStack batteryStack = BatteryInputInventory.getItem(0);
         if(batteryStack.isEmpty()) return;
 
-        if(!Platform.ENERGY.chargeFromSlot(BatteryInputInventory, 0, EnergyContainer) && OutputInventory.canAddItem(batteryStack)) {
-            OutputInventory.addItem(BatteryInputInventory.removeItemNoUpdate(0));
+        if(!Platform.ENERGY.hasEnergy(batteryStack)) {
+            if(OutputInventory.canAddItem(batteryStack)) {
+                OutputInventory.addItem(BatteryInputInventory.removeItemNoUpdate(0));
+            }
+
+            return;
         }
 
+        long chargeEnergy = Math.min(EnergyContainer.getFreeSpace(), EnergyContainer.getMaxInsert(null));
+        if(chargeEnergy <= 0) return;
 
+        Platform.ENERGY.chargeFromSlot(BatteryInputInventory, 0, EnergyContainer);
     }
 
     //Inventories

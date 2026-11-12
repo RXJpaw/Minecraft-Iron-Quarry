@@ -51,6 +51,13 @@ public class NeoForgePlatformEnergy implements IPlatformEnergy {
     }
 
     @Override
+    public boolean hasEnergy(ItemStack stack) {
+        EnergyHandler energyHandler = ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM);
+
+        return energyHandler != null && energyHandler.getAmountAsLong() > 0;
+    }
+
+    @Override
     public boolean chargeFromSlot(Container container, int slot, ComplexEnergyContainer target) {
         EnergyHandler energyHandler = ItemAccess.forHandlerIndex(VanillaContainerWrapper.of(container), slot).getCapability(Capabilities.Energy.ITEM);
         if(energyHandler == null || energyHandler.getAmountAsLong() <= 0) return false;

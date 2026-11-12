@@ -41,6 +41,13 @@ public class FabricPlatformEnergy implements IPlatformEnergy {
     }
 
     @Override
+    public boolean hasEnergy(ItemStack stack) {
+        EnergyStorage energyStorage = ContainerItemContext.withConstant(stack).find(EnergyStorage.ITEM);
+
+        return energyStorage != null && energyStorage.getAmount() > 0;
+    }
+
+    @Override
     public boolean chargeFromSlot(Container container, int slot, ComplexEnergyContainer target) {
         EnergyStorage energyStorage = ContainerItemContext.ofSingleSlot(ContainerStorage.of(container, null).getSlot(slot)).find(EnergyStorage.ITEM);
         if(energyStorage == null || energyStorage.getAmount() <= 0) return false;

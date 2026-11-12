@@ -15,5 +15,6 @@ public interface IPlatformEnergy {
 
     DataComponentType<Long> getEnergyComponent();
     boolean canExtractEnergy(ItemStack stack);
+    boolean hasEnergy(ItemStack stack);
     boolean chargeFromSlot(Container container, int slot, ComplexEnergyContainer target);
 }
