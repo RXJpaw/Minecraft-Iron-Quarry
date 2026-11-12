@@ -65,7 +65,7 @@ public class MachineWarningsUtil {
     }
     private MachineWarningsUtil(QuarryBlock quarryBlock, long energyStored, ComplexInventory outputInventory, ItemStack blueprintStack, ItemStack drillStack,
                                 MachineUpgradesUtil upgradesUtil, MachineExpansionsUtil expansionsUtil, @Nullable QuarryOwnerComponent owner, @Nullable QuarryBlockedDataComponent blocked) {
-        long energyRequired = quarryBlock.getMinEnergyConsumption(upgradesUtil);
+        long energyRequired = quarryBlock.getMaxEnergyConsumption(upgradesUtil);
         int occupiedSlots = outputInventory.occupiedSlots();
         int slots = outputInventory.getContainerSize();
         int flag = 0;

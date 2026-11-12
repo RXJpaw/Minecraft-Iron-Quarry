@@ -164,14 +164,17 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
     public long getMinEnergyConsumption(MachineUpgradesUtil upgradesUtil) {
         return (long) this.getEnergyPerOperation(upgradesUtil);
     }
+    public long getMaxEnergyConsumption(MachineUpgradesUtil upgradesUtil) {
+        float fortunePenalty = upgradesUtil.getFortuneEnergyMultiplier();
+
+        return (long) (this.getEnergyPerOperation(upgradesUtil) * fortunePenalty);
+    }
     public long getEnergyConsumption(MachineUpgradesUtil upgradesUtil, BlockState blockState) {
         if(BlockActress.isLiquid(blockState)) {
             return blockState.getFluidState().isSource() ? this.getMinEnergyConsumption(upgradesUtil) : 0;
         }
 
-        float fortunePenalty = upgradesUtil.getFortuneEnergyMultiplier();
-
-        return (long) (this.getEnergyPerOperation(upgradesUtil) * fortunePenalty);
+        return this.getMaxEnergyConsumption(upgradesUtil);
     }
 
     /**
