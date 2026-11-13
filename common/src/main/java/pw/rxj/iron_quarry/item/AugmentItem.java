@@ -150,8 +150,8 @@ public class AugmentItem extends Item implements IHandledSmithing, IHandledItemE
 
         if(augmentType.isPresent()) {
             if(!this.isUnique()) {
-                MutableComponent LORE_UNUSED = ReadableString.translatable("item.iron_quarry.augment.lore.used", stored, capacity);
-                textConsumer.accept(LORE_UNUSED);
+                MutableComponent LORE_USED = ReadableString.translatable("item.iron_quarry.augment.lore.used", stored, capacity);
+                textConsumer.accept(LORE_USED);
             }
 
             augmentType.getAugment().appendEffectTooltip(stored, textConsumer);
