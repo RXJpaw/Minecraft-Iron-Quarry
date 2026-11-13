@@ -119,8 +119,6 @@
     "item.iron_quarry.lore.energy.per_operation": "%s RF/op",
     "item.iron_quarry.lore.operation.per_second": "%s op/s",
 
-    "item.iron_quarry.lore.listing.used": "§{RGB_WEAK_HIGHLIGHT > %s}",
-    "item.iron_quarry.lore.listing.unused": "§{RGB_DARK_GRAY > %s}",
     "item.iron_quarry.lore.instructions": "§{RGB_LIGHT_GRAY Hold} §{RGB_WEAK_HIGHLIGHT Left Shift} §{RGB_LIGHT_GRAY for instructions}",
     "item.iron_quarry.lore.details": "§{RGB_LIGHT_GRAY Hold} §{RGB_WEAK_HIGHLIGHT Left Shift} §{RGB_LIGHT_GRAY for more information}",
     "item.iron_quarry.lore.use_rei": "§{RGB_WARNING Press U in EMI/JEI/REI to view recipes.}",
