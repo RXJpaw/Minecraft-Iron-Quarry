@@ -3,6 +3,7 @@ package pw.rxj.iron_quarry.resource.config.client;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 import pw.rxj.iron_quarry.resource.config.util.Comment;
+import pw.rxj.iron_quarry.resource.config.util.Options;
 import pw.rxj.iron_quarry.types.MonitorDepthOffsetMode;
 
 public class MonitorPreviewConfig {
@@ -11,6 +12,7 @@ public class MonitorPreviewConfig {
     "precise" (intended): draws the preview exactly on the placed quarry.
     "stable" (fallback): draws the preview a tiny bit closer to you.
     "auto": uses the fallback while a shader pack is in use.""")
+    @Options(MonitorDepthOffsetMode.class)
     public String depthOffset = MonitorDepthOffsetMode.AUTO.getTranslationKey();
 
     public static class Handler extends AbstractInnerConfigHandler {

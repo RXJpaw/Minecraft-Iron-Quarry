@@ -6,6 +6,7 @@ import pw.rxj.iron_quarry.resource.config.Config;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ConfigFields {
@@ -34,6 +35,15 @@ public class ConfigFields {
     }
     public static boolean isConfigClass(Class<?> type) {
         return !type.isArray() && type.getPackageName().startsWith(Config.class.getPackageName());
+    }
+    public static @Nullable List<String> getAllowedOptions(Field field) {
+        Options options = field.getAnnotation(Options.class);
+        if(options == null) return null;
+
+        return Arrays.stream(options.value().getEnumConstants()).map(constant -> constant.toString().toLowerCase()).toList();
+    }
+    public static String joinOptions(List<String> options) {
+        return String.join(", ", options.stream().map(option -> "\"" + option + "\"").toList());
     }
 
     public static @Nullable Object get(Field field, @Nullable Object owner) {

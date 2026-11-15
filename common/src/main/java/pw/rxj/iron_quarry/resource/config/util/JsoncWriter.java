@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -96,6 +97,9 @@ public class JsoncWriter {
 
             String rangeText = describeRange(field.getAnnotation(Range.class));
             if(rangeText != null) this.writeComment(rangeText, depth);
+
+            List<String> options = ConfigFields.getAllowedOptions(field);
+            if(options != null) this.writeComment("Options: " + ConfigFields.joinOptions(options), depth);
         }
 
         if(fieldDefault != null && value.isJsonPrimitive()) {

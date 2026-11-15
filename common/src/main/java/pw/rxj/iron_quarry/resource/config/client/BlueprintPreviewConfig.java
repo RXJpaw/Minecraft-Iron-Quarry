@@ -3,6 +3,7 @@ package pw.rxj.iron_quarry.resource.config.client;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 import pw.rxj.iron_quarry.resource.config.util.Comment;
+import pw.rxj.iron_quarry.resource.config.util.Options;
 import pw.rxj.iron_quarry.types.BlueprintHiddenLinesMode;
 
 public class BlueprintPreviewConfig {
@@ -11,6 +12,7 @@ public class BlueprintPreviewConfig {
     "transparent" (intended): draws them fainter than the rest.
     "dashed" (fallback): draws them as dashed lines.
     "auto": uses the fallback while a shader pack is in use.""")
+    @Options(BlueprintHiddenLinesMode.class)
     public String hiddenLines = BlueprintHiddenLinesMode.AUTO.getTranslationKey();
 
     public static class Handler extends AbstractInnerConfigHandler {

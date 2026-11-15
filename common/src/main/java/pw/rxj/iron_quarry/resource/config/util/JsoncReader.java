@@ -6,6 +6,7 @@ import pw.rxj.iron_quarry.Main;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -76,9 +77,9 @@ public class JsoncReader {
         if(checked != null || isConfigObject(value, field.getType())) return checked;
 
         if(defaultValue == null) {
-            Main.LOGGER.warn("Config value {} = {} is invalid, expected {}.", path, value, describeExpectedType(field.getType()));
+            Main.LOGGER.warn("Config value {} = {} is invalid, expected {}.", path, value, describeExpectedType(field, field.getType()));
         } else {
-            Main.LOGGER.warn("Config value {} = {} is invalid, expected {}, using {}.", path, value, describeExpectedType(field.getType()), describeDefaultValue(defaultValue));
+            Main.LOGGER.warn("Config value {} = {} is invalid, expected {}, using {}.", path, value, describeExpectedType(field, field.getType()), describeDefaultValue(defaultValue));
         }
 
         return defaultValue;
@@ -96,7 +97,7 @@ public class JsoncReader {
 
         JsonPrimitive primitive = value.getAsJsonPrimitive();
         if(isBooleanType(type)) return primitive.isBoolean() ? primitive : null;
-        if(type == String.class) return primitive.isString() ? primitive : null;
+        if(type == String.class) return primitive.isString() && isAllowedOption(primitive, field) ? primitive : null;
 
         NumberType numberType = NumberType.of(type);
         if(numberType != null) return checkNumber(primitive, field.getAnnotation(Range.class), numberType, path);
@@ -116,7 +117,7 @@ public class JsoncReader {
             } else if(isConfigObject(entry, componentType)) {
                 Main.LOGGER.warn("Config list entry {} is incomplete and ignored.", entryPath);
             } else {
-                Main.LOGGER.warn("Config list entry {} = {} is invalid and ignored, expected {}.", entryPath, entry, describeExpectedType(componentType));
+                Main.LOGGER.warn("Config list entry {} = {} is invalid and ignored, expected {}.", entryPath, entry, describeExpectedType(field, componentType));
             }
         }
 
@@ -148,21 +149,32 @@ public class JsoncReader {
     private static boolean isBooleanType(Class<?> type) {
         return type == boolean.class || type == Boolean.class;
     }
+    private static boolean isAllowedOption(JsonPrimitive primitive, Field field) {
+        List<String> options = ConfigFields.getAllowedOptions(field);
+
+        return options == null || options.contains(primitive.getAsString());
+    }
 
     private static String describeDefaultValue(JsonElement defaultValue) {
         return defaultValue.isJsonPrimitive() ? defaultValue.toString() : "the defaults";
     }
-    private static String describeExpectedType(Class<?> type) {
+    private static String describeExpectedType(Field field, Class<?> type) {
         if(isBooleanType(type)) return "true or false";
 
         NumberType numberType = NumberType.of(type);
         if(numberType != null) return numberType.isWhole() ? "a whole number" : "a number";
 
-        if(type == String.class) return "a text in quotes";
+        if(type == String.class) return describeExpectedText(field);
         if(type.isArray()) return "a list";
         if(ConfigFields.isConfigClass(type)) return "an object";
 
         return type.getSimpleName();
+    }
+    private static String describeExpectedText(Field field) {
+        List<String> options = ConfigFields.getAllowedOptions(field);
+        if(options == null) return "a text in quotes";
+
+        return "one of " + ConfigFields.joinOptions(options);
     }
 
     private static @Nullable String suggestFieldName(Class<?> type, String key) {

@@ -2,7 +2,7 @@
 
 Iron Quarry has two config files in the `config/iron_quarry/` folder of the game or server. `server.jsonc` holds the balancing: quarry stats, dimensions, augments, expansion cards, monitors and drills. It is used by the server, and in single player by your game for all your worlds. `client.jsonc` holds each player's own settings for sounds, particles and other visuals.
 
-Both files are created with the default values when the game starts for the first time. Each option has a comment in the file that explains it and shows its default value and allowed range.
+Both files are created with the default values when the game starts for the first time. Each option has a comment in the file that explains it and shows its default value and its allowed range or values.
 
 ## How the files are read
 
