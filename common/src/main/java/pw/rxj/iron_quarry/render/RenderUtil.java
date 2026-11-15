@@ -33,12 +33,14 @@ import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import pw.rxj.iron_quarry.Main;
 
@@ -57,6 +59,11 @@ public class RenderUtil {
         private static final RenderType VISIBLE_LINES = RenderType.create("iron_quarry_visible_lines", RenderSetup.builder(VISIBLE_LINES_PIPELINE).bufferSize(1536).createRenderSetup());
         private static final RenderType HIDDEN_LINES = RenderType.create("iron_quarry_hidden_lines", RenderSetup.builder(HIDDEN_LINES_PIPELINE).bufferSize(1536).createRenderSetup());
         private static final float LINE_WIDTH = 3.0F;
+        private static final float HIDDEN_LINES_ALPHA = 0.2F;
+        private static final float DASH_SCREEN_LENGTH = 0.025F;
+        private static final float GAP_SCREEN_LENGTH = 0.04F;
+        private static final float DASH_MIN_CLIP_W = 0.05F;
+        private static final float DASH_SCREEN_MARGIN = 1.1F;
     }
 
     private static class Markers {
@@ -164,33 +171,48 @@ public class RenderUtil {
                pos.x >  range || pos.y >  range || pos.z >  range;
     }
 
-    public static void drawZBufferedCuboid(Cuboid cuboid, PoseStack matrices, @Nullable GpuBufferSlice fog, int viewDistance, float red, float green, float blue, float alpha) {
-        double squaredViewDistance = Math.pow(viewDistance, 2);
-
+    public static void drawZBufferedCuboid(Cuboid cuboid, PoseStack matrices, Matrix4fc projectionMatrix, @Nullable GpuBufferSlice fog, int viewDistance, float red, float green, float blue, float alpha, boolean dashHiddenLines) {
         Matrix4f positionMatrix = matrices.last().pose();
-        Tesselator tessellator = Tesselator.getInstance();
+        Tesselator tesselator = Tesselator.getInstance();
 
         //Outlines
         List<SpriteVec2f> boxLines = cuboid.getLines();
         List<SpriteVec2f> splitBoxLines = boxLines.stream().map(vec -> vec.autoSplit(8.0F)).flatMap(List::stream).toList();
-        List<SpriteVec2f> filteredSplitBoxLines = splitBoxLines.stream().filter(vec -> vec.squaredDistanceTo(new Vector3f()) <= squaredViewDistance).toList();
+        List<SpriteVec2f> filteredSplitBoxLines = splitBoxLines.stream().filter(vec -> vec.isCenterWithin(viewDistance)).toList();
+        List<SpriteVec2f> hiddenBoxLines = dashHiddenLines ? dashLines(boxLines, positionMatrix, projectionMatrix) : splitBoxLines;
+        List<SpriteVec2f> filteredHiddenBoxLines = hiddenBoxLines.stream().filter(vec -> vec.isCenterWithin(viewDistance)).toList();
+        float hiddenAlpha = dashHiddenLines ? alpha : alpha * Lines.HIDDEN_LINES_ALPHA;
 
         GpuBufferSlice shaderFog = RenderSystem.getShaderFog();
         if(fog != null) RenderSystem.setShaderFog(fog);
 
         try {
             //Visible Outlines
-            drawLines(tessellator, Lines.VISIBLE_LINES, positionMatrix, matrices.last(), filteredSplitBoxLines, red, green, blue, alpha);
+            drawLines(tesselator, Lines.VISIBLE_LINES, positionMatrix, matrices.last(), filteredSplitBoxLines, red, green, blue, alpha);
 
             //Hidden Outlines
-            drawLines(tessellator, Lines.HIDDEN_LINES, positionMatrix, matrices.last(), filteredSplitBoxLines, red, green, blue, alpha * 0.2F);
+            drawLines(tesselator, Lines.HIDDEN_LINES, positionMatrix, matrices.last(), filteredHiddenBoxLines, red, green, blue, hiddenAlpha);
         } finally {
             RenderSystem.setShaderFog(shaderFog);
         }
     }
 
-    private static void drawLines(Tesselator tessellator, RenderType renderLayer, Matrix4f positionMatrix, PoseStack.Pose entry, List<SpriteVec2f> lines, float red, float green, float blue, float alpha) {
-        BufferBuilder buffer = tessellator.begin(renderLayer.mode(), renderLayer.format());
+    private static List<SpriteVec2f> dashLines(List<SpriteVec2f> lines, Matrix4f positionMatrix, Matrix4fc projectionMatrix) {
+        Matrix4f viewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix()).mul(positionMatrix);
+        Matrix4f clipMatrix = new Matrix4f(projectionMatrix).mul(viewMatrix);
+        Vector3f eye = viewMatrix.invert(new Matrix4f()).transformPosition(new Vector3f());
+        float aspectRatio = projectionMatrix.m11() / projectionMatrix.m00();
+
+        return lines.stream()
+                .map(line -> ProjectedLine.of(line, clipMatrix, aspectRatio, Lines.DASH_MIN_CLIP_W, Lines.DASH_SCREEN_MARGIN))
+                .flatMap(Optional::stream)
+                .map(projectedLine -> projectedLine.dash(eye, Lines.DASH_SCREEN_LENGTH, Lines.GAP_SCREEN_LENGTH))
+                .flatMap(List::stream)
+                .toList();
+    }
+
+    private static void drawLines(Tesselator tesselator, RenderType renderLayer, Matrix4f positionMatrix, PoseStack.Pose entry, List<SpriteVec2f> lines, float red, float green, float blue, float alpha) {
+        BufferBuilder buffer = tesselator.begin(renderLayer.mode(), renderLayer.format());
 
         for (SpriteVec2f line : lines) {
             Vector3f n = line.normalize();

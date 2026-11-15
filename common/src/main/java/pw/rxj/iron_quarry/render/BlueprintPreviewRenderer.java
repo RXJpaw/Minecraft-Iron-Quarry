@@ -12,12 +12,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.data.QuarryBlockedDataComponent;
 import pw.rxj.iron_quarry.event.WorldRenderCallback;
 import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
+import pw.rxj.iron_quarry.resource.config.client.BlueprintPreviewConfig;
 import pw.rxj.iron_quarry.util.ItemStackUtil;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -25,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class BlueprintPreviewRenderer {
     private static final WorldBlueprintMarkerRenderer WORLD_MARKER_RENDERER = new WorldBlueprintMarkerRenderer();
+    private static final BlueprintPreviewConfig.Handler BLUEPRINT_PREVIEW_CONFIG = Main.CONFIG.getBlueprintPreviewConfig();
 
     private static void renderInWorld(CameraRenderState cameraRenderState, PoseStack matrices) {
         WORLD_MARKER_RENDERER.clear();
@@ -74,12 +77,12 @@ public class BlueprintPreviewRenderer {
 
         BlockPos firstPos = blueprintItem.getFirstPos(blueprintStack).orElse(null);
         BlockPos secondPos = blueprintItem.getSecondPos(blueprintStack).orElse(null);
-        if(firstPos != null && secondPos != null) renderCuboid(minecraftClient, player, camera, matrices, firstPos, secondPos);
+        if(firstPos != null && secondPos != null) renderCuboid(minecraftClient, player, camera, matrices, projectionMatrix, firstPos, secondPos);
 
         WORLD_MARKER_RENDERER.update(firstPos, secondPos, atomicMiningPos.get(), atomicBlockedPos.get(), camera, positionMatrix, projectionMatrix);
     }
 
-    private static void renderCuboid(Minecraft minecraftClient, LocalPlayer player, Camera camera, PoseStack matrices, BlockPos firstPos, BlockPos secondPos) {
+    private static void renderCuboid(Minecraft minecraftClient, LocalPlayer player, Camera camera, PoseStack matrices, Matrix4f projectionMatrix, BlockPos firstPos, BlockPos secondPos) {
         float tickDelta = minecraftClient.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         int viewDistance = Math.min(minecraftClient.options.getEffectiveRenderDistance() * 16 * 3, RenderUtil.MAX_VIEW_DISTANCE * 16 * 3);
 
@@ -97,7 +100,7 @@ public class BlueprintPreviewRenderer {
 
         // WorldRenderEvents.END doesn't call this when the world border is rendered.
         // Resulting in color, transparency and brightness being way off.
-        RenderUtil.drawZBufferedCuboid(limitedCuboid.inflate(0.02), matrices, minecraftClient.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE), viewDistance, 0.976F, 0.718F, 0.192F, 0.667F);
+        RenderUtil.drawZBufferedCuboid(limitedCuboid.inflate(0.02), matrices, projectionMatrix, minecraftClient.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE), viewDistance, 0.976F, 0.718F, 0.192F, 0.667F, BLUEPRINT_PREVIEW_CONFIG.isHiddenLinesDashed());
 
         matrices.popPose();
     }

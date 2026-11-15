@@ -23,10 +23,12 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3fc;
+import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.event.WorldRenderCallback;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.model.QuarryModel;
+import pw.rxj.iron_quarry.resource.config.client.MonitorPreviewConfig;
 import pw.rxj.iron_quarry.util.ItemStackUtil;
 import pw.rxj.iron_quarry.util.ZUtil;
 
@@ -38,6 +40,10 @@ public class QuarryMonitorPreviewRenderer {
     private static final float MIN_PREVIEW_SIZE = 16.0F / 3.0F;
     private static final float PREVIEW_ALPHA = 0.66F;
     private static final Block MISSING_QUARRY_BLOCK = Blocks.BEDROCK; //TODO: custom texture
+    private static final MonitorPreviewConfig.Handler MONITOR_PREVIEW_CONFIG = Main.CONFIG.getMonitorPreviewConfig();
+    private static final double PRECISE_DEPTH_OFFSET = 0.001;
+    private static final double STABLE_DEPTH_OFFSET = 0.01;
+    private static final double DEPTH_OFFSET_PER_BLOCK = 5.0E-6;
 
     private static void renderInWorld(CameraRenderState cameraRenderState) {
         Minecraft minecraftClient = Minecraft.getInstance();
@@ -95,7 +101,8 @@ public class QuarryMonitorPreviewRenderer {
 
         if(quads.isEmpty()) return;
 
-        float approach = coversRealBlock ? (float) (1.0 - 0.001 - depth * 5.0E-6) : 1.0F;
+        double depthOffset = MONITOR_PREVIEW_CONFIG.isDepthOffsetStable() ? STABLE_DEPTH_OFFSET : PRECISE_DEPTH_OFFSET;
+        float approach = coversRealBlock ? (float) (1.0 - depthOffset - depth * DEPTH_OFFSET_PER_BLOCK) : 1.0F;
         float scale = depthScale * enlargement * approach;
         Vec3 modelPos = previewPos.scale(approach);
 

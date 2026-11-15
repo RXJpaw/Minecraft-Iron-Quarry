@@ -1,5 +1,6 @@
 package pw.rxj.iron_quarry.compat;
 
+import pw.rxj.iron_quarry.compat.iris.IrisClient;
 import pw.rxj.iron_quarry.platform.Platform;
 
 public class Compat {
@@ -13,5 +14,9 @@ public class Compat {
         if(Platform.LOADER.isModLoaded("jei")) JEI_LOADED = true;
         if(Platform.LOADER.isModLoaded("iris")) IRIS_LOADED = true;
         if(Platform.LOADER.isModLoaded("lootr")) LOOTR_LOADED = true;
+    }
+
+    public static boolean isShaderPackInUse() {
+        return IRIS_LOADED && IrisClient.isShaderPackInUse();
     }
 }

@@ -83,6 +83,15 @@ public class SpriteVec2f {
 
         return list;
     }
+    public Vector3f pointAt(double fraction) {
+        return new Vector3f(this.from).lerp(this.to, (float) fraction);
+    }
+    public double closestFractionTo(Vector3f pos) {
+        Vector3f delta = new Vector3f(this.to).sub(this.from);
+        if(delta.lengthSquared() == 0.0F) return 0.0;
+
+        return Math.clamp(new Vector3f(pos).sub(this.from).dot(delta) / (double) delta.lengthSquared(), 0.0, 1.0);
+    }
     public Vector3f center() {
         return new Vector3f(
                 (this.from.x + this.to.x) / 2,
@@ -91,6 +100,9 @@ public class SpriteVec2f {
         );
     }
 
+    public boolean isCenterWithin(double distance) {
+        return this.squaredDistanceTo(new Vector3f()) <= distance * distance;
+    }
     public boolean isOutsideRange(double range) {
         return RenderUtil.isOutsideRange(new Vec3(this.from), range) &&
                RenderUtil.isOutsideRange(new Vec3(this.to), range);

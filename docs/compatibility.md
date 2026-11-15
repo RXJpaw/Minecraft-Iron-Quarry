@@ -30,7 +30,19 @@ Before a quarry breaks a block, it uses the loader's normal block-breaking event
 
 ## Shaders
 
-With [Iris](https://modrinth.com/mod/iris) and a shader pack, the Blueprint outline can be harder to see in bright daylight. Some shader packs also affect the [Quarry Monitor](quarry-monitor.md#in-the-world): close to the quarry, the highlighted quarry can flicker or appear in front of the item in your hand.
+Shader packs for [Iris](https://modrinth.com/mod/iris) can change how the Blueprint outline and the Quarry Monitor look. Iron Quarry fixes two of these problems itself: while a shader pack is in use, it draws the outline and the monitor's preview a little differently. You can change both in the [client config](configuration.md#client-config), under Blueprint Preview and Quarry Monitor Preview.
+
+### Blueprint outline
+
+Normally the parts of the [Blueprint outline](blueprints.md#seeing-the-area) that are hidden behind blocks are drawn fainter than the rest. This shows you which edges are covered and which are not. Many shader packs draw all parts equally strong, so you can't tell them apart anymore. While a shader pack is in use, the hidden parts are drawn as dashed lines instead.
+
+With some shader packs the outline is also hard to see in bright daylight. There is no setting for that.
+
+### Quarry Monitor
+
+While you hold a [Quarry Monitor](quarry-monitor.md#in-the-world), it shows a preview of its quarry in the world. When you stand near the quarry, the preview is drawn exactly on the placed quarry. With many shader packs it then flickers, because of their temporal anti-aliasing (TAA). While a shader pack is in use, the preview is drawn a tiny bit closer to you instead, which stops the flickering.
+
+With some shader packs the preview can also appear in front of the item in your hand. There is no setting for that.
 
 ## Mod Menu
 

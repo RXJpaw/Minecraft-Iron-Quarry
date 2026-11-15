@@ -10,4 +10,8 @@ public class IrisClient {
 
         RenderUtil.getLinePipelines().forEach(pipeline -> irisApi.assignPipeline(pipeline, IrisProgram.LINES));
     }
+
+    public static boolean isShaderPackInUse() {
+        return IrisApi.getInstance().isShaderPackInUse();
+    }
 }

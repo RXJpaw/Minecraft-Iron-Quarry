@@ -1,6 +1,6 @@
 # Configuration
 
-Iron Quarry has two config files in the `config/iron_quarry/` folder of the game or server. `server.jsonc` holds the balancing: quarry stats, dimensions, augments, expansion cards, monitors and drills. It is used by the server, and in single player by your game for all your worlds. `client.jsonc` holds each player's own settings for sounds, particles and the monitor display.
+Iron Quarry has two config files in the `config/iron_quarry/` folder of the game or server. `server.jsonc` holds the balancing: quarry stats, dimensions, augments, expansion cards, monitors and drills. It is used by the server, and in single player by your game for all your worlds. `client.jsonc` holds each player's own settings for sounds, particles and other visuals.
 
 Both files are created with the default values when the game starts for the first time. Each option has a comment in the file that explains it and shows its default value and allowed range.
 
@@ -204,6 +204,8 @@ These options can be changed in-game. On Fabric, this needs [Mod Menu](https://m
 | `quarryMonitorOverlay.alignment` | `"bottom_left"` | Screen corner of the [monitor display](quarry-monitor.md#monitor-display): `top_left`, `top_right`, `bottom_left` or `bottom_right`. |
 | `quarryMonitorOverlay.x` | `8` | Horizontal distance from the screen edge, 0 to 128 pixels. |
 | `quarryMonitorOverlay.y` | `8` | Vertical distance from the screen edge, 0 to 128 pixels. |
+| `blueprintPreview.hiddenLines` | `"auto"` | How the parts of the Blueprint outline that are hidden behind blocks are drawn: `transparent` (fainter than the rest), `dashed` (as dashed lines) or `auto` (`dashed` while a shader pack is in use). See [Shaders](compatibility.md#shaders). |
+| `monitorPreview.depthOffset` | `"auto"` | How far in front of the placed quarry a held Quarry Monitor draws its preview when you stand near it: `precise` (exactly on the placed quarry), `stable` (a tiny bit closer to you) or `auto` (`stable` while a shader pack is in use). See [Shaders](compatibility.md#shaders). |
 
 > [!IMPORTANT]
 > Edit `client.jsonc` by hand only while the game is closed, because the in-game settings screen overwrites the file.

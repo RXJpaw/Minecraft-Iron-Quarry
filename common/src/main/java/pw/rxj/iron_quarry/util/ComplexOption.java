@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import net.minecraft.client.OptionInstance;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
 
 public class ComplexOption {
@@ -18,7 +20,7 @@ public class ComplexOption {
         return rotatingOptionFrom(
                 key,
                 autoTooltip ? OptionInstance.cachedConstantTooltip(ReadableString.translatable(key + ".tooltip")) : OptionInstance.noTooltip(),
-                clazz.isEnum() ? Arrays.stream(clazz.getEnumConstants()).map(anEnum -> anEnum.toString().toLowerCase()).toList() : List.of(),
+                getOptionList(clazz),
                 defaultValue,
                 write
         );
@@ -32,6 +34,26 @@ public class ComplexOption {
                 defaultValue,
                 write
         );
+    }
+
+    public static OptionInstance<String> resolvingOptionFrom(String key, UnaryOperator<String> resolve, Class<? extends Enum<?>> clazz, String defaultValue, Consumer<String> write) {
+        return new OptionInstance<>(
+                key,
+                value -> Tooltip.create(ReadableString.translatable(key + "." + value + ".tooltip")),
+                (optionText, value) -> {
+                    String resolved = resolve.apply(value);
+                    String resolvedText = Component.translatable(key + "." + resolved).getString();
+
+                    return resolved.equals(value) ? ReadableString.parse(resolvedText) : ReadableString.translatable(key + "." + value, resolvedText);
+                },
+                new OptionInstance.LazyEnum<>(() -> getOptionList(clazz), Optional::of, Codec.STRING),
+                defaultValue,
+                write
+        );
+    }
+
+    private static List<String> getOptionList(Class<? extends Enum<?>> clazz) {
+        return clazz.isEnum() ? Arrays.stream(clazz.getEnumConstants()).map(anEnum -> anEnum.toString().toLowerCase()).toList() : List.of();
     }
 
     public static OptionInstance<Integer> sliderOptionFrom(String key, ValueFormatter<Integer> valueDivider, boolean autoTooltip, int min, int max, int defaultValue, Consumer<Integer> write) {
