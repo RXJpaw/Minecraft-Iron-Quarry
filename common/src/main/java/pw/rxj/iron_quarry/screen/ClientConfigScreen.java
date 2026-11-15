@@ -9,8 +9,8 @@ import net.minecraft.network.chat.Component;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.resource.config.client.BlockBreakingConfig;
 import pw.rxj.iron_quarry.resource.config.client.BlueprintPreviewConfig;
+import pw.rxj.iron_quarry.resource.config.client.MonitorOverlayConfig;
 import pw.rxj.iron_quarry.resource.config.client.MonitorPreviewConfig;
-import pw.rxj.iron_quarry.resource.config.client.QuarryMonitorOverlayConfig;
 import pw.rxj.iron_quarry.types.AbsAlignment;
 import pw.rxj.iron_quarry.types.BlueprintHiddenLinesMode;
 import pw.rxj.iron_quarry.types.MonitorDepthOffsetMode;
@@ -18,7 +18,7 @@ import pw.rxj.iron_quarry.util.ComplexOption;
 
 public class ClientConfigScreen extends OptionsSubScreen {
     private static final BlockBreakingConfig.Handler BLOCK_BREAKING_CONFIG = Main.CONFIG.getBlockBreakingConfig();
-    private static final QuarryMonitorOverlayConfig.Handler QUARRY_MONITOR_OVERLAY_CONFIG = Main.CONFIG.getQuarryMonitorOverlayConfig();
+    private static final MonitorOverlayConfig.Handler MONITOR_OVERLAY_CONFIG = Main.CONFIG.getMonitorOverlayConfig();
     private static final BlueprintPreviewConfig.Handler BLUEPRINT_PREVIEW_CONFIG = Main.CONFIG.getBlueprintPreviewConfig();
     private static final MonitorPreviewConfig.Handler MONITOR_PREVIEW_CONFIG = Main.CONFIG.getMonitorPreviewConfig();
 
@@ -39,28 +39,28 @@ public class ClientConfigScreen extends OptionsSubScreen {
             BLOCK_BREAKING_CONFIG::setOptionVolume
     );
 
-    public static OptionInstance<String> QUARRY_MONITOR_ALIGNMENT = ComplexOption.rotatingOptionFrom(
-            "screen.iron_quarry.client_config.quarry_monitor_alignment",
+    public static OptionInstance<String> MONITOR_OVERLAY_ALIGNMENT = ComplexOption.rotatingOptionFrom(
+            "screen.iron_quarry.client_config.monitor_overlay.alignment",
             true,
             AbsAlignment.class,
-            QUARRY_MONITOR_OVERLAY_CONFIG.getOptionAlignment(),
-            QUARRY_MONITOR_OVERLAY_CONFIG::setOptionAlignment
+            MONITOR_OVERLAY_CONFIG.getOptionAlignment(),
+            MONITOR_OVERLAY_CONFIG::setOptionAlignment
     );
-    public static OptionInstance<Integer> QUARRY_MONITOR_X = ComplexOption.sliderOptionFrom(
-            "screen.iron_quarry.client_config.quarry_monitor_x",
+    public static OptionInstance<Integer> MONITOR_OVERLAY_X = ComplexOption.sliderOptionFrom(
+            "screen.iron_quarry.client_config.monitor_overlay.x",
             ComplexOption.valueDivider("%.0f", 1),
             true,
             0, 128,
-            QUARRY_MONITOR_OVERLAY_CONFIG.getX(),
-            QUARRY_MONITOR_OVERLAY_CONFIG::setX
+            MONITOR_OVERLAY_CONFIG.getX(),
+            MONITOR_OVERLAY_CONFIG::setX
     );
-    public static OptionInstance<Integer> QUARRY_MONITOR_Y = ComplexOption.sliderOptionFrom(
-            "screen.iron_quarry.client_config.quarry_monitor_y",
+    public static OptionInstance<Integer> MONITOR_OVERLAY_Y = ComplexOption.sliderOptionFrom(
+            "screen.iron_quarry.client_config.monitor_overlay.y",
             ComplexOption.valueDivider("%.0f", 1),
             true,
             0, 128,
-            QUARRY_MONITOR_OVERLAY_CONFIG.getY(),
-            QUARRY_MONITOR_OVERLAY_CONFIG::setY
+            MONITOR_OVERLAY_CONFIG.getY(),
+            MONITOR_OVERLAY_CONFIG::setY
     );
 
     public static OptionInstance<String> BLUEPRINT_HIDDEN_LINES = ComplexOption.resolvingOptionFrom(
@@ -87,9 +87,9 @@ public class ClientConfigScreen extends OptionsSubScreen {
     protected void addOptions() {
         if(this.list == null) return;
 
-        this.list.addSmall(QUARRY_MONITOR_ALIGNMENT, BLOCK_BREAK_DISTANCE_OPTION,
-                         QUARRY_MONITOR_X,         BLOCK_BREAK_VOLUME_OPTION,
-                         QUARRY_MONITOR_Y);
+        this.list.addSmall(MONITOR_OVERLAY_ALIGNMENT, BLOCK_BREAK_DISTANCE_OPTION,
+                         MONITOR_OVERLAY_X,         BLOCK_BREAK_VOLUME_OPTION,
+                         MONITOR_OVERLAY_Y);
 
         this.list.addHeader(Component.translatable("screen.iron_quarry.client_config.blueprint_preview"));
         this.list.addBig(BLUEPRINT_HIDDEN_LINES);

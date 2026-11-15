@@ -14,12 +14,12 @@ import pw.rxj.iron_quarry.item.BlueprintItem;
 import pw.rxj.iron_quarry.item.DrillItem;
 import pw.rxj.iron_quarry.item.QuarryMonitorItem;
 import pw.rxj.iron_quarry.resource.ResourceReloadListener;
-import pw.rxj.iron_quarry.resource.config.client.QuarryMonitorOverlayConfig;
+import pw.rxj.iron_quarry.resource.config.client.MonitorOverlayConfig;
 import pw.rxj.iron_quarry.util.MachineWarningsUtil;
 import pw.rxj.iron_quarry.util.ZUtil;
 
 public class QuarryMonitorOverlayRenderer {
-    private static final QuarryMonitorOverlayConfig.Handler QUARRY_MONITOR_OVERLAY_CONFIG = Main.CONFIG.getQuarryMonitorOverlayConfig();
+    private static final MonitorOverlayConfig.Handler MONITOR_OVERLAY_CONFIG = Main.CONFIG.getMonitorOverlayConfig();
     public static final Identifier OVERLAY_TEXTURE = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/quarry_monitor_overlay.png");
 
     private static void renderOnScreen(GuiGraphicsExtractor context, double tickDelta) {
@@ -52,8 +52,8 @@ public class QuarryMonitorOverlayRenderer {
         ItemStack drillStack = quarryMonitorItem.getCachedDrillStack(quarryMonitorStack);
         MachineWarningsUtil warningsUtil = MachineWarningsUtil.from(quarryMonitorStack);
 
-        int x = QUARRY_MONITOR_OVERLAY_CONFIG.getComputedWindowX(minecraftClient.getWindow(), 42);
-        int y = QUARRY_MONITOR_OVERLAY_CONFIG.getComputedWindowY(minecraftClient.getWindow(), 45);
+        int x = MONITOR_OVERLAY_CONFIG.getComputedWindowX(minecraftClient.getWindow(), 42);
+        int y = MONITOR_OVERLAY_CONFIG.getComputedWindowY(minecraftClient.getWindow(), 45);
 
         //texture render
 
@@ -73,7 +73,7 @@ public class QuarryMonitorOverlayRenderer {
             RenderUtil.drawTexture(context, OVERLAY_TEXTURE, 34, 3 + 39 - chargedPixels, 47, 3 + 39 - chargedPixels, 5, chargedPixels, 128, 128);
         }
 
-        int warningX = QUARRY_MONITOR_OVERLAY_CONFIG.getAlignment().isRight() ? -4 : 43;
+        int warningX = MONITOR_OVERLAY_CONFIG.getAlignment().isRight() ? -4 : 43;
         QuarryMonitorWarningRenderer.renderIcon(context, warningsUtil, warningX, 0);
 
         matrices.popMatrix();

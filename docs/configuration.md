@@ -201,9 +201,9 @@ These options can be changed in-game. On Fabric, this needs [Mod Menu](https://m
 |---|---|---|
 | `blockBreaking.volume` | `1.0` | Volume of the block breaking sounds of quarries, 0 to 1. |
 | `blockBreaking.distance` | `64.0` | Up to this distance in blocks you see particles and hear sounds of quarries, 0 to 64. |
-| `quarryMonitorOverlay.alignment` | `"bottom_left"` | Screen corner of the [monitor display](quarry-monitor.md#monitor-display): `top_left`, `top_right`, `bottom_left` or `bottom_right`. |
-| `quarryMonitorOverlay.x` | `8` | Horizontal distance from the screen edge, 0 to 128 pixels. |
-| `quarryMonitorOverlay.y` | `8` | Vertical distance from the screen edge, 0 to 128 pixels. |
+| `monitorOverlay.alignment` | `"bottom_left"` | Screen corner of the [monitor display](quarry-monitor.md#monitor-display): `top_left`, `top_right`, `bottom_left` or `bottom_right`. |
+| `monitorOverlay.x` | `8` | Horizontal distance from the screen edge, 0 to 128 pixels. |
+| `monitorOverlay.y` | `8` | Vertical distance from the screen edge, 0 to 128 pixels. |
 | `blueprintPreview.hiddenLines` | `"auto"` | How the parts of the Blueprint outline that are hidden behind blocks are drawn: `transparent` (fainter than the rest), `dashed` (as dashed lines) or `auto` (`dashed` while a shader pack is in use). See [Shaders](compatibility.md#shaders). |
 | `monitorPreview.depthOffset` | `"auto"` | How far in front of the placed quarry a held Quarry Monitor draws its preview when you stand near it: `precise` (exactly on the placed quarry), `stable` (a tiny bit closer to you) or `auto` (`stable` while a shader pack is in use). See [Shaders](compatibility.md#shaders). |
 

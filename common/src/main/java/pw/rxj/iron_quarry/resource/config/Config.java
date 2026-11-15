@@ -2,8 +2,8 @@ package pw.rxj.iron_quarry.resource.config;
 
 import pw.rxj.iron_quarry.resource.config.client.BlockBreakingConfig;
 import pw.rxj.iron_quarry.resource.config.client.BlueprintPreviewConfig;
+import pw.rxj.iron_quarry.resource.config.client.MonitorOverlayConfig;
 import pw.rxj.iron_quarry.resource.config.client.MonitorPreviewConfig;
-import pw.rxj.iron_quarry.resource.config.client.QuarryMonitorOverlayConfig;
 import pw.rxj.iron_quarry.resource.config.server.*;
 import pw.rxj.iron_quarry.resource.config.util.Comment;
 
@@ -37,7 +37,7 @@ public class Config {
         @Comment("Particles & sounds of blocks mined by quarries.")
         public final BlockBreakingConfig blockBreaking = new BlockBreakingConfig();
         @Comment("HUD displayed when using a Quarry Monitor.")
-        public final QuarryMonitorOverlayConfig quarryMonitorOverlay = new QuarryMonitorOverlayConfig();
+        public final MonitorOverlayConfig monitorOverlay = new MonitorOverlayConfig();
         @Comment("Area outline and markers shown in the world while holding a Blueprint, a quarry with a Blueprint or a linked Quarry Monitor.")
         public final BlueprintPreviewConfig blueprintPreview = new BlueprintPreviewConfig();
         @Comment("Quarry drawn at its position while holding a linked Quarry Monitor, so you can find it from far away.")
