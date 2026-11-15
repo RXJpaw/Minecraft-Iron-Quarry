@@ -8,6 +8,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class ConfigFields {
     private ConfigFields() { }
@@ -40,7 +41,13 @@ public class ConfigFields {
         Options options = field.getAnnotation(Options.class);
         if(options == null) return null;
 
-        return Arrays.stream(options.value().getEnumConstants()).map(constant -> constant.toString().toLowerCase()).toList();
+        return getOptionNames(options.value());
+    }
+    public static List<String> getOptionNames(Class<? extends Enum<?>> type) {
+        return Arrays.stream(type.getEnumConstants()).map(ConfigFields::getOptionName).toList();
+    }
+    public static String getOptionName(Enum<?> constant) {
+        return constant.toString().toLowerCase(Locale.ROOT);
     }
     public static String joinOptions(List<String> options) {
         return String.join(", ", options.stream().map(option -> "\"" + option + "\"").toList());

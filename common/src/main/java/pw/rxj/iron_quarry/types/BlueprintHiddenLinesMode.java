@@ -2,6 +2,7 @@ package pw.rxj.iron_quarry.types;
 
 import java.util.Arrays;
 import pw.rxj.iron_quarry.compat.Compat;
+import pw.rxj.iron_quarry.resource.config.util.ConfigFields;
 
 public enum BlueprintHiddenLinesMode {
     AUTO,
@@ -13,7 +14,7 @@ public enum BlueprintHiddenLinesMode {
     }
 
     public String getTranslationKey() {
-        return this.toString().toLowerCase();
+        return ConfigFields.getOptionName(this);
     }
     public BlueprintHiddenLinesMode resolve() {
         if(this != AUTO) return this;

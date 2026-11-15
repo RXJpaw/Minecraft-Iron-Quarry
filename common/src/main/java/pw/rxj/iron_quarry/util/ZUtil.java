@@ -29,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 
 public class ZUtil {
     public static ItemLike getBlockOrItem(ItemStack stack) {
@@ -99,7 +100,7 @@ public class ZUtil {
     public static String capitalizeFirstLetter(String input) {
         if (input == null || input.isEmpty()) return input;
 
-        return input.substring(0, 1).toUpperCase() + input.substring(1);
+        return input.substring(0, 1).toUpperCase(Locale.ROOT) + input.substring(1);
     }
 
     public static double normDeg(double degrees) {

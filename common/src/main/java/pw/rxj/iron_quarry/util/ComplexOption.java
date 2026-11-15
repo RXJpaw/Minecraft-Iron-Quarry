@@ -1,7 +1,6 @@
 package pw.rxj.iron_quarry.util;
 
 import com.mojang.serialization.Codec;
-import java.util.Arrays;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +10,7 @@ import java.util.function.UnaryOperator;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
+import pw.rxj.iron_quarry.resource.config.util.ConfigFields;
 
 public class ComplexOption {
     private ComplexOption() { }
@@ -53,7 +53,7 @@ public class ComplexOption {
     }
 
     private static List<String> getOptionList(Class<? extends Enum<?>> clazz) {
-        return clazz.isEnum() ? Arrays.stream(clazz.getEnumConstants()).map(anEnum -> anEnum.toString().toLowerCase()).toList() : List.of();
+        return clazz.isEnum() ? ConfigFields.getOptionNames(clazz) : List.of();
     }
 
     public static OptionInstance<Integer> sliderOptionFrom(String key, ValueFormatter<Integer> valueDivider, boolean autoTooltip, int min, int max, int defaultValue, Consumer<Integer> write) {

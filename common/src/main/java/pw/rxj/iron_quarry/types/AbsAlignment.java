@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import pw.rxj.iron_quarry.resource.config.util.ConfigFields;
 
 public enum AbsAlignment {
     TOP_LEFT(0),
@@ -33,7 +34,7 @@ public enum AbsAlignment {
         return this == TOP_RIGHT || this == BOTTOM_RIGHT;
     }
     public String getTranslationKey() {
-        return this.toString().toLowerCase();
+        return ConfigFields.getOptionName(this);
     }
     public Component getText() {
         return Component.literal("Not yet implemented.");
