@@ -87,10 +87,11 @@ public class ClientConfigScreen extends OptionsSubScreen {
     protected void addOptions() {
         if(this.list == null) return;
 
-        this.list.addSmall(MONITOR_OVERLAY_ALIGNMENT, QUARRY_EFFECTS_DISTANCE,
-                         MONITOR_OVERLAY_X,         QUARRY_EFFECTS_MINING_VOLUME,
-                         MONITOR_OVERLAY_Y);
-
+        this.list.addHeader(Component.translatable("screen.iron_quarry.client_config.quarry_effects"));
+        this.list.addSmall(QUARRY_EFFECTS_MINING_VOLUME, QUARRY_EFFECTS_DISTANCE);
+        this.list.addHeader(Component.translatable("screen.iron_quarry.client_config.monitor_overlay"));
+        this.list.addBig(MONITOR_OVERLAY_ALIGNMENT);
+        this.list.addSmall(MONITOR_OVERLAY_X, MONITOR_OVERLAY_Y);
         this.list.addHeader(Component.translatable("screen.iron_quarry.client_config.blueprint_preview"));
         this.list.addBig(BLUEPRINT_HIDDEN_LINES);
         this.list.addHeader(Component.translatable("screen.iron_quarry.client_config.monitor_preview"));
