@@ -29,18 +29,21 @@ public class ProjectedLine {
         return from(line, clipMatrix, aspectRatio).cropToFront(clipMatrix, minClipW).flatMap(projectedLine -> projectedLine.cropToScreen(clipMatrix, screenMargin));
     }
 
-    public List<SpriteVec2f> dash(Vector3f anchor, float dashLength, float gapLength) {
+    public List<SpriteVec2f> dash(Vector3f eye, float dashAngle, float gapAngle) {
         List<SpriteVec2f> dashes = new ArrayList<>();
 
-        double screenLength = this.getScreenLength();
-        double period = dashLength + gapLength;
-        double anchorOffset = this.toScreenFraction(this.line.closestFractionTo(anchor)) * screenLength;
+        double footFraction = this.line.footFractionOf(eye);
+        double eyeDistance = this.line.pointAt(footFraction).distance(eye) / this.line.innerDistance();
+        double startAngle = Math.atan(-footFraction / eyeDistance);
+        double endAngle = Math.atan((1.0 - footFraction) / eyeDistance);
+        double period = dashAngle + gapAngle;
+        if(period <= 0.0) return dashes;
 
-        for (double offset = anchorOffset - Math.ceil(anchorOffset / period) * period; offset < screenLength; offset += period) {
-            double start = Math.max(offset, 0.0);
-            double end = Math.min(offset + dashLength, screenLength);
+        for (double angle = Math.floor(startAngle / period) * period; angle < endAngle; angle += period) {
+            double start = Math.max(angle, startAngle);
+            double end = Math.min(angle + dashAngle, endAngle);
 
-            if(end > start) dashes.add(SpriteVec2f.from(this.atScreenFraction(start / screenLength), this.atScreenFraction(end / screenLength)));
+            if(end > start) dashes.add(SpriteVec2f.from(this.atAngle(footFraction, eyeDistance, start), this.atAngle(footFraction, eyeDistance, end)));
         }
 
         return dashes;
@@ -86,11 +89,8 @@ public class ProjectedLine {
     private double getScreenY(Vector4f clipPos) {
         return clipPos.y / clipPos.w;
     }
-    private double getScreenLength() {
-        return Math.hypot(this.getScreenX(this.clipTo) - this.getScreenX(this.clipFrom), this.getScreenY(this.clipTo) - this.getScreenY(this.clipFrom));
-    }
-    private double toScreenFraction(double lineFraction) {
-        return lineFraction * this.clipTo.w / ((1.0 - lineFraction) * this.clipFrom.w + lineFraction * this.clipTo.w);
+    private Vector3f atAngle(double footFraction, double eyeDistance, double angle) {
+        return this.line.pointAt(footFraction + eyeDistance * Math.tan(angle));
     }
     private Vector3f atScreenFraction(double screenFraction) {
         return this.line.pointAt(screenFraction * this.clipFrom.w / ((1.0 - screenFraction) * this.clipTo.w + screenFraction * this.clipFrom.w));

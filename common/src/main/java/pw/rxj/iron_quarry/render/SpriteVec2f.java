@@ -86,11 +86,11 @@ public class SpriteVec2f {
     public Vector3f pointAt(double fraction) {
         return new Vector3f(this.from).lerp(this.to, (float) fraction);
     }
-    public double closestFractionTo(Vector3f pos) {
+    public double footFractionOf(Vector3f pos) {
         Vector3f delta = new Vector3f(this.to).sub(this.from);
         if(delta.lengthSquared() == 0.0F) return 0.0;
 
-        return Math.clamp(new Vector3f(pos).sub(this.from).dot(delta) / (double) delta.lengthSquared(), 0.0, 1.0);
+        return new Vector3f(pos).sub(this.from).dot(delta) / (double) delta.lengthSquared();
     }
     public Vector3f center() {
         return new Vector3f(

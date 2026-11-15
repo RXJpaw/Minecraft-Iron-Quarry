@@ -202,13 +202,22 @@ public class RenderUtil {
         Matrix4f clipMatrix = new Matrix4f(projectionMatrix).mul(viewMatrix);
         Vector3f eye = viewMatrix.invert(new Matrix4f()).transformPosition(new Vector3f());
         float aspectRatio = projectionMatrix.m11() / projectionMatrix.m00();
+        float angleScale = getDashAngleScale(projectionMatrix);
+        float dashAngle = Lines.DASH_SCREEN_LENGTH * angleScale;
+        float gapAngle = Lines.GAP_SCREEN_LENGTH * angleScale;
 
         return lines.stream()
                 .map(line -> ProjectedLine.of(line, clipMatrix, aspectRatio, Lines.DASH_MIN_CLIP_W, Lines.DASH_SCREEN_MARGIN))
                 .flatMap(Optional::stream)
-                .map(projectedLine -> projectedLine.dash(eye, Lines.DASH_SCREEN_LENGTH, Lines.GAP_SCREEN_LENGTH))
+                .map(projectedLine -> projectedLine.dash(eye, dashAngle, gapAngle))
                 .flatMap(List::stream)
                 .toList();
+    }
+    private static float getDashAngleScale(Matrix4fc projectionMatrix) {
+        float baseScale = (float) Math.tan(Math.toRadians(Minecraft.getInstance().options.fov().get()) / 2.0);
+        float zoomStep = (float) Math.pow(2.0, Math.max(0.0, Math.floor(Math.log(projectionMatrix.m11() * baseScale) / Math.log(2.0))));
+
+        return baseScale / zoomStep;
     }
 
     private static void drawLines(Tesselator tesselator, RenderType renderLayer, Matrix4f positionMatrix, PoseStack.Pose entry, List<SpriteVec2f> lines, float red, float green, float blue, float alpha) {
