@@ -18,6 +18,7 @@ import java.awt.*;
 
 public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
     private static final double MIN_MARKER_DEPTH = 1.0;
+    private static final double MAX_DECIMAL_DISTANCE = 100.0;
 
     @Override
     protected ScreenPos project(Vec3 worldPos) {
@@ -54,7 +55,7 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
 
                 matrices.translate(0.0F, 9 * scale, 0.0F);
 
-                MutableComponent text = Component.literal(ReadableString.getDecimalFormatter("#,##0.0").format(distance) + "m");
+                MutableComponent text = getDistanceText(distance);
                 int width = textRenderer.width(text);
                 int height = 8;
                 scale /= 1.5F;
@@ -87,5 +88,11 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
         matrices.scale(pixelSize, -pixelSize, pixelSize);
 
         return matrices;
+    }
+
+    private static MutableComponent getDistanceText(double distance) {
+        String pattern = distance < MAX_DECIMAL_DISTANCE ? "#,##0.0" : "#,##0";
+
+        return Component.literal(ReadableString.getDecimalFormatter(pattern).format(distance) + "m");
     }
 }
