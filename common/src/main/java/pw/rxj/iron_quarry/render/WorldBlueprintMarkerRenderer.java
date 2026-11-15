@@ -93,6 +93,6 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
     private static MutableComponent getDistanceText(double distance) {
         String pattern = distance < MAX_DECIMAL_DISTANCE ? "#,##0.0" : "#,##0";
 
-        return Component.literal(ReadableString.getDecimalFormatter(pattern).format(distance) + "m");
+        return Component.translatable("distance.unit.c.meter", ReadableString.getDecimalFormatter(pattern).format(distance));
     }
 }

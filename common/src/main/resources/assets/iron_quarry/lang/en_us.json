@@ -210,6 +210,7 @@
     "time.unit.c.hour.plural": "%s hours",
     "time.unit.c.day.singular": "%s day",
     "time.unit.c.day.plural": "%s days",
+    "distance.unit.c.meter": "%sm",
 
     "kick_reason.iron_quarry.packet_blueprint_position_set.disallowed_distance": "Tried to expand blueprint position by an illegal amount. (Must be between %s and %s)",
 
