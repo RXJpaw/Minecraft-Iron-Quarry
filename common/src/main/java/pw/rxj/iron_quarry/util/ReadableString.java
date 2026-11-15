@@ -42,15 +42,15 @@ public class ReadableString {
 
     public static String minPrecisionFloat(float number) {
         if(number == (int) number)
-            return String.format("%d", (int) number);
+            return String.valueOf((int) number);
         else
-            return String.format("%s", number);
+            return String.valueOf(number);
     }
     public static String minPrecisionDouble(double number) {
         if(number == (long) number)
-            return String.format("%d", (long) number);
+            return String.valueOf((long) number);
         else
-            return String.format("%s", number);
+            return String.valueOf(number);
     }
 
     public static MutableComponent space() {

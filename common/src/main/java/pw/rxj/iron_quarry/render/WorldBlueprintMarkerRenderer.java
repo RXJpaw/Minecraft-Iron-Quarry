@@ -12,6 +12,7 @@ import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import pw.rxj.iron_quarry.util.ReadableString;
 
 import java.awt.*;
 
@@ -53,7 +54,7 @@ public class WorldBlueprintMarkerRenderer extends BlueprintMarkerRenderer {
 
                 matrices.translate(0.0F, 9 * scale, 0.0F);
 
-                MutableComponent text = Component.literal(String.format("%,.1fm", distance));
+                MutableComponent text = Component.literal(ReadableString.getDecimalFormatter("#,##0.0").format(distance) + "m");
                 int width = textRenderer.width(text);
                 int height = 8;
                 scale /= 1.5F;

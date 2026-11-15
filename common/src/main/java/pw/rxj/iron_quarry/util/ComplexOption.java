@@ -3,6 +3,7 @@ package pw.rxj.iron_quarry.util;
 import com.mojang.serialization.Codec;
 import java.util.IllegalFormatException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -87,7 +88,7 @@ public class ComplexOption {
             Object castValue;
 
             try {
-                castValue = String.format(formatter, value.doubleValue() / divider);
+                castValue = String.format(Locale.ROOT, formatter, value.doubleValue() / divider);
             } catch (IllegalFormatException ignored) {
                 castValue = "NaN";
             }
