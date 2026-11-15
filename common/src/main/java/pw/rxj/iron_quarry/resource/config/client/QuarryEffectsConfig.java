@@ -5,10 +5,10 @@ import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 import pw.rxj.iron_quarry.resource.config.util.Comment;
 import pw.rxj.iron_quarry.resource.config.util.Range;
 
-public class BlockBreakingConfig {
+public class QuarryEffectsConfig {
     @Comment("Block breaking sound volume.")
     @Range(min = 0, max = 1)
-    public float volume = 1.0F;
+    public float miningVolume = 1.0F;
     @Comment("Max. distance for particles & sounds.")
     @Range(min = 0, max = 64)
     public float distance = 64.0F;
@@ -21,24 +21,24 @@ public class BlockBreakingConfig {
             return new Handler(handler);
         }
 
-        public void setVolume(float volume) {
-            this.getClient().blockBreaking.volume = volume;
+        public void setMiningVolume(float miningVolume) {
+            this.getClient().quarryEffects.miningVolume = miningVolume;
         }
-        public float getVolume() {
-            return this.getClient().blockBreaking.volume;
+        public float getMiningVolume() {
+            return this.getClient().quarryEffects.miningVolume;
         }
-        public void setOptionVolume(int volume) {
-            this.setVolume(volume / 100.0F);
+        public void setOptionMiningVolume(int miningVolume) {
+            this.setMiningVolume(miningVolume / 100.0F);
         }
-        public int getOptionVolume() {
-            return (int) (this.getVolume() * 100);
+        public int getOptionMiningVolume() {
+            return (int) (this.getMiningVolume() * 100);
         }
 
         public void setDistance(float distance) {
-            this.getClient().blockBreaking.distance = distance;
+            this.getClient().quarryEffects.distance = distance;
         }
         public float getDistance() {
-            return this.getClient().blockBreaking.distance;
+            return this.getClient().quarryEffects.distance;
         }
         public void setOptionDistance(int distance) {
             this.setDistance(distance);

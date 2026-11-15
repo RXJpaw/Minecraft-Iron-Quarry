@@ -10,10 +10,10 @@ import pw.rxj.iron_quarry.event.ClientConnectionCallback;
 import pw.rxj.iron_quarry.event.ServerLifecycleCallback;
 import pw.rxj.iron_quarry.network.PacketServerConfigApply;
 import pw.rxj.iron_quarry.network.ZNetwork;
-import pw.rxj.iron_quarry.resource.config.client.BlockBreakingConfig;
 import pw.rxj.iron_quarry.resource.config.client.BlueprintPreviewConfig;
 import pw.rxj.iron_quarry.resource.config.client.MonitorOverlayConfig;
 import pw.rxj.iron_quarry.resource.config.client.MonitorPreviewConfig;
+import pw.rxj.iron_quarry.resource.config.client.QuarryEffectsConfig;
 import pw.rxj.iron_quarry.resource.config.server.*;
 import pw.rxj.iron_quarry.resource.config.util.JsoncReader;
 import pw.rxj.iron_quarry.resource.config.util.JsoncWriter;
@@ -58,8 +58,8 @@ public class ConfigHandler {
     }
 
     //Client Configs
-    public BlockBreakingConfig.Handler getBlockBreakingConfig() {
-        return BlockBreakingConfig.Handler.of(this);
+    public QuarryEffectsConfig.Handler getQuarryEffectsConfig() {
+        return QuarryEffectsConfig.Handler.of(this);
     }
     public MonitorOverlayConfig.Handler getMonitorOverlayConfig() {
         return MonitorOverlayConfig.Handler.of(this);

@@ -199,8 +199,8 @@ These options can be changed in-game. On Fabric, this needs [Mod Menu](https://m
 
 | Option | Default | Meaning |
 |---|---|---|
-| `blockBreaking.volume` | `1.0` | Volume of the block breaking sounds of quarries, 0 to 1. |
-| `blockBreaking.distance` | `64.0` | Up to this distance in blocks you see particles and hear sounds of quarries, 0 to 64. |
+| `quarryEffects.miningVolume` | `1.0` | Volume of the block breaking sounds of quarries, 0 to 1. |
+| `quarryEffects.distance` | `64.0` | Up to this distance in blocks you see particles and hear sounds of quarries, 0 to 64. |
 | `monitorOverlay.alignment` | `"bottom_left"` | Screen corner of the [monitor display](quarry-monitor.md#monitor-display): `top_left`, `top_right`, `bottom_left` or `bottom_right`. |
 | `monitorOverlay.x` | `8` | Horizontal distance from the screen edge, 0 to 128 pixels. |
 | `monitorOverlay.y` | `8` | Vertical distance from the screen edge, 0 to 128 pixels. |

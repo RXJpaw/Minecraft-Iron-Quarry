@@ -7,36 +7,36 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.network.chat.Component;
 import pw.rxj.iron_quarry.Main;
-import pw.rxj.iron_quarry.resource.config.client.BlockBreakingConfig;
 import pw.rxj.iron_quarry.resource.config.client.BlueprintPreviewConfig;
 import pw.rxj.iron_quarry.resource.config.client.MonitorOverlayConfig;
 import pw.rxj.iron_quarry.resource.config.client.MonitorPreviewConfig;
+import pw.rxj.iron_quarry.resource.config.client.QuarryEffectsConfig;
 import pw.rxj.iron_quarry.types.AbsAlignment;
 import pw.rxj.iron_quarry.types.BlueprintHiddenLinesMode;
 import pw.rxj.iron_quarry.types.MonitorDepthOffsetMode;
 import pw.rxj.iron_quarry.util.ComplexOption;
 
 public class ClientConfigScreen extends OptionsSubScreen {
-    private static final BlockBreakingConfig.Handler BLOCK_BREAKING_CONFIG = Main.CONFIG.getBlockBreakingConfig();
+    private static final QuarryEffectsConfig.Handler QUARRY_EFFECTS_CONFIG = Main.CONFIG.getQuarryEffectsConfig();
     private static final MonitorOverlayConfig.Handler MONITOR_OVERLAY_CONFIG = Main.CONFIG.getMonitorOverlayConfig();
     private static final BlueprintPreviewConfig.Handler BLUEPRINT_PREVIEW_CONFIG = Main.CONFIG.getBlueprintPreviewConfig();
     private static final MonitorPreviewConfig.Handler MONITOR_PREVIEW_CONFIG = Main.CONFIG.getMonitorPreviewConfig();
 
-    public static OptionInstance<Integer> BLOCK_BREAK_DISTANCE_OPTION = ComplexOption.sliderOptionFrom(
-            "screen.iron_quarry.client_config.block_break_distance",
+    public static OptionInstance<Integer> QUARRY_EFFECTS_DISTANCE = ComplexOption.sliderOptionFrom(
+            "screen.iron_quarry.client_config.quarry_effects.distance",
             ComplexOption.valueDivider("%.0f", 1),
             true,
             0, 64,
-            BLOCK_BREAKING_CONFIG.getOptionDistance(),
-            BLOCK_BREAKING_CONFIG::setOptionDistance
+            QUARRY_EFFECTS_CONFIG.getOptionDistance(),
+            QUARRY_EFFECTS_CONFIG::setOptionDistance
     );
-    public static OptionInstance<Integer> BLOCK_BREAK_VOLUME_OPTION = ComplexOption.sliderOptionFrom(
-            "screen.iron_quarry.client_config.block_break_volume",
+    public static OptionInstance<Integer> QUARRY_EFFECTS_MINING_VOLUME = ComplexOption.sliderOptionFrom(
+            "screen.iron_quarry.client_config.quarry_effects.mining_volume",
             ComplexOption.valueDivider("%.0f", 1),
             true,
             0, 100,
-            BLOCK_BREAKING_CONFIG.getOptionVolume(),
-            BLOCK_BREAKING_CONFIG::setOptionVolume
+            QUARRY_EFFECTS_CONFIG.getOptionMiningVolume(),
+            QUARRY_EFFECTS_CONFIG::setOptionMiningVolume
     );
 
     public static OptionInstance<String> MONITOR_OVERLAY_ALIGNMENT = ComplexOption.rotatingOptionFrom(
@@ -87,8 +87,8 @@ public class ClientConfigScreen extends OptionsSubScreen {
     protected void addOptions() {
         if(this.list == null) return;
 
-        this.list.addSmall(MONITOR_OVERLAY_ALIGNMENT, BLOCK_BREAK_DISTANCE_OPTION,
-                         MONITOR_OVERLAY_X,         BLOCK_BREAK_VOLUME_OPTION,
+        this.list.addSmall(MONITOR_OVERLAY_ALIGNMENT, QUARRY_EFFECTS_DISTANCE,
+                         MONITOR_OVERLAY_X,         QUARRY_EFFECTS_MINING_VOLUME,
                          MONITOR_OVERLAY_Y);
 
         this.list.addHeader(Component.translatable("screen.iron_quarry.client_config.blueprint_preview"));

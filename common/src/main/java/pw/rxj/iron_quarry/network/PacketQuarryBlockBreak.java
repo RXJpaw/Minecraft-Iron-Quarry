@@ -17,7 +17,7 @@ import net.minecraft.world.phys.Vec3;
 import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.network.packet.BlockPosStateListPacket;
 import pw.rxj.iron_quarry.render.RenderUtil;
-import pw.rxj.iron_quarry.resource.config.client.BlockBreakingConfig;
+import pw.rxj.iron_quarry.resource.config.client.QuarryEffectsConfig;
 import pw.rxj.iron_quarry.util.BlockActress;
 import pw.rxj.iron_quarry.util.BlockPosState;
 import pw.rxj.iron_quarry.util.ZUtil;
@@ -29,7 +29,7 @@ public class PacketQuarryBlockBreak extends BlockPosStateListPacket {
     public static final StreamCodec<RegistryFriendlyByteBuf, PacketQuarryBlockBreak> PACKET_CODEC = StreamCodec.ofMember(PacketQuarryBlockBreak::write, PacketQuarryBlockBreak::new);
     public static final CustomPacketPayload.Type<PacketQuarryBlockBreak> PACKET_ID = register("quarry_block_break", PACKET_CODEC);
 
-    private static final BlockBreakingConfig.Handler BLOCK_BREAKING_CONFIG = Main.CONFIG.getBlockBreakingConfig();
+    private static final QuarryEffectsConfig.Handler QUARRY_EFFECTS_CONFIG = Main.CONFIG.getQuarryEffectsConfig();
     private static final int MAX_SOUNDS_PER_PACKET = 3;
     private static final int MAX_SOUNDS_PER_TICK = 6;
 
@@ -59,7 +59,7 @@ public class PacketQuarryBlockBreak extends BlockPosStateListPacket {
         for (BlockPosState blockPosState : payload.blockPosStates) {
             Vec3 blockPosVec = RenderUtil.vec3dFrom(blockPosState.blockPos);
             double distance = client.player.position().distanceTo(blockPosVec);
-            if(distance > BLOCK_BREAKING_CONFIG.getDistance()) continue;
+            if(distance > QUARRY_EFFECTS_CONFIG.getDistance()) continue;
             if(blockPosState.blockState.isAir()) continue;
 
             if(!BlockActress.isLiquid(blockPosState.blockState)) visibleBlockPosStates.add(blockPosState);
@@ -116,10 +116,10 @@ public class PacketQuarryBlockBreak extends BlockPosStateListPacket {
     }
 
     private static float getBreakVolume(BlockState blockState) {
-        if(BlockActress.isLiquid(blockState)) return BLOCK_BREAKING_CONFIG.getVolume();
+        if(BlockActress.isLiquid(blockState)) return QUARRY_EFFECTS_CONFIG.getMiningVolume();
 
         SoundType soundType = blockState.getSoundType();
-        return ((soundType.getVolume() + 1.0F) / 2.0F) * BLOCK_BREAKING_CONFIG.getVolume();
+        return ((soundType.getVolume() + 1.0F) / 2.0F) * QUARRY_EFFECTS_CONFIG.getMiningVolume();
     }
 
     private static float getBreakPitch(BlockState blockState) {
