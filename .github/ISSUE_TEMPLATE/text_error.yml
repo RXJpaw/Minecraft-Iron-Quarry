@@ -1,0 +1,38 @@
+name: ✏️ Text error
+description: Mistake in the documentation, a game text, or another text.
+title: "[Text]: "
+labels: ["✏️ text"]
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      description: Report text errors here instead of opening a pull request. Pull requests that only fix a typo are closed.
+      options:
+        - label: I searched the existing issues, and this error isn't reported yet.
+          required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options: [Documentation, Game text, Something else]
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: Page and section, where the text shows up in the game, or where else you found it.
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current text
+      description: For game texts, a screenshot works too.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested text

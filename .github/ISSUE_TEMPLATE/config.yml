@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ✨ Feature request
+    url: https://github.com/RXJpaw/Minecraft-Iron-Quarry/discussions/new?category=feedback
+    about: Share ideas and thoughts in the Feedback discussions.
+  - name: 📖 Documentation
+    url: https://github.com/RXJpaw/Minecraft-Iron-Quarry/blob/HEAD/docs/README.md
+    about: Read how Iron Quarry works, from the first quarry to the config files.
+  - name: ❓ Questions
+    url: https://github.com/RXJpaw/Minecraft-Iron-Quarry/discussions/new?category=q-a
+    about: Ask about playing, configuring, or adding Iron Quarry to a modpack.
+  - name: 🌐 Translations
+    url: https://github.com/RXJpaw/Minecraft-Iron-Quarry/blob/HEAD/.github/CONTRIBUTING.md#translations
+    about: Add or improve a translation with a pull request.

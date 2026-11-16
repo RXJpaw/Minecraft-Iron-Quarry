@@ -1,0 +1,76 @@
+name: 🐛 Bug report
+description: Something isn't working as intended.
+title: "[Bug]: "
+labels: ["🐛 bug"]
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      description: If the bug only shows up together with another mod, file an [incompatibility report](https://github.com/RXJpaw/Minecraft-Iron-Quarry/issues/new?template=incompatibility_report.yml) instead.
+      options:
+        - label: I searched the existing issues, and this bug isn't reported yet.
+          required: true
+        - label: I use the newest version of Iron Quarry.
+          required: true
+        - label: I tested it with only Iron Quarry and its dependencies installed, and the bug still shows up.
+          required: true
+  - type: dropdown
+    id: loader
+    attributes:
+      label: Loader(s)
+      multiple: true
+      options: [Fabric, NeoForge]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Iron Quarry version
+      description: Shown in the mod list and the file name, e.g. `Iron-Quarry-0.1.0-fabric-26.1.2.jar`.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: minecraft
+    attributes:
+      label: Minecraft version
+      placeholder: 26.1.2
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment(s)
+      multiple: true
+      options: [Single player, Dedicated server]
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What went wrong, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: If you can't make the bug show up again, describe what you were doing.
+      placeholder: |
+        1. Place a quarry and insert a Blueprint
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: log
+    attributes:
+      label: Log
+      description: Upload `logs/latest.log`, or the file from `crash-reports/` after a crash, to [mclo.gs](https://mclo.gs) and paste the link. Log files can contain sensitive data, such as OS usernames or IP addresses, some of which mclo.gs hides.
+      placeholder: https://mclo.gs/...
+  - type: textarea
+    id: config
+    attributes:
+      label: Config
+      description: Attach `config/iron_quarry/server.jsonc` or `client.jsonc` if you changed it.
