@@ -7,14 +7,26 @@ body:
     id: checks
     attributes:
       label: Checks
-      description: If the bug only shows up together with another mod, file an [incompatibility report](https://github.com/RXJpaw/Minecraft-Iron-Quarry/issues/new?template=incompatibility_report.yml) instead.
+      description: If you know which other mod causes the bug, file an [incompatibility report](https://github.com/RXJpaw/Minecraft-Iron-Quarry/issues/new?template=incompatibility_report.yml) instead.
       options:
         - label: I searched the existing issues, and this bug isn't reported yet.
           required: true
         - label: I use the newest version of Iron Quarry.
           required: true
-        - label: I tested it with only Iron Quarry and its dependencies installed, and the bug still shows up.
-          required: true
+  - type: dropdown
+    id: isolation
+    attributes:
+      label: Isolation test
+      description: If you can, try it again with only Iron Quarry and its dependencies installed.
+      options: [Not tested, Bug still shows up, Bug disappears]
+    validations:
+      required: true
+  - type: input
+    id: modpack
+    attributes:
+      label: Modpack
+      description: Name and version, if you play one.
+      placeholder: Example Pack 1.2.3
   - type: dropdown
     id: loader
     attributes:
