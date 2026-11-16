@@ -1,6 +1,6 @@
 # Contributing
 
-Iron Quarry is my hobby project, and since the actual development is where the fun lies, I prefer to write the code myself. Translations are an exception and are very welcome. All other pull requests will be closed.
+Iron Quarry is my hobby project, and since the actual development is where the fun lies, I prefer to write the code myself. Translations are an exception and are very welcome. All other pull requests are closed.
 
 ## Translations
 
@@ -13,6 +13,10 @@ Add a file named after your Minecraft locale code (e.g. `de_de.json`) next to `e
 
 The documentation in `docs/` stays in English.
 
-## Bugs
+## Bugs and text errors
 
-Found one? Open an [issue](https://github.com/RXJpaw/Minecraft-Iron-Quarry/issues).
+Found a bug, an incompatibility or a text error? Open an [issue](https://github.com/RXJpaw/Minecraft-Iron-Quarry/issues/new/choose).
+
+## Questions and ideas
+
+Ask questions in [Q&A](https://github.com/RXJpaw/Minecraft-Iron-Quarry/discussions/categories/q-a) and share ideas in [Feedback](https://github.com/RXJpaw/Minecraft-Iron-Quarry/discussions/categories/feedback).
