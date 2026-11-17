@@ -34,7 +34,7 @@ public class Config {
     public static class Client {
         private Client() { }
 
-        @Comment("Particles & sounds of blocks mined by quarries.")
+        @Comment("Particles and sounds of quarries.")
         public final QuarryEffectsConfig quarryEffects = new QuarryEffectsConfig();
         @Comment("HUD displayed when using a Quarry Monitor.")
         public final MonitorOverlayConfig monitorOverlay = new MonitorOverlayConfig();
