@@ -97,7 +97,7 @@ public class JsoncReader {
 
         JsonPrimitive primitive = value.getAsJsonPrimitive();
         if(isBooleanType(type)) return primitive.isBoolean() ? primitive : null;
-        if(type == String.class) return primitive.isString() && isAllowedOption(primitive, field) ? primitive : null;
+        if(type == String.class) return primitive.isString() ? checkText(primitive, field) : null;
 
         NumberType numberType = NumberType.of(type);
         if(numberType != null) return checkNumber(primitive, field.getAnnotation(Range.class), numberType, path);
@@ -122,6 +122,12 @@ public class JsoncReader {
         }
 
         return checked;
+    }
+    private static @Nullable JsonPrimitive checkText(JsonPrimitive primitive, Field field) {
+        List<String> options = ConfigFields.getAllowedOptions(field);
+        if(options == null) return primitive;
+
+        return options.stream().filter(option -> option.equalsIgnoreCase(primitive.getAsString())).findFirst().map(JsonPrimitive::new).orElse(null);
     }
     private static @Nullable JsonPrimitive checkNumber(JsonPrimitive primitive, @Nullable Range range, NumberType type, String path) {
         BigDecimal number;
@@ -148,11 +154,6 @@ public class JsoncReader {
     }
     private static boolean isBooleanType(Class<?> type) {
         return type == boolean.class || type == Boolean.class;
-    }
-    private static boolean isAllowedOption(JsonPrimitive primitive, Field field) {
-        List<String> options = ConfigFields.getAllowedOptions(field);
-
-        return options == null || options.contains(primitive.getAsString());
     }
 
     private static String describeDefaultValue(JsonElement defaultValue) {

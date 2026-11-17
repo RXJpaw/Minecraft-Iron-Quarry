@@ -15,6 +15,7 @@ Mistakes in a file don't break the game:
 - A missing option is added back with its default value.
 - A value that is out of range is moved into the range, with a warning in the log.
 - A wrong value is replaced by the default, with a warning in the log.
+- Upper and lower case don't matter in options with fixed values like `"whitelist"`.
 - An unknown option is reported in the log, with a suggestion if it looks like a typo.
 
 To reset an option, delete it from the file. It comes back with its default value.
