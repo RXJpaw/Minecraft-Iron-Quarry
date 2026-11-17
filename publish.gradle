@@ -1,0 +1,63 @@
+plugins {
+	id 'me.modmuss50.mod-publish-plugin' version '2.2.1'
+}
+
+def env = { String name -> providers.environmentVariable(name).getOrElse('') }
+def modVersion = env('MOD_VERSION')
+def minecraftVersion = env('MINECRAFT_VERSION')
+def releaseDir = env('RELEASE_DIR')
+
+publishMods {
+	version = modVersion
+	type = modVersion.tokenize('.')[0] == '0' ? BETA : STABLE
+	changelog = file("${releaseDir}/changelog.md").text
+	dryRun = env('DRY_RUN') == 'true'
+
+	def cfOptions = curseforgeOptions {
+		accessToken = providers.environmentVariable('CURSEFORGE_TOKEN')
+		projectId = env('CURSEFORGE_PROJECT')
+		minecraftVersions.add(minecraftVersion)
+		client = true
+		server = true
+	}
+
+	def mrOptions = modrinthOptions {
+		accessToken = providers.environmentVariable('MODRINTH_TOKEN')
+		projectId = env('MODRINTH_PROJECT')
+		minecraftVersions.add(minecraftVersion)
+		environment = CLIENT_AND_SERVER
+	}
+
+	[fabric: 'Fabric', neoforge: 'NeoForge'].each { loader, loaderName ->
+		def jar = file("${releaseDir}/Iron-Quarry-${modVersion}-${loader}-${minecraftVersion}.jar")
+		def title = "v${modVersion} for ${loaderName} ${minecraftVersion}"
+		def isFabric = loader == 'fabric'
+		if (!jar.isFile()) throw new GradleException("Missing release file: ${jar.name}")
+
+		curseforge("curseforge${loaderName}") {
+			from cfOptions
+			file = jar
+			displayName = title
+			modLoaders.add(loader)
+			if (isFabric) requires('fabric-api')
+		}
+
+		modrinth("modrinth${loaderName}") {
+			from mrOptions
+			file = jar
+			displayName = title
+			modLoaders.add(loader)
+			if (isFabric) requires('fabric-api')
+		}
+	}
+}
+
+tasks.matching { it.name.startsWith('publishCurseforge') }.configureEach {
+	mustRunAfter(tasks.matching { it.name.startsWith('publishModrinth') })
+}
+
+['Modrinth', 'Curseforge'].each { platform ->
+	tasks.matching { it.name == "publish${platform}NeoForge" }.configureEach {
+		mustRunAfter(tasks.matching { it.name == "publish${platform}Fabric" })
+	}
+}
