@@ -7,26 +7,27 @@ import pw.rxj.iron_quarry.Main;
 import pw.rxj.iron_quarry.resource.config.AbstractInnerConfigHandler;
 import pw.rxj.iron_quarry.resource.config.ConfigHandler;
 import pw.rxj.iron_quarry.resource.config.util.Comment;
+import pw.rxj.iron_quarry.resource.config.util.Options;
+import pw.rxj.iron_quarry.types.DimensionListMode;
 
 import java.util.Arrays;
 
 public class DimensionsConfig {
-    private static final String BLACKLIST = "blacklist";
-    private static final String WHITELIST = "whitelist";
     private static final String NAMESPACE_WILDCARD = ":*";
 
     @Comment("\"blacklist\": Quarries mine in every dimension except the listed ones.\n\"whitelist\": Quarries only mine in the listed dimensions.")
+    @Options(DimensionListMode.class)
     public final String mode;
     @Comment("Dimension IDs like minecraft:the_end, or somemod:* for every dimension of a mod.")
     public final String[] list;
 
     public DimensionsConfig() {
-        this.mode = BLACKLIST;
+        this.mode = DimensionListMode.BLACKLIST.getOptionName();
         this.list = new String[0];
     }
 
     public boolean isWhitelist() {
-        return WHITELIST.equalsIgnoreCase(this.mode);
+        return DimensionListMode.byOptionName(this.mode) == DimensionListMode.WHITELIST;
     }
     public boolean allows(Identifier dimension) {
         return Arrays.stream(this.list).anyMatch(entry -> matches(entry, dimension)) == this.isWhitelist();
@@ -65,12 +66,7 @@ public class DimensionsConfig {
         }
 
         public void validate() {
-            DimensionsConfig dimensions = this.getDimensions();
-
-            if(!BLACKLIST.equalsIgnoreCase(dimensions.mode) && !dimensions.isWhitelist()) {
-                Main.LOGGER.error("Config dimensions.mode ({}) is neither {} nor {}, using {} instead!", dimensions.mode, BLACKLIST, WHITELIST, BLACKLIST);
-            }
-            for(String entry : dimensions.list) {
+            for(String entry : this.getDimensions().list) {
                 if(isValidEntry(entry)) continue;
 
                 Main.LOGGER.error("Config dimensions.list entry {} is not a valid dimension ID!", entry);

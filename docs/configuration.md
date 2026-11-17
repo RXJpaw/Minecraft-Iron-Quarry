@@ -85,7 +85,7 @@ Mining only in a special mining dimension:
 }
 ```
 
-A quarry with a Blueprint from a forbidden dimension stops with the red warning `⚠ Mining is disabled in the blueprint's dimension`. An unknown `mode` falls back to `"blacklist"`, and invalid entries are reported in the log.
+A quarry with a Blueprint from a forbidden dimension stops with the red warning `⚠ Mining is disabled in the blueprint's dimension`. Any other `mode` is replaced by `"blacklist"`, and invalid entries are reported in the log.
 
 ### `augments`
 
