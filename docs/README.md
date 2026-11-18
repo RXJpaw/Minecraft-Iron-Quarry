@@ -4,7 +4,7 @@ Iron Quarry adds quarries: machines that mine a selected area block by block. Yo
 
 If you are new to the mod, start with [Getting Started](getting-started.md).
 
-This documentation is written for Iron Quarry 0.1.0 on Minecraft 26.1.2.
+This documentation is written for Iron Quarry 0.2.0 on Minecraft 26.1.2.
 
 ## Contents
 
