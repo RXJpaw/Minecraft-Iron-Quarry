@@ -12,12 +12,12 @@ Default values:
 
 | Drill | Mining level | Blocks before it breaks | Enchantability |
 |---|---|---|---|
-| Copper Drill | Copper | 649 | 2 |
-| Iron Drill | Iron | 1,284 | 5 |
-| Diamond Drill | Diamond | 6,649 | 4 |
-| Netherite Drill | Netherite | 93,750 | 5 |
-| Shulker Drill | Netherite | 159,375 | 7 |
-| Nether Star Drill | Netherite | 796,875 | 9 |
+| Copper Drill | Copper | 649 | 7 |
+| Iron Drill | Iron | 1,284 | 15 |
+| Diamond Drill | Diamond | 6,649 | 11 |
+| Netherite Drill | Netherite | 93,750 | 19 |
+| Shulker Drill | Netherite | 159,375 | 27 |
+| Nether Star Drill | Netherite | 796,875 | 35 |
 
 > [!NOTE]
 > Modpacks and servers can change these values, including the mining level (see [Configuration](configuration.md#drills)). A drill's tooltip shows its actual `Mining Level` and `Durability`.

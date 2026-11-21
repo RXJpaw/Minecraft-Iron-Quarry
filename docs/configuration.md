@@ -170,12 +170,12 @@ One entry per drill: `copper`, `iron`, `diamond`, `netherite`, `shulker`, `nethe
 
 | Drill | `durability` | `enchantability` | `toolEquivalent` |
 |---|---|---|---|
-| `copper` | 649 | 2 | `minecraft:copper_pickaxe` |
-| `iron` | 1,284 | 5 | `minecraft:iron_pickaxe` |
-| `diamond` | 6,649 | 4 | `minecraft:diamond_pickaxe` |
-| `netherite` | 93,750 | 5 | `minecraft:netherite_pickaxe` |
-| `shulker` | 159,375 | 7 | `minecraft:netherite_pickaxe` |
-| `netherStar` | 796,875 | 9 | `minecraft:netherite_pickaxe` |
+| `copper` | 649 | 7 | `minecraft:copper_pickaxe` |
+| `iron` | 1,284 | 15 | `minecraft:iron_pickaxe` |
+| `diamond` | 6,649 | 11 | `minecraft:diamond_pickaxe` |
+| `netherite` | 93,750 | 19 | `minecraft:netherite_pickaxe` |
+| `shulker` | 159,375 | 27 | `minecraft:netherite_pickaxe` |
+| `netherStar` | 796,875 | 35 | `minecraft:netherite_pickaxe` |
 
 An unknown `toolEquivalent` falls back to the default tool and is reported in the log. An item that isn't a tool only gets drops that need no tool. For a tool from another mod, the drill's tooltip needs a name for the mining level. Add a language entry like `"mining_level.iron_quarry.somemod:void_pickaxe": "Void"` with a resource pack.
 
