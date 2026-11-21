@@ -50,6 +50,8 @@ Drills can be enchanted at an Enchanting Table or with books on an Anvil. Two en
 - **Unbreaking** makes the drill last longer, like on a normal tool.
 - **Efficiency** makes the quarry faster. Levels I to V add 0.30, 0.69, 1.20, 1.86 or 2.71 to the quarry's speed factor and the same amount to its speed energy factor (see [Energy factors](augments.md#energy-factors)). The quarry then uses more energy per tick, but it also mines faster by the same factor, so a block doesn't cost more energy than before.
 
+Efficiency makes the biggest difference while a quarry has few or no Speed Augments. Each Speed Augment makes the gain smaller, and next to several full ones it hardly matters. Unbreaking, on the other hand, helps the same at every stage.
+
 ---
 
 [← Blueprints](blueprints.md) · [Overview](README.md) · [Augments →](augments.md)

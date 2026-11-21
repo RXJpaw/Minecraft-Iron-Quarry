@@ -55,7 +55,11 @@ Mined items go into the quarry's output inventory, which has 18 slots. Take them
 
 ## Next steps
 
-A better [quarry tier](quarries.md#the-six-tiers) mines faster, and when you upgrade, everything inside moves to the new quarry. [Augments](augments.md) make it even faster or give more ores. The Copper Quarry has no augment slots by default, so you need at least an Iron Quarry for them. A [Quarry Monitor](quarry-monitor.md) lets you watch the quarry from far away.
+A better [quarry tier](quarries.md#the-six-tiers) mines faster, and when you upgrade, everything inside moves to the new quarry.
+
+[Augments](augments.md) make it even faster or give more ores. The Copper Quarry has no augment slots by default, so you need at least an Iron Quarry for them. Until then, and while a quarry has only a few augments, an Efficiency enchantment on the drill is a cheap way to make it faster. A block doesn't cost more energy because of it (see [Enchantments](drills.md#enchantments)).
+
+A [Quarry Monitor](quarry-monitor.md) lets you watch the quarry from far away.
 
 ---
 
