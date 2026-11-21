@@ -218,7 +218,7 @@ M A M
 · M ·
 ```
 
-`S` 1× Blaze Rod, `A` 1× Shulker Drill, `M` 1× Nether Star.
+`S` 1× Breeze Rod, `A` 1× Shulker Drill, `M` 1× Nether Star.
 
 ## Blueprints
 
