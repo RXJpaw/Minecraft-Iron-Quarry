@@ -5,7 +5,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantments;
 import pw.rxj.iron_quarry.augment.ZAugments;
 import pw.rxj.iron_quarry.block.QuarryBlock;
 import pw.rxj.iron_quarry.blockentity.QuarryBlockEntity;
@@ -58,15 +57,9 @@ public class MachineUpgradesUtil {
             }
         }
 
-        if(drillStack.getItem() instanceof DrillItem) {
-            int efficiencyLevel = ZUtil.getCappedEnchantmentLevel(drillStack, Enchantments.EFFICIENCY);
-
-            if(efficiencyLevel > 0) {
-                float speedMultiplier = (float) Math.pow(1.3, efficiencyLevel) - 1.0F;
-
-                this.speedMultiplier += speedMultiplier;
-                this.speedEnergyBonus += speedMultiplier;
-            }
+        if(drillStack.getItem() instanceof DrillItem drillItem) {
+            this.speedMultiplier += drillItem.getSpeedBonus(drillStack);
+            this.speedEnergyBonus += drillItem.getEnergyBonus(drillStack);
         }
     }
 

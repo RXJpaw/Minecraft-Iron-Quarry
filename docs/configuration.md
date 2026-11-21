@@ -98,7 +98,7 @@ A quarry with a Blueprint from a forbidden dimension stops with the red warning 
 | `maxSpeedBonus` | `15.0` | Speed factor of a completely filled augment with all capacity upgrades. |
 | `maxEnergyBonus` | `45.0` | Speed energy factor of a completely filled augment with all capacity upgrades. |
 | `energyRatioExponent` | `1.5` | Shape of the energy cost curve. Above 0, partly filled augments cost less energy per speed than full ones, and the higher the value, the bigger the saving. |
-| `speedFactorLimit` | `93.71293` | Highest total speed factor of a quarry. The default is 1 + 6 full augments + Efficiency V. |
+| `speedFactorLimit` | `93.7` | Highest total speed factor of a quarry. The default is 1 + 6 full augments + 2.7 for a drill with Efficiency V. Each Efficiency level of the drill above V adds 0.8, see [Enchantments](drills.md#enchantments). |
 
 #### `augments.fortune`
 

@@ -82,7 +82,7 @@ For example, a Gold Quarry mines one block per second by default. One full Speed
 
 Smaller augments use energy more efficiently. Without capacity upgrades, a full augment's speed energy factor is about 1.04 times its speed factor. With all seven, it is 3 times.
 
-By default the speed factor of a quarry can't go above 93.71, which is exactly six full Speed Augments plus a drill with Efficiency V. Speed above the limit does nothing and costs no energy, and the quarry shows a yellow warning that names the limit.
+By default the speed factor of a quarry can't go above 93.7, which is exactly six full Speed Augments plus a drill with Efficiency V. Speed above the limit does nothing and costs no energy, and the quarry shows a yellow warning that names the limit. Other mods can give a drill Efficiency above V (see [Enchantments](drills.md#enchantments)). The quarry then reaches the limit sooner, and next to six full Speed Augments the levels above V do nothing.
 
 ## Fortune Augment
 

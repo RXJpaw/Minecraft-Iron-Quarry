@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class DrillItem extends Item implements ICustomEnchantabilityProvider, ICustomDurability {
+    private static final float[] EFFICIENCY_SPEED_BONUSES = { 0.3F, 0.7F, 1.2F, 1.9F, 2.7F };
     private static final Tool NO_TOOL = new Tool(List.of(), 0.0F, 0, true);
 
     private final Supplier<QuarryDrillStatsConfig.Entry> config;
@@ -65,6 +66,20 @@ public class DrillItem extends Item implements ICustomEnchantabilityProvider, IC
     }
     public int getEnchantability() {
         return this.config.get().enchantability;
+    }
+
+    public float getSpeedBonus(ItemStack stack) {
+        int level = ZUtil.getEnchantmentLevel(stack, Enchantments.EFFICIENCY);
+        if(level <= 0) return 0.0F;
+
+        int tableLevels = EFFICIENCY_SPEED_BONUSES.length;
+        if(level <= tableLevels) return EFFICIENCY_SPEED_BONUSES[level - 1];
+
+        float lastStep = EFFICIENCY_SPEED_BONUSES[tableLevels - 1] - EFFICIENCY_SPEED_BONUSES[tableLevels - 2];
+        return EFFICIENCY_SPEED_BONUSES[tableLevels - 1] + (level - tableLevels) * lastStep;
+    }
+    public float getEnergyBonus(ItemStack stack) {
+        return this.getSpeedBonus(stack);
     }
 
     public Item getToolItem() {

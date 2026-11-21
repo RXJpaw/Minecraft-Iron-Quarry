@@ -201,13 +201,6 @@ public class ZUtil {
 
         return 0;
     }
-    public static int getCappedEnchantmentLevel(ItemStack stack, ResourceKey<Enchantment> enchantment) {
-        for (Object2IntMap.Entry<Holder<Enchantment>> entry : stack.getEnchantments().entrySet()) {
-            if(entry.getKey().is(enchantment)) return Math.min(entry.getIntValue(), entry.getKey().value().getMaxLevel());
-        }
-
-        return 0;
-    }
 
     public static List<Item> getItemsIn(TagKey<Item> tag) {
         List<Item> items = new ArrayList<>();

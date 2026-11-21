@@ -30,7 +30,10 @@ public class AugmentsConfig {
         @Comment("Shape of the energy cost curve. Above 0, partly filled augments cost less energy per speed than full ones; the higher, the less.")
         @Range(min = 0)
         public final float energyRatioExponent;
-        @Comment("Highest total speed factor. Speed above it has no effect and costs no energy.\nDefault = 1 + 6 * maxSpeedBonus + Efficiency V (1.3^5 - 1), i.e. a fully upgraded nether star quarry.")
+        @Comment("""
+        Highest total speed factor. Speed above it has no effect and costs no energy.
+        Default = 1 + 6 * maxSpeedBonus + 2.7 for a drill with Efficiency V, i.e. a fully upgraded nether star quarry.
+        If other mods allow Efficiency above V, add 0.8 per extra level to let it count, e.g. 6.7 instead of 2.7 for Efficiency X.""")
         @Range(min = 1)
         public final float speedFactorLimit;
 
@@ -40,7 +43,7 @@ public class AugmentsConfig {
             this.maxSpeedBonus = 15.0F;
             this.maxEnergyBonus = 45.0F;
             this.energyRatioExponent = 1.5F;
-            this.speedFactorLimit = 93.71293F;
+            this.speedFactorLimit = 93.7F;
         }
     }
     public static class Fortune {
