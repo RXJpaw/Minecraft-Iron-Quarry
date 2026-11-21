@@ -28,8 +28,8 @@ Red warnings mean the quarry has stopped. Yellow warnings mean it still runs, bu
 | `⚠ Energy almost depleted \| <30%` | Less than 30% of the energy capacity is left. | Supply more energy, or the quarry will soon stop. |
 | `⚠ Output inventory almost full \| >70%` | At least 70% of the output slots are in use. | Empty the output soon. |
 | `⚠ Quarry out of range` | Monitor only: you are too far from the quarry, or it is in a dimension this monitor can't reach. | Come closer, or use a better [monitor](quarry-monitor.md#the-four-monitors). |
-| `⚠ Speed Augments are limited to Speed factor ×…` | The quarry has more speed than allowed; the number in the warning is the limit. | Nothing breaks, the extra speed just does nothing. Remove an augment if you like. |
-| `⚠ Fortune Augments are limited to Fortune …` | The quarry has more fortune than allowed; the number in the warning is the limit. | Nothing breaks, the extra fortune just does nothing. Remove an augment if you like. |
+| `⚠ Speed factor limited to ×…` | The quarry has more speed than allowed; the number in the warning is the limit. | Nothing breaks, the extra speed just does nothing. Remove an augment if you like. |
+| `⚠ Fortune limited to …` | The quarry has more fortune than allowed; the number in the warning is the limit. | Nothing breaks, the extra fortune just does nothing. Remove an augment if you like. |
 | `⚠ Silk Touch overrides Fortune Augment` | A Silk Touch Augment and a Fortune Augment are in the same quarry, so the Fortune Augment does nothing. | Remove one of them. |
 | `⚠ Augments in locked slots are ignored` | An augment is in a slot this tier can't use. | Take it out or upgrade the quarry. |
 | `⚠ Expansion Cards in locked slots are ignored` | A card is in a slot this tier can't use. | Take it out or upgrade the quarry. |

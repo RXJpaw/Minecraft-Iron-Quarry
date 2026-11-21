@@ -126,8 +126,8 @@
     "item.iron_quarry.lore.mining_level": "§{RGB_LIGHT_GRAY Mining Level:} §{RGB_WEAK_HIGHLIGHT %s}",
     "item.iron_quarry.lore.custom_durability": "§{RGB_LIGHT_GRAY Durability:} §{RGB_WEAK_HIGHLIGHT %s/%s (%s%%)}",
 
-    "item.iron_quarry.conflict.speed_limit": "§{RGB_WARNING ⚠ Speed Augments are limited to Speed factor ×%s}",
-    "item.iron_quarry.conflict.fortune_limit": "§{RGB_WARNING ⚠ Fortune Augments are limited to Fortune %s}",
+    "item.iron_quarry.conflict.speed_limit": "§{RGB_WARNING ⚠ Speed factor limited to ×%s}",
+    "item.iron_quarry.conflict.fortune_limit": "§{RGB_WARNING ⚠ Fortune limited to %s}",
     "item.iron_quarry.conflict.silk_touch_fortune": "§{RGB_WARNING ⚠ Silk Touch overrides Fortune Augment}",
     "item.iron_quarry.conflict.locked_augment": "§{RGB_WARNING ⚠ Augments in locked slots are ignored}",
     "item.iron_quarry.conflict.locked_expansion": "§{RGB_WARNING ⚠ Expansion Cards in locked slots are ignored}",
