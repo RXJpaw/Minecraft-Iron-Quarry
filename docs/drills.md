@@ -12,12 +12,12 @@ Default values:
 
 | Drill | Mining level | Blocks before it breaks | Enchantability |
 |---|---|---|---|
-| Copper Drill | Copper | 649 | 7 |
-| Iron Drill | Iron | 1,284 | 15 |
-| Diamond Drill | Diamond | 6,649 | 11 |
-| Netherite Drill | Netherite | 93,750 | 19 |
-| Shulker Drill | Netherite | 159,375 | 27 |
-| Nether Star Drill | Netherite | 796,875 | 35 |
+| Copper Drill | Copper | 749 | 7 |
+| Iron Drill | Iron | 1,346 | 15 |
+| Diamond Drill | Diamond | 8,479 | 11 |
+| Netherite Drill | Netherite | 98,745 | 19 |
+| Shulker Drill | Netherite | 157,992 | 27 |
+| Nether Star Drill | Netherite | 1,283,685 | 35 |
 
 > [!NOTE]
 > Modpacks and servers can change these values, including the mining level (see [Configuration](configuration.md#drills)). A drill's tooltip shows its actual `Mining Level` and `Durability`.
@@ -39,7 +39,9 @@ Blocks from other mods follow the same rules as for the matching pickaxe. If a m
 
 ## Durability
 
-Every mined block costs one point of durability. Water and lava cost nothing. When the durability runs out, the drill breaks and disappears, and the quarry stops with the warning `⚠ Drill slot empty`. To replace drills automatically, feed new ones in through a pipe on a red side (see [Side settings](quarries.md#side-settings-io)).
+Every mined block costs one point of durability. Water and lava are removed without costing durability. When the durability runs out, the drill breaks and disappears, and the quarry stops with the warning `⚠ Drill slot empty`. To replace drills automatically, feed new ones in through a pipe on a red side (see [Side settings](quarries.md#side-settings-io)).
+
+On average and without enchantments, a drill with the default values mines a little more copper, diamonds or netherite than went into it. The Iron Drill gets back a bit less iron, but also finds redstone, lapis, gold and diamonds on the way. The Netherite, Shulker and Nether Star Drills get their netherite back at the heights where ancient debris generates.
 
 ## Enchantments
 

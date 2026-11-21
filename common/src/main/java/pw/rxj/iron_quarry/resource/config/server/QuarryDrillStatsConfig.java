@@ -15,12 +15,12 @@ import java.util.Optional;
 public class QuarryDrillStatsConfig {
     public static final QuarryDrillStatsConfig DEFAULTS = new QuarryDrillStatsConfig();
 
-    public final Entry copper = new Entry(649, 7, "minecraft:copper_pickaxe");
-    public final Entry iron = new Entry(1_284, 15, "minecraft:iron_pickaxe");
-    public final Entry diamond = new Entry(6_649, 11, "minecraft:diamond_pickaxe");
-    public final Entry netherite = new Entry(93_750, 19, "minecraft:netherite_pickaxe");
-    public final Entry shulker = new Entry(159_375, 27, "minecraft:netherite_pickaxe");
-    public final Entry netherStar = new Entry(796_875, 35, "minecraft:netherite_pickaxe");
+    public final Entry copper = new Entry(749, 7, "minecraft:copper_pickaxe");
+    public final Entry iron = new Entry(1_346, 15, "minecraft:iron_pickaxe");
+    public final Entry diamond = new Entry(8_479, 11, "minecraft:diamond_pickaxe");
+    public final Entry netherite = new Entry(98_745, 19, "minecraft:netherite_pickaxe");
+    public final Entry shulker = new Entry(157_992, 27, "minecraft:netherite_pickaxe");
+    public final Entry netherStar = new Entry(1_283_685, 35, "minecraft:netherite_pickaxe");
 
     @AllArgsConstructor
     public static class Entry {
