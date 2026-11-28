@@ -14,7 +14,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
@@ -231,16 +230,13 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
             return;
         }
 
-        this.playerWillDestroy(world, blockPos, blockState, player);
-        boolean removed = world.removeBlock(blockPos, false);
-        if(removed) this.destroy(world, blockPos, blockState);
+        if(!world.destroyBlock(blockPos, false, player)) return;
+        this.destroy(world, blockPos, blockState);
 
-        if(!player.isCreative()) {
-            stack.mineBlock(world, blockState, blockPos, player);
-            this.playerDestroy(world, player, blockPos, blockState, blockEntity, stack.copy());
-        }
+        if(!player.isCreative()) stack.mineBlock(world, blockState, blockPos, player);
+        this.playerDestroy(world, player, blockPos, blockState, blockEntity, stack.copy());
 
-        if(removed) Platform.BLOCK_BREAK.afterBreak(world, player, blockPos, blockState, blockEntity);
+        Platform.BLOCK_BREAK.afterBreak(world, player, blockPos, blockState, blockEntity);
     }
 
     @Override
@@ -255,15 +251,11 @@ public class QuarryBlock extends BaseEntityBlock implements IEnergyContainer, IT
 
     @Override
     public BlockState playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof QuarryBlockEntity) {
-            if (!world.isClientSide() && player.isCreative()) {
-                ItemStack itemStack = new ItemStack(this);
-                itemStack.applyComponents(blockEntity.collectComponents());
-
-                ItemEntity itemEntity = new ItemEntity(world, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, itemStack);
-                itemEntity.setDefaultPickUpDelay();
-                world.addFreshEntity(itemEntity);
+        if(!world.isClientSide() && world.getBlockEntity(pos) instanceof QuarryBlockEntity quarryBlockEntity) {
+            if(player.isCreative()) {
+                dropResources(state, world, pos, quarryBlockEntity, player, player.getMainHandItem());
+            } else if(!Platform.BLOCK_BREAK.dropsLootWhenBrokenBy(world, player, pos, state)) {
+                quarryBlockEntity.dropContents();
             }
         }
 

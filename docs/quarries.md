@@ -25,7 +25,7 @@ Each tier is crafted from the one before it (see [Crafting Recipes](crafting.md#
 A quarry also keeps its contents when you pick it up, so you can move a running setup somewhere else. Break it with any pickaxe, or sneak and right-click it with a wrench from another mod.
 
 > [!CAUTION]
-> A quarry broken without a pickaxe, for example by hand, is destroyed together with everything inside.
+> A quarry broken without a pickaxe, for example by hand, is destroyed. Everything inside falls to the ground, only the stored energy is lost.
 
 ## The quarry screen
 

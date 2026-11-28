@@ -37,4 +37,9 @@ public class FabricPlatformBlockBreak implements IPlatformBlockBreak {
     public void afterBreak(Level world, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity) {
         PlayerBlockBreakEvents.AFTER.invoker().afterBlockBreak(world, player, pos, state, blockEntity);
     }
+
+    @Override
+    public boolean dropsLootWhenBrokenBy(Level world, Player player, BlockPos pos, BlockState state) {
+        return player.hasCorrectToolForDrops(state);
+    }
 }

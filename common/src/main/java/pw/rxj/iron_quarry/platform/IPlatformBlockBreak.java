@@ -16,4 +16,5 @@ public interface IPlatformBlockBreak {
     boolean beforeBreak(Level world, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity);
     void onBreakCanceled(Level world, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity);
     void afterBreak(Level world, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity);
+    boolean dropsLootWhenBrokenBy(Level world, Player player, BlockPos pos, BlockState state);
 }

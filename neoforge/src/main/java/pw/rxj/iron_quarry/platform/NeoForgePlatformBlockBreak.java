@@ -36,4 +36,9 @@ public class NeoForgePlatformBlockBreak implements IPlatformBlockBreak {
     @Override
     public void afterBreak(Level world, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity) {
     }
+
+    @Override
+    public boolean dropsLootWhenBrokenBy(Level world, Player player, BlockPos pos, BlockState state) {
+        return state.canHarvestBlock(world, pos, player);
+    }
 }

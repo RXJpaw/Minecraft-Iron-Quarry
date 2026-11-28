@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Container;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -41,7 +42,8 @@ import pw.rxj.iron_quarry.types.Face;
 import pw.rxj.iron_quarry.types.IoState;
 import pw.rxj.iron_quarry.util.*;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.UUID;
 
 public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     public QuarryBlockEntity(BlockPos pos, BlockState state) {
@@ -135,6 +137,22 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     public final ComplexInventory ExpansionsInventory = QuarryInventory.Expansions.ofRef(this);
     public final ComplexInventory BlueprintInventory = QuarryInventory.Blueprint.ofRef(this);
     public final ComplexInventory DrillInventory = QuarryInventory.Drill.ofRef(this);
+
+    public void dropContents() {
+        Level level = this.getLevel();
+        if(level == null) return;
+
+        this.dropAndClear(level, OutputInventory);
+        this.dropAndClear(level, BatteryInputInventory);
+        this.dropAndClear(level, MachineUpgradesInventory);
+        this.dropAndClear(level, ExpansionsInventory);
+        this.dropAndClear(level, BlueprintInventory);
+        this.dropAndClear(level, DrillInventory);
+    }
+    private void dropAndClear(Level level, Container inventory) {
+        Containers.dropContents(level, this.worldPosition, inventory);
+        inventory.clearContent();
+    }
 
     public @Nullable Container getLinkedContainer(Direction direction){
         if(direction == null) return null;
